@@ -34,7 +34,7 @@ public class DeviceHeader {
 	public String toString() {
 		StringBuffer outBuf = new StringBuffer();
 		outBuf.append(this.DeviceType.name());
-		outBuf.append(": Mac(" + this.GetMacAddressString() + "), ");
+		outBuf.append(": MAC(" + this.GetMacAddressString() + "), ");
 		outBuf.append("IP(" + this.IpAddress.toString() + "), ");
 		outBuf.append("Protocol Ver(" + this.ProtocolVersion + "), ");
 		outBuf.append("Vendor ID(" + this.VendorId + "), ");
@@ -48,7 +48,7 @@ public class DeviceHeader {
 	public String GetMacAddressString() {
 		StringBuffer buffer = new StringBuffer();
 		Formatter formatter = new Formatter(buffer, Locale.US);
-		formatter.format("%02X:%02X:%02X:%02X:%02X:%02X", this.MacAddress[0],
+		formatter.format("%02x:%02x:%02x:%02x:%02x:%02x", this.MacAddress[0],
 				this.MacAddress[1], this.MacAddress[2], this.MacAddress[3],
 				this.MacAddress[4], this.MacAddress[5]);
 		String macAddrString = formatter.toString();

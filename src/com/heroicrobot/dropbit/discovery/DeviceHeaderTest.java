@@ -48,7 +48,7 @@ public class DeviceHeaderTest {
 				(byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff };
 		DeviceHeader deviceHeader = new DeviceHeader(Arrays.copyOfRange(
 				headerPacket, 0, 24));
-		assertEquals("PIXELPUSHER: Mac(00:02:F7:F0:C0:99), IP(/10.73.38.166), "
+		assertEquals("PIXELPUSHER: MAC(00:02:f7:f0:c0:99), IP(/10.73.38.166), "
 				+ "Protocol Ver(1), Vendor ID(2), Product ID(1), "
 				+ "HW Rev(2), SW Rev(3), Link Spd(100000000), ",
 				deviceHeader.toString());

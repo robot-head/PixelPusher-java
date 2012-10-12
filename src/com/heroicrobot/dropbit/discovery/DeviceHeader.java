@@ -38,6 +38,9 @@ public class DeviceHeader {
 	}
 
 	public DeviceHeader(byte[] HeaderPacket) {
+		if (HeaderPacket.length != 24) {
+			throw new IllegalArgumentException();
+		}
 		this.MacAddress = Arrays.copyOfRange(HeaderPacket, 0, 5);
 		try {
 			this.IpAddress = InetAddress.getByAddress(Arrays.copyOfRange(

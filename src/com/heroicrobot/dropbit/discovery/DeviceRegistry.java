@@ -7,5 +7,5 @@ import com.heroicrobot.dropbit.devices.Device;
 
 public class DeviceRegistry extends Observable {
 
-    List<Device> devices;
+  List<Device> devices;
 }

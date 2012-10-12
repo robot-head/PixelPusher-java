@@ -1,12 +1,12 @@
 package com.heroicrobot.dropbit.discovery;
 
-import com.heroicrobot.dropbit.common.ByteUtils;
-import com.heroicrobot.dropbit.discovery.DeviceType;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Locale;
+
+import com.heroicrobot.dropbit.common.ByteUtils;
 
 public class DeviceHeader {
   /**
@@ -31,6 +31,7 @@ public class DeviceHeader {
   public int SoftwareRevision;
   public long LinkSpeed;
 
+  @Override
   public String toString() {
     StringBuffer outBuf = new StringBuffer();
     outBuf.append(this.DeviceType.name());

@@ -1,16 +1,16 @@
 package com.heroicrobot.dropbit.discovery;
 
 public enum DeviceType {
-	PIXELPUSHER, ETHERDREAM, LUMIABRIDGE;
+	ETHERDREAM, LUMIABRIDGE, PIXELPUSHER;
 
 	public static DeviceType fromInteger(int x) {
 		switch (x) {
 		case 0:
-			return PIXELPUSHER;
-		case 1:
 			return ETHERDREAM;
-		case 2:
+		case 1:
 			return LUMIABRIDGE;
+		case 2:
+			return PIXELPUSHER;
 		}
 		return null;
 	}

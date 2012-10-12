@@ -48,7 +48,7 @@ public class DeviceHeader {
 	public String GetMacAddressString() {
 		StringBuffer buffer = new StringBuffer();
 		Formatter formatter = new Formatter(buffer, Locale.US);
-		formatter.format("%X:%X:%X:%X:%X:%X", this.MacAddress[0],
+		formatter.format("%02X:%02X:%02X:%02X:%02X:%02X", this.MacAddress[0],
 				this.MacAddress[1], this.MacAddress[2], this.MacAddress[3],
 				this.MacAddress[4], this.MacAddress[5]);
 		String macAddrString = formatter.toString();
@@ -60,10 +60,10 @@ public class DeviceHeader {
 		if (HeaderPacket.length != 24) {
 			throw new IllegalArgumentException();
 		}
-		this.MacAddress = Arrays.copyOfRange(HeaderPacket, 0, 5);
+		this.MacAddress = Arrays.copyOfRange(HeaderPacket, 0, 6);
 		try {
 			this.IpAddress = InetAddress.getByAddress(Arrays.copyOfRange(
-					HeaderPacket, 6, 9));
+					HeaderPacket, 6, 10));
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -73,16 +73,15 @@ public class DeviceHeader {
 						.unsignedCharToInt(new byte[] { HeaderPacket[10] }));
 		this.ProtocolVersion = ByteUtils
 				.unsignedCharToInt(new byte[] { HeaderPacket[11] });
-		Arrays.copyOfRange(HeaderPacket, 12, 13);
 		this.VendorId = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(
-				HeaderPacket, 12, 13));
+				HeaderPacket, 12, 14));
 		this.ProductId = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(
-				HeaderPacket, 13, 14));
+				HeaderPacket, 14, 16));
 		this.HardwareRevision = ByteUtils.unsignedShortToInt(Arrays
-				.copyOfRange(HeaderPacket, 14, 15));
+				.copyOfRange(HeaderPacket, 16, 18));
 		this.SoftwareRevision = ByteUtils.unsignedShortToInt(Arrays
-				.copyOfRange(HeaderPacket, 16, 17));
+				.copyOfRange(HeaderPacket, 18, 20));
 		this.LinkSpeed = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(
-				HeaderPacket, 18, 23));
+				HeaderPacket, 20, 24));
 	}
 }

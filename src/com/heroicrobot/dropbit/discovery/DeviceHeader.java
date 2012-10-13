@@ -31,6 +31,8 @@ public class DeviceHeader {
   public int SoftwareRevision;
   public long LinkSpeed;
 
+  private static final int headerLength = 24;
+  
   @Override
   public String toString() {
     StringBuffer outBuf = new StringBuffer();
@@ -58,7 +60,7 @@ public class DeviceHeader {
   }
 
   public DeviceHeader(byte[] HeaderPacket) {
-    if (HeaderPacket.length != 24) {
+    if (HeaderPacket.length != headerLength) {
       throw new IllegalArgumentException();
     }
     this.MacAddress = Arrays.copyOfRange(HeaderPacket, 0, 6);

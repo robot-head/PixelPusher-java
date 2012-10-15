@@ -30,9 +30,10 @@ public class DeviceHeader {
   public int HardwareRevision;
   public int SoftwareRevision;
   public long LinkSpeed;
+  public byte[] PacketRemainder;
 
   private static final int headerLength = 24;
-  
+
   @Override
   public String toString() {
     StringBuffer outBuf = new StringBuffer();
@@ -59,31 +60,34 @@ public class DeviceHeader {
     return macAddrString;
   }
 
-  public DeviceHeader(byte[] HeaderPacket) {
-    if (HeaderPacket.length != headerLength) {
+  public DeviceHeader(byte[] packet) {
+    if (packet.length < headerLength) {
       throw new IllegalArgumentException();
     }
-    this.MacAddress = Arrays.copyOfRange(HeaderPacket, 0, 6);
+    byte[] headerPkt = Arrays.copyOfRange(packet, 0, headerLength);
+
+    this.MacAddress = Arrays.copyOfRange(headerPkt, 0, 6);
     try {
-      this.IpAddress = InetAddress.getByAddress(Arrays.copyOfRange(
-          HeaderPacket, 6, 10));
+      this.IpAddress = InetAddress.getByAddress(Arrays.copyOfRange(headerPkt,
+          6, 10));
     } catch (UnknownHostException e) {
       throw new IllegalArgumentException();
     }
     this.DeviceType = com.heroicrobot.dropbit.discovery.DeviceType
-        .fromInteger(ByteUtils
-            .unsignedCharToInt(new byte[] { HeaderPacket[10] }));
+        .fromInteger(ByteUtils.unsignedCharToInt(new byte[] { headerPkt[10] }));
     this.ProtocolVersion = ByteUtils
-        .unsignedCharToInt(new byte[] { HeaderPacket[11] });
-    this.VendorId = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(
-        HeaderPacket, 12, 14));
-    this.ProductId = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(
-        HeaderPacket, 14, 16));
+        .unsignedCharToInt(new byte[] { headerPkt[11] });
+    this.VendorId = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(headerPkt,
+        12, 14));
+    this.ProductId = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(headerPkt,
+        14, 16));
     this.HardwareRevision = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(
-        HeaderPacket, 16, 18));
+        headerPkt, 16, 18));
     this.SoftwareRevision = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(
-        HeaderPacket, 18, 20));
-    this.LinkSpeed = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(
-        HeaderPacket, 20, 24));
+        headerPkt, 18, 20));
+    this.LinkSpeed = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(headerPkt,
+        20, 24));
+    this.PacketRemainder = Arrays.copyOfRange(packet, headerLength,
+        packet.length);
   }
 }

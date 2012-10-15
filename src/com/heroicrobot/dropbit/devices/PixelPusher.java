@@ -19,7 +19,7 @@ public class PixelPusher extends DeviceImpl {
   public long UpdatePeriod;
   public long PowerTotal;
 
-  public void parsePacket(byte[] packet) {
+  public PixelPusher(byte[] packet) {
     if (packet.length < 12) {
       throw new IllegalArgumentException();
     }

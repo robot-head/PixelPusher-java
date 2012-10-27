@@ -1,19 +1,22 @@
 package com.heroicrobot.dropbit.discovery;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Observable;
 
 import com.heroicrobot.dropbit.devices.Device;
 import com.heroicrobot.dropbit.devices.PixelPusher;
 
 import hypermedia.net.UDP;
 
-public class DeviceRegistry {
+public class DeviceRegistry extends Observable {
 
   private UDP udp;
   private static final int DISCOVERY_PORT = 7331;
   
   private Map<String, Device> deviceMap;
+  private Map<String, Date> deviceLastSeenMap;
   
   public Map<String, Device> getDeviceMap() {
     return deviceMap;
@@ -36,7 +39,22 @@ public class DeviceRegistry {
     if (header.DeviceType == DeviceType.PIXELPUSHER) {
       device = new PixelPusher(header.PacketRemainder);
     }
-    deviceMap.put(macAddr, device);
+    // Set the timestamp for the last time this device checked in
+    deviceLastSeenMap.put(macAddr, new Date());
+    if (!deviceMap.containsKey(macAddr)) {
+      // We haven't seen this device before
+      deviceMap.put(macAddr, device);
+      this.setChanged();
+    } else {
+      if (deviceMap.get(macAddr) != device) {
+        // We already knew about this device at the given MAC, but its details
+        // have changed
+        deviceMap.put(macAddr, device);
+        this.setChanged();
+      } else {
+        // The device is identical, nothing has changed
+      }
+    }
   }
   
 }

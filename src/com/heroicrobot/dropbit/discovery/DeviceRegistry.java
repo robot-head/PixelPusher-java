@@ -14,6 +14,7 @@ public class DeviceRegistry extends Observable {
 
   private UDP udp;
   private static final int DISCOVERY_PORT = 7331;
+  private static final int MAX_DISCONNECT_SECONDS = 30;
   
   private Map<String, Device> deviceMap;
   private Map<String, Date> deviceLastSeenMap;
@@ -22,7 +23,17 @@ public class DeviceRegistry extends Observable {
     return deviceMap;
   }
 
+  class DeviceTimeoutRunnable implements Runnable {
 
+    @Override
+    public void run() {
+      for (String deviceMac : deviceMap.keySet()) {
+        // foo
+      }
+    }
+    
+  }
+  
   public DeviceRegistry() {
     udp = new UDP(this, DISCOVERY_PORT);
     deviceMap = new HashMap<String, Device>();

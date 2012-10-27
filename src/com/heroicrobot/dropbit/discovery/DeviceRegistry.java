@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 
+import org.joda.time.DateTime;
+
 import com.heroicrobot.dropbit.devices.Device;
 import com.heroicrobot.dropbit.devices.PixelPusher;
 
@@ -15,10 +17,10 @@ public class DeviceRegistry extends Observable {
   private UDP udp;
   private static final int DISCOVERY_PORT = 7331;
   private static final int MAX_DISCONNECT_SECONDS = 30;
-  
+
   private Map<String, Device> deviceMap;
-  private Map<String, Date> deviceLastSeenMap;
-  
+  private Map<String, DateTime> deviceLastSeenMap;
+
   public Map<String, Device> getDeviceMap() {
     return deviceMap;
   }
@@ -31,9 +33,9 @@ public class DeviceRegistry extends Observable {
         // foo
       }
     }
-    
+
   }
-  
+
   public DeviceRegistry() {
     udp = new UDP(this, DISCOVERY_PORT);
     deviceMap = new HashMap<String, Device>();
@@ -51,7 +53,7 @@ public class DeviceRegistry extends Observable {
       device = new PixelPusher(header.PacketRemainder);
     }
     // Set the timestamp for the last time this device checked in
-    deviceLastSeenMap.put(macAddr, new Date());
+    deviceLastSeenMap.put(macAddr, new DateTime());
     if (!deviceMap.containsKey(macAddr)) {
       // We haven't seen this device before
       deviceMap.put(macAddr, device);
@@ -67,5 +69,5 @@ public class DeviceRegistry extends Observable {
       }
     }
   }
-  
+
 }

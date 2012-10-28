@@ -45,9 +45,7 @@ public class DeviceRegistry extends Observable {
         Seconds lastSeenSeconds = Seconds.secondsBetween(
             deviceLastSeenMap.get(deviceMac), DateTime.now());
         if (lastSeenSeconds.getSeconds() > MAX_DISCONNECT_SECONDS) {
-          deviceMap.remove(deviceMac);
-          deviceLastSeenMap.remove(deviceMac);
-          registry.setChanged();
+          registry.expireDevice(deviceMac);
         }
       }
     }
@@ -65,6 +63,13 @@ public class DeviceRegistry extends Observable {
         EXPIRY_TIMER_MSEC);
   }
 
+  public void expireDevice(String macAddr) {
+    deviceMap.remove(macAddr);
+    deviceLastSeenMap.remove(macAddr);
+    this.setChanged();
+    this.notifyObservers();
+  }
+
   public void receive(byte[] data) {
     System.out.println("Got data");
     DeviceHeader header = new DeviceHeader(data);
@@ -79,12 +84,14 @@ public class DeviceRegistry extends Observable {
       // We haven't seen this device before
       deviceMap.put(macAddr, device);
       this.setChanged();
+      this.notifyObservers(device);
     } else {
       if (deviceMap.get(macAddr) != device) {
         // We already knew about this device at the given MAC, but its details
         // have changed
         deviceMap.put(macAddr, device);
         this.setChanged();
+        this.notifyObservers(device);
       } else {
         // The device is identical, nothing has changed
       }

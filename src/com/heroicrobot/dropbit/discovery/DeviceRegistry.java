@@ -1,12 +1,12 @@
 package com.heroicrobot.dropbit.discovery;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.joda.time.DateTime;
-import org.joda.time.Minutes;
 import org.joda.time.Seconds;
 
 import com.heroicrobot.dropbit.devices.Device;
@@ -19,22 +19,25 @@ public class DeviceRegistry extends Observable {
   private UDP udp;
   private static final int DISCOVERY_PORT = 7331;
   private static final int MAX_DISCONNECT_SECONDS = 30;
+  private static final long EXPIRY_TIMER_MSEC = 1000;
 
   private Map<String, Device> deviceMap;
   private Map<String, DateTime> deviceLastSeenMap;
+
+  private Timer expiryTimer;
 
   public Map<String, Device> getDeviceMap() {
     return deviceMap;
   }
 
-  class DeviceExpiryTask implements Runnable {
+  class DeviceExpiryTask extends TimerTask {
 
     private DeviceRegistry registry;
-    
+
     DeviceExpiryTask(DeviceRegistry registry) {
       this.registry = registry;
     }
-    
+
     @Override
     public void run() {
       for (String deviceMac : deviceMap.keySet()) {
@@ -57,6 +60,9 @@ public class DeviceRegistry extends Observable {
     udp.setReceiveHandler("receive");
     udp.log(true);
     udp.listen(true);
+    this.expiryTimer = new Timer();
+    this.expiryTimer.scheduleAtFixedRate(new DeviceExpiryTask(this), 0,
+        EXPIRY_TIMER_MSEC);
   }
 
   public void receive(byte[] data) {

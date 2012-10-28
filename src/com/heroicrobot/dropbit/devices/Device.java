@@ -22,4 +22,5 @@ public interface Device {
   int getSoftwareRevision();
 
   long getLinkSpeed();
+
 }

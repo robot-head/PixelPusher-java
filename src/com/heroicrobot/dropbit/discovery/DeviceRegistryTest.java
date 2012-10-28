@@ -1,8 +1,5 @@
 package com.heroicrobot.dropbit.discovery;
 
-import static org.junit.Assert.*;
-
-import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -10,7 +7,6 @@ import java.util.logging.Logger;
 
 import org.junit.Test;
 
-import com.heroicrobot.dropbit.devices.Device;
 
 public class DeviceRegistryTest {
 

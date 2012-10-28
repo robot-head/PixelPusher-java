@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
@@ -15,6 +16,9 @@ import com.heroicrobot.dropbit.devices.PixelPusher;
 import hypermedia.net.UDP;
 
 public class DeviceRegistry extends Observable {
+
+  private final static Logger LOGGER = Logger.getLogger(DeviceRegistry.class
+      .getName());
 
   private UDP udp;
   private static int DISCOVERY_PORT = 7331;
@@ -64,6 +68,7 @@ public class DeviceRegistry extends Observable {
   }
 
   public void expireDevice(String macAddr) {
+    LOGGER.info("Device gone: " + macAddr);
     deviceMap.remove(macAddr);
     deviceLastSeenMap.remove(macAddr);
     this.setChanged();
@@ -71,7 +76,6 @@ public class DeviceRegistry extends Observable {
   }
 
   public void receive(byte[] data) {
-    System.out.println("Got data");
     DeviceHeader header = new DeviceHeader(data);
     String macAddr = header.GetMacAddressString();
     Device device = null;
@@ -82,6 +86,7 @@ public class DeviceRegistry extends Observable {
     deviceLastSeenMap.put(macAddr, DateTime.now());
     if (!deviceMap.containsKey(macAddr)) {
       // We haven't seen this device before
+      LOGGER.info("New device: " + macAddr);
       deviceMap.put(macAddr, device);
       this.setChanged();
       this.notifyObservers(device);
@@ -89,6 +94,7 @@ public class DeviceRegistry extends Observable {
       if (deviceMap.get(macAddr) != device) {
         // We already knew about this device at the given MAC, but its details
         // have changed
+        LOGGER.info("Device changed: " + macAddr);
         deviceMap.put(macAddr, device);
         this.setChanged();
         this.notifyObservers(device);

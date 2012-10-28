@@ -81,7 +81,7 @@ public class DeviceRegistry extends Observable {
     String macAddr = header.GetMacAddressString();
     Device device = null;
     if (header.DeviceType == DeviceType.PIXELPUSHER) {
-      device = new PixelPusher(header.PacketRemainder);
+      device = new PixelPusher(header.PacketRemainder, header);
     }
     assert device != null;
     // Set the timestamp for the last time this device checked in

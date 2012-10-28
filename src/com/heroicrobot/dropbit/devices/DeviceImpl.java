@@ -8,6 +8,10 @@ import com.heroicrobot.dropbit.discovery.DeviceType;
 public abstract class DeviceImpl implements Device {
 
   private DeviceHeader header;
+  
+  DeviceImpl(DeviceHeader header) {
+    this.header = header;
+  }
 
   /*
    * (non-Javadoc)
@@ -106,6 +110,17 @@ public abstract class DeviceImpl implements Device {
   public long getLinkSpeed() {
     // TODO Auto-generated method stub
     return header.LinkSpeed;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "Mac: " + header.GetMacAddressString() + ", IP: "
+        + header.IpAddress.toString();
   }
 
 }

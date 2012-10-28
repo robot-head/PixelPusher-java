@@ -3,6 +3,7 @@ package com.heroicrobot.dropbit.devices;
 import java.util.Arrays;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
+import com.heroicrobot.dropbit.discovery.DeviceHeader;
 
 public class PixelPusher extends DeviceImpl {
   /**
@@ -19,7 +20,8 @@ public class PixelPusher extends DeviceImpl {
   public long UpdatePeriod;
   public long PowerTotal;
 
-  public PixelPusher(byte[] packet) {
+  public PixelPusher(byte[] packet, DeviceHeader header) {
+    super(header);
     if (packet.length < 12) {
       throw new IllegalArgumentException();
     }
@@ -69,4 +71,10 @@ public class PixelPusher extends DeviceImpl {
     return true;
   }
 
+  public String toString() {
+    return super.toString() + " # Strips(" + StripsAttached
+        + ") Max Strips Per Packet(" + MaxStripsPerPacket
+        + ") PixelsPerStrip (" + PixelsPerStrip + ") Update Period ("
+        + UpdatePeriod + ") Power Total (" + PowerTotal + ")";
+  }
 }

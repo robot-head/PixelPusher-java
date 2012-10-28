@@ -44,8 +44,8 @@ public class DeviceRegistry extends Observable {
 
     @Override
     public void run() {
+      LOGGER.fine("Expiry Task running");
       for (String deviceMac : deviceMap.keySet()) {
-        // foo
         Seconds lastSeenSeconds = Seconds.secondsBetween(
             deviceLastSeenMap.get(deviceMac), DateTime.now());
         if (lastSeenSeconds.getSeconds() > MAX_DISCONNECT_SECONDS) {
@@ -59,6 +59,7 @@ public class DeviceRegistry extends Observable {
   public DeviceRegistry() {
     udp = new UDP(this, DISCOVERY_PORT);
     deviceMap = new HashMap<String, Device>();
+    deviceLastSeenMap = new HashMap<String, DateTime>();
     udp.setReceiveHandler("receive");
     udp.log(true);
     udp.listen(true);
@@ -82,6 +83,7 @@ public class DeviceRegistry extends Observable {
     if (header.DeviceType == DeviceType.PIXELPUSHER) {
       device = new PixelPusher(header.PacketRemainder);
     }
+    assert device != null;
     // Set the timestamp for the last time this device checked in
     deviceLastSeenMap.put(macAddr, DateTime.now());
     if (!deviceMap.containsKey(macAddr)) {
@@ -100,6 +102,7 @@ public class DeviceRegistry extends Observable {
         this.notifyObservers(device);
       } else {
         // The device is identical, nothing has changed
+        LOGGER.fine("Device still present: " + macAddr);
       }
     }
   }

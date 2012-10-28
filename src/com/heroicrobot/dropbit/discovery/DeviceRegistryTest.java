@@ -15,16 +15,16 @@ public class DeviceRegistryTest {
 
   @Test
   public void testDiscovery() throws InterruptedException {
-    LOGGER.setLevel(Level.FINE);
+    LOGGER.setLevel(Level.FINEST);
     LOGGER.info("Beginning discovery");
     DeviceRegistry registry = new DeviceRegistry();
     class TestObserver implements Observer {
 
       @Override
       public void update(Observable registry, Object updatedDevice) {
-        System.out.println("Registry changed!");
+        LOGGER.info("Registry changed!");
         if (updatedDevice != null) {
-          System.out.println("Device change: " + updatedDevice);
+          LOGGER.info("Device change: " + updatedDevice);
         }
       }
 

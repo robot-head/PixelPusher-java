@@ -22,8 +22,8 @@ public class DeviceRegistry extends Observable {
 
   private UDP udp;
   private static int DISCOVERY_PORT = 7331;
-  private static int MAX_DISCONNECT_SECONDS = 30;
-  private static long EXPIRY_TIMER_MSEC = 1000;
+  private static int MAX_DISCONNECT_SECONDS = 2;
+  private static long EXPIRY_TIMER_MSEC = 1000L;
 
   private Map<String, Device> deviceMap;
   private Map<String, DateTime> deviceLastSeenMap;
@@ -61,10 +61,10 @@ public class DeviceRegistry extends Observable {
     deviceMap = new HashMap<String, Device>();
     deviceLastSeenMap = new HashMap<String, DateTime>();
     udp.setReceiveHandler("receive");
-    udp.log(true);
+    udp.log(false);
     udp.listen(true);
     this.expiryTimer = new Timer();
-    this.expiryTimer.scheduleAtFixedRate(new DeviceExpiryTask(this), 0,
+    this.expiryTimer.scheduleAtFixedRate(new DeviceExpiryTask(this), 0L,
         EXPIRY_TIMER_MSEC);
   }
 
@@ -93,7 +93,7 @@ public class DeviceRegistry extends Observable {
       this.setChanged();
       this.notifyObservers(device);
     } else {
-      if (deviceMap.get(macAddr) != device) {
+      if (!deviceMap.get(macAddr).equals(device)) {
         // We already knew about this device at the given MAC, but its details
         // have changed
         LOGGER.info("Device changed: " + macAddr);

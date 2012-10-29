@@ -92,8 +92,8 @@ public class PixelPusher extends DeviceImpl {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + PixelsPerStrip;
-    result = prime * result + StripsAttached;
+    result = prime * result + getPixelsPerStrip();
+    result = prime * result + getNumberOfStrips();
     return result;
   }
 
@@ -111,17 +111,17 @@ public class PixelPusher extends DeviceImpl {
     if (getClass() != obj.getClass())
       return false;
     PixelPusher other = (PixelPusher) obj;
-    if (PixelsPerStrip != other.PixelsPerStrip)
+    if (getPixelsPerStrip() != other.getPixelsPerStrip())
       return false;
-    if (StripsAttached != other.StripsAttached)
+    if (getNumberOfStrips() != other.getNumberOfStrips())
       return false;
     return true;
   }
 
   public String toString() {
-    return super.toString() + " # Strips(" + StripsAttached
+    return super.toString() + " # Strips(" + getNumberOfStrips()
         + ") Max Strips Per Packet(" + maxStripsPerPacket
-        + ") PixelsPerStrip (" + PixelsPerStrip + ") Update Period ("
+        + ") PixelsPerStrip (" + getPixelsPerStrip() + ") Update Period ("
         + updatePeriod + ") Power Total (" + powerTotal + ")";
   }
 }

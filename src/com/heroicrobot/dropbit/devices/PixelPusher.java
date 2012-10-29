@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
 import com.heroicrobot.dropbit.discovery.DeviceHeader;
+import com.heroicrobot.dropbit.pixelpusher.Pixel;
 import com.heroicrobot.dropbit.pixelpusher.Strip;
 
 public class PixelPusher extends DeviceImpl {
@@ -24,6 +25,14 @@ public class PixelPusher extends DeviceImpl {
    */
   public int getNumberOfStrips() {
     return strips.size();
+  }
+  
+  public List<Strip> getStrips() {
+    return this.strips;
+  }
+  
+  public Strip getStrip(int stripNumber) {
+    return this.strips.get(stripNumber);
   }
 
   /**
@@ -61,6 +70,10 @@ public class PixelPusher extends DeviceImpl {
   private long updatePeriod;
   private long powerTotal;
 
+  public void setStripValues(int stripNumber, Pixel[] pixels) {
+    this.strips.get(stripNumber).setPixels(pixels);
+  }
+  
   public PixelPusher(byte[] packet, DeviceHeader header) {
     super(header);
     if (packet.length < 12) {
@@ -78,9 +91,9 @@ public class PixelPusher extends DeviceImpl {
     powerTotal = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 8, 12));
     this.strips = new ArrayList<Strip>();
     for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
-      this.strips.add(new Strip(pixelsPerStrip));
+      this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
     }
-
+    
   }
 
   /*

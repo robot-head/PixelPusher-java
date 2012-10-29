@@ -1,9 +1,12 @@
 package com.heroicrobot.dropbit.devices;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
 import com.heroicrobot.dropbit.discovery.DeviceHeader;
+import com.heroicrobot.dropbit.pixelpusher.Strip;
 
 public class PixelPusher extends DeviceImpl {
   /**
@@ -14,26 +17,70 @@ public class PixelPusher extends DeviceImpl {
    * uint32_t power_total; // in PWM units
    */
 
-  public int StripsAttached;
-  public int MaxStripsPerPacket;
-  public int PixelsPerStrip;
-  public long UpdatePeriod;
-  public long PowerTotal;
+  private List<Strip> strips;
+
+  /**
+   * @return the stripsAttached
+   */
+  public int getNumberOfStrips() {
+    return strips.size();
+  }
+
+  /**
+   * @return the maxStripsPerPacket
+   */
+  public int getMaxStripsPerPacket() {
+    return maxStripsPerPacket;
+  }
+
+  /**
+   * @return the pixelsPerStrip
+   */
+  public int getPixelsPerStrip() {
+    if (this.strips.isEmpty()) {
+      return 0;
+    }
+    return this.strips.get(0).getLength();
+  }
+
+  /**
+   * @return the updatePeriod
+   */
+  public long getUpdatePeriod() {
+    return updatePeriod;
+  }
+
+  /**
+   * @return the powerTotal
+   */
+  public long getPowerTotal() {
+    return powerTotal;
+  }
+
+  private int maxStripsPerPacket;
+  private long updatePeriod;
+  private long powerTotal;
 
   public PixelPusher(byte[] packet, DeviceHeader header) {
     super(header);
     if (packet.length < 12) {
       throw new IllegalArgumentException();
     }
-    StripsAttached = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 0,
-        1));
-    MaxStripsPerPacket = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet,
+    int stripsAttached = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet,
+        0, 1));
+    int pixelsPerStrip = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(
+        packet, 2, 4));
+    maxStripsPerPacket = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet,
         1, 2));
-    PixelsPerStrip = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 2,
-        4));
-    UpdatePeriod = ByteUtils
+
+    updatePeriod = ByteUtils
         .unsignedIntToLong(Arrays.copyOfRange(packet, 4, 8));
-    PowerTotal = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 8, 12));
+    powerTotal = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 8, 12));
+    this.strips = new ArrayList<Strip>();
+    for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
+      this.strips.add(new Strip(pixelsPerStrip));
+    }
+
   }
 
   /*
@@ -73,8 +120,8 @@ public class PixelPusher extends DeviceImpl {
 
   public String toString() {
     return super.toString() + " # Strips(" + StripsAttached
-        + ") Max Strips Per Packet(" + MaxStripsPerPacket
+        + ") Max Strips Per Packet(" + maxStripsPerPacket
         + ") PixelsPerStrip (" + PixelsPerStrip + ") Update Period ("
-        + UpdatePeriod + ") Power Total (" + PowerTotal + ")";
+        + updatePeriod + ") Power Total (" + powerTotal + ")";
   }
 }

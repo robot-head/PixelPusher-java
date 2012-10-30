@@ -28,6 +28,10 @@ public class Strip {
     return stripNumber;
   }
   
+  public long getStripIdentifier() {
+    // Return a compact reversible identifier
+  }
+  
   public synchronized void setPixels(Pixel[] pixels) {
     this.pixels = Arrays.copyOfRange(pixels, 0, this.pixels.length);
   }

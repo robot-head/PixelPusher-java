@@ -35,4 +35,12 @@ public class ByteUtils {
     i |= b[0] & 0xFF;
     return i;
   }
+
+  public static final long byteArrayToLong(byte[] b) {
+    long value = 0;
+    for (int i = 0; i < b.length; i++) {
+      value += ((long) b[i] & 0xFFL) << (8 * i);
+    }
+    return value;
+  }
 }

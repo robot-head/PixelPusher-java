@@ -53,4 +53,12 @@ public class ByteUtils {
     }
     return value;
   }
+  
+  public static final byte[] longToByteArray(long l) {
+    byte[] bytes = new byte[8];
+    for (int i = 0; i < 8; i++) {
+      bytes[i] = (byte) ((l >> i * 8) | 0xFFL);
+    }
+    return bytes;
+  }
 }

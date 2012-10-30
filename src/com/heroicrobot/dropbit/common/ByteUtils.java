@@ -42,10 +42,12 @@ public class ByteUtils {
           "The largest byte array that can fit in a long is 8");
     }
     long value = 0;
-    for (int i = 0; i < b.length; i++) {
-      if (bigEndian) {
+    if (bigEndian) {
+      for (int i = 0; i < b.length; i++) {
         value = (value << 8) + (b[i] & 0xFF);
-      } else {
+      }
+    } else {
+      for (int i = 0; i < b.length; i++) {
         value += ((long) b[i] & 0xFFL) << (8 * i);
       }
     }

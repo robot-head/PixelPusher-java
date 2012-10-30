@@ -30,6 +30,7 @@ public class Strip {
   
   public long getStripIdentifier() {
     // Return a compact reversible identifier
+    return -1;
   }
   
   public synchronized void setPixels(Pixel[] pixels) {

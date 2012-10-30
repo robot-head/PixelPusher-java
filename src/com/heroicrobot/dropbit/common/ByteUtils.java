@@ -6,13 +6,13 @@ public class ByteUtils {
       throw new IllegalArgumentException();
     }
     long l = 0;
-    l |= b[3] & 0xFF;
+    l |= b[3] & 0xff;
     l <<= 8;
-    l |= b[2] & 0xFF;
+    l |= b[2] & 0xff;
     l <<= 8;
-    l |= b[1] & 0xFF;
+    l |= b[1] & 0xff;
     l <<= 8;
-    l |= b[0] & 0xFF;
+    l |= b[0] & 0xff;
     return l;
   }
 
@@ -21,9 +21,9 @@ public class ByteUtils {
       throw new IllegalArgumentException();
     }
     int i = 0;
-    i |= b[1] & 0xFF;
+    i |= b[1] & 0xff;
     i <<= 8;
-    i |= b[0] & 0xFF;
+    i |= b[0] & 0xff;
     return i;
   }
 
@@ -32,7 +32,7 @@ public class ByteUtils {
       throw new IllegalArgumentException();
     }
     int i = 0;
-    i |= b[0] & 0xFF;
+    i |= b[0] & 0xff;
     return i;
   }
 
@@ -44,20 +44,26 @@ public class ByteUtils {
     long value = 0;
     if (bigEndian) {
       for (int i = 0; i < b.length; i++) {
-        value = (value << 8) + (b[i] & 0xFF);
+        value = (value << 8) + (b[i] & 0xff);
       }
     } else {
       for (int i = 0; i < b.length; i++) {
-        value += ((long) b[i] & 0xFFL) << (8 * i);
+        value += ((long) b[i] & 0xffL) << (8 * i);
       }
     }
     return value;
   }
-  
-  public static final byte[] longToByteArray(long l) {
+
+  public static final byte[] longToByteArray(long l, boolean bigEndian) {
     byte[] bytes = new byte[8];
-    for (int i = 0; i < 8; i++) {
-      bytes[i] = (byte) ((l >> i * 8) | 0xFFL);
+    if (bigEndian) {
+      for (int i = 0; i < 8; i++) {
+        bytes[i] = (byte) ((l >> i * 8) | 0xffL);
+      }
+    } else {
+      for (int i = 0; i < 8; i++) {
+        bytes[i] = (byte) ((l >> (8 - i) * 8) | 0xffL);
+      }
     }
     return bytes;
   }

@@ -37,6 +37,9 @@ public class ByteUtils {
   }
 
   public static final long byteArrayToLong(byte[] b) {
+    if (b.length > 8) {
+      throw new IllegalArgumentException("The largest byte array that can fit in a long is 8");
+    }
     long value = 0;
     for (int i = 0; i < b.length; i++) {
       value += ((long) b[i] & 0xFFL) << (8 * i);

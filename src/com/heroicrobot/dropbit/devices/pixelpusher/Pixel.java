@@ -1,4 +1,4 @@
-package com.heroicrobot.dropbit.pixelpusher;
+package com.heroicrobot.dropbit.devices.pixelpusher;
 
 public class Pixel {
 

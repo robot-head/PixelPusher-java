@@ -1,8 +1,7 @@
-package com.heroicrobot.dropbit.pixelpusher;
+package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.util.Arrays;
 
-import com.heroicrobot.dropbit.devices.PixelPusher;
 
 public class Strip {
 

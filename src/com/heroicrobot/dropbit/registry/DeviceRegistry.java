@@ -1,4 +1,4 @@
-package com.heroicrobot.dropbit.discovery;
+package com.heroicrobot.dropbit.registry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,9 +12,11 @@ import java.util.logging.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 
-import com.heroicrobot.dropbit.devices.PixelPusher;
-import com.heroicrobot.dropbit.pixelpusher.Pixel;
-import com.heroicrobot.dropbit.pixelpusher.Strip;
+import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
+import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
+import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
+import com.heroicrobot.dropbit.discovery.DeviceHeader;
+import com.heroicrobot.dropbit.discovery.DeviceType;
 
 import hypermedia.net.UDP;
 

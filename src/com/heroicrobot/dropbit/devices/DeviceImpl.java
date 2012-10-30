@@ -9,7 +9,7 @@ public abstract class DeviceImpl implements Device {
 
   private DeviceHeader header;
   
-  DeviceImpl(DeviceHeader header) {
+  public DeviceImpl(DeviceHeader header) {
     this.header = header;
   }
 

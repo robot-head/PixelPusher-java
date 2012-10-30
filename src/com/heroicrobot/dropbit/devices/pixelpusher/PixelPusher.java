@@ -1,13 +1,12 @@
-package com.heroicrobot.dropbit.devices;
+package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
+import com.heroicrobot.dropbit.devices.DeviceImpl;
 import com.heroicrobot.dropbit.discovery.DeviceHeader;
-import com.heroicrobot.dropbit.pixelpusher.Pixel;
-import com.heroicrobot.dropbit.pixelpusher.Strip;
 
 public class PixelPusher extends DeviceImpl {
   /**

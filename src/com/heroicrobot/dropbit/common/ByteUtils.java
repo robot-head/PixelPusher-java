@@ -44,11 +44,11 @@ public class ByteUtils {
     long value = 0;
     if (bigEndian) {
       for (int i = 0; i < b.length; i++) {
-        value = (value << 8) + (b[i] & 0xff);
+        value = (value << 8) + b[i];
       }
     } else {
       for (int i = 0; i < b.length; i++) {
-        value += ((long) b[i] & 0xffL) << (8 * i);
+        value |= (long) b[i] << (8 * i);
       }
     }
     return value;

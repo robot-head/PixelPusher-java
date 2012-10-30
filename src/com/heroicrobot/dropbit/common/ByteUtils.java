@@ -44,7 +44,7 @@ public class ByteUtils {
     long value = 0;
     if (bigEndian) {
       for (int i = 0; i < b.length; i++) {
-        value = (value << 8) + b[i];
+        value = (value << 8) | b[i];
       }
     } else {
       for (int i = 0; i < b.length; i++) {

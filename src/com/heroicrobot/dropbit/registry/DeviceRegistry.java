@@ -14,6 +14,7 @@ import org.joda.time.Seconds;
 
 import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
 import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
+import com.heroicrobot.dropbit.devices.pixelpusher.PusherTask;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import com.heroicrobot.dropbit.discovery.DeviceHeader;
 import com.heroicrobot.dropbit.discovery.DeviceType;
@@ -25,6 +26,8 @@ public class DeviceRegistry extends Observable {
   private final static Logger LOGGER = Logger.getLogger(DeviceRegistry.class
       .getName());
 
+  private static final long PUSHER_UPDATE_INTERVAL = 16;
+
   private UDP udp;
   private static int DISCOVERY_PORT = 7331;
   private static int MAX_DISCONNECT_SECONDS = 2;
@@ -34,6 +37,10 @@ public class DeviceRegistry extends Observable {
   private Map<String, DateTime> pusherLastSeenMap;
 
   private Timer expiryTimer;
+
+  private PusherTask pusherTask;
+
+  private Timer pusherTaskTimer;
 
   public Map<String, PixelPusher> getPusherMap() {
     return pusherMap;
@@ -79,6 +86,9 @@ public class DeviceRegistry extends Observable {
     this.expiryTimer = new Timer();
     this.expiryTimer.scheduleAtFixedRate(new DeviceExpiryTask(this), 0L,
         EXPIRY_TIMER_MSEC);
+    this.pusherTask = new PusherTask();
+    this.addObserver(this.pusherTask);
+    this.pusherTaskTimer = new Timer();
   }
 
   public void expireDevice(String macAddr) {
@@ -94,11 +104,11 @@ public class DeviceRegistry extends Observable {
   }
   
   public void startPushing() {
-    // Start the thread to push values to strip continuously
+    this.pusherTaskTimer.schedule(this.pusherTask, 0, PUSHER_UPDATE_INTERVAL);
   }
   
   public void stopPushing() {
-    // Stop the thread to push values to strip
+    this.pusherTaskTimer.cancel();
   }
 
   public void receive(byte[] data) {

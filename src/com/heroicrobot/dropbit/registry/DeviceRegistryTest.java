@@ -1,5 +1,6 @@
 package com.heroicrobot.dropbit.registry;
 
+import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;
@@ -19,10 +20,9 @@ public class DeviceRegistryTest {
 
   private Random random = new Random();
   
-  public Pixel generateRandomPixel() {
-    byte[] pixelBytes = new byte[3];
-    random.nextBytes(pixelBytes);
-    return new Pixel(pixelBytes[0], pixelBytes[1], pixelBytes[2]);
+  public Pixel generateRandomPixel(int scaling) {
+    return new Pixel((byte)(random.nextInt(scaling)),(byte)(random.nextInt(scaling)),(byte)(random.nextInt(scaling)));
+    //return new Pixel((byte)(15), (byte)0, (byte)0);
   }
   
   @Test
@@ -45,13 +45,17 @@ public class DeviceRegistryTest {
     }
     TestObserver testObserver = new TestObserver();
     registry.addObserver(testObserver);
+    double scaling = 1d;
     while (true) {
       Thread.yield();
       if (testObserver.hasStrips) {
+        scaling += 0.001;
+        if (scaling > 255)
+          scaling = 1d;
         registry.startPushing();
         for(Strip strip : registry.getStrips()) {
           for (int i = 0; i < strip.getLength(); i++)
-            strip.setPixel(generateRandomPixel(), i);
+            strip.setPixel(generateRandomPixel((int)(Math.round(scaling))), i);
         }
       }
     }

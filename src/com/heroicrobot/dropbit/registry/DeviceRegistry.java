@@ -26,7 +26,7 @@ public class DeviceRegistry extends Observable {
   private final static Logger LOGGER = Logger.getLogger(DeviceRegistry.class
       .getName());
 
-  private static final long PUSHER_UPDATE_INTERVAL = 20;
+  private static final long PUSHER_UPDATE_INTERVAL = 4;
 
   private UDP udp;
   private static int DISCOVERY_PORT = 7331;
@@ -145,6 +145,7 @@ public class DeviceRegistry extends Observable {
       } else {
         // The device is identical, nothing has changed
         LOGGER.fine("Device still present: " + macAddr);
+        System.out.println(device.toString());
       }
     }
   }

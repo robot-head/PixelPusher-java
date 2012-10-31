@@ -1,0 +1,5 @@
+com.heroicrobot.dropbit.common
+com.heroicrobot.dropbit.devices
+com.heroicrobot.dropbit.devices.pixelpusher
+com.heroicrobot.dropbit.discovery
+com.heroicrobot.dropbit.registry

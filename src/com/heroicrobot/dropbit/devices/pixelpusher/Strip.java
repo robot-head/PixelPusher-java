@@ -36,10 +36,16 @@ public class Strip {
     this.pixels = Arrays.copyOfRange(pixels, 0, this.pixels.length);
   }
   
+  public synchronized void setPixel(Pixel pixel, int position) {
+    this.pixels[position] = new Pixel(pixel);
+  }
+  
   public byte[] serialize() {
     byte[] msg = new byte[pixels.length * 3];
     int i = 0;
     for (Pixel pixel : pixels) {
+      if (pixel == null) 
+        pixel = new Pixel();
       msg[i++] = pixel.red;
       msg[i++] = pixel.green;
       msg[i++] = pixel.blue;

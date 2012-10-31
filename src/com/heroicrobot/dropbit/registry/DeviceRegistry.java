@@ -26,12 +26,12 @@ public class DeviceRegistry extends Observable {
   private final static Logger LOGGER = Logger.getLogger(DeviceRegistry.class
       .getName());
 
-  private static final long PUSHER_UPDATE_INTERVAL = 16;
+  private static final long PUSHER_UPDATE_INTERVAL = 20;
 
   private UDP udp;
   private static int DISCOVERY_PORT = 7331;
   private static int MAX_DISCONNECT_SECONDS = 2;
-  private static long EXPIRY_TIMER_MSEC = 1000L;
+  private static long EXPIRY_TIMER_MSEC = 1000000L;
 
   private Map<String, PixelPusher> pusherMap;
   private Map<String, DateTime> pusherLastSeenMap;
@@ -41,11 +41,12 @@ public class DeviceRegistry extends Observable {
   private PusherTask pusherTask;
 
   private Timer pusherTaskTimer;
+  private boolean pushing = false;
 
   public Map<String, PixelPusher> getPusherMap() {
     return pusherMap;
   }
-  
+
   public List<Strip> getStrips() {
     List<Strip> strips = new ArrayList<Strip>();
     for (PixelPusher pusher : pusherMap.values()) {
@@ -101,12 +102,16 @@ public class DeviceRegistry extends Observable {
 
   public void setStripValues(String macAddress, int stripNumber, Pixel[] pixels) {
     this.pusherMap.get(macAddress).setStripValues(stripNumber, pixels);
+
   }
-  
+
   public void startPushing() {
-    this.pusherTaskTimer.schedule(this.pusherTask, 0, PUSHER_UPDATE_INTERVAL);
+    if (!this.pushing) {
+      this.pusherTaskTimer.schedule(this.pusherTask, 0, PUSHER_UPDATE_INTERVAL);
+      this.pushing = true;
+    }
   }
-  
+
   public void stopPushing() {
     this.pusherTaskTimer.cancel();
   }

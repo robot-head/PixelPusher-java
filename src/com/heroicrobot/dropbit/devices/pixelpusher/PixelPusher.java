@@ -3,10 +3,12 @@ package com.heroicrobot.dropbit.devices.pixelpusher;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
 import com.heroicrobot.dropbit.devices.DeviceImpl;
 import com.heroicrobot.dropbit.discovery.DeviceHeader;
+import com.heroicrobot.dropbit.registry.DeviceRegistryTest;
 
 public class PixelPusher extends DeviceImpl {
   /**
@@ -17,6 +19,9 @@ public class PixelPusher extends DeviceImpl {
    * uint32_t power_total; // in PWM units
    */
 
+  private final static Logger LOGGER = Logger
+      .getLogger(PixelPusher.class.getName());
+  
   private List<Strip> strips;
 
   /**

@@ -1,5 +1,7 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,7 @@ public class PusherTask extends TimerTask implements Observer {
       return;
     for (PixelPusher pusher : pusherMap.values()) {
       int stripPerPacket = pusher.getMaxStripsPerPacket();
-      List<Strip> remainingStrips = pusher.getStrips();
+      List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
       while (!remainingStrips.isEmpty()) {
         for (int i = 0; i < stripPerPacket; i++) {
           if (remainingStrips.isEmpty()) {
@@ -57,9 +59,11 @@ public class PusherTask extends TimerTask implements Observer {
           }
           this.packetLength += stripPacket.length;
         }
+        this.udp.setBuffer(this.packetLength);
+        this.udp.send(this.packet, pusher.getIp().getHostAddress(), PUSHER_PORT);
+        //System.out.println(Arrays.toString(this.packet));
+        this.packetLength = 0;
       }
-      this.udp.setBuffer(this.packetLength);
-      this.udp.send(this.packet, pusher.getIp().toString(), PUSHER_PORT);
     }
     this.semaphore.release();
 

@@ -26,7 +26,7 @@ public class DeviceRegistry extends Observable {
   private final static Logger LOGGER = Logger.getLogger(DeviceRegistry.class
       .getName());
 
-  private static final long PUSHER_UPDATE_INTERVAL = 4;
+  private long pusherUpdateInterval = 4;
 
   private UDP udp;
   private static int DISCOVERY_PORT = 7331;
@@ -91,6 +91,11 @@ public class DeviceRegistry extends Observable {
     this.addObserver(this.pusherTask);
     this.pusherTaskTimer = new Timer();
   }
+  
+  public DeviceRegistry(long PixelPusherUpdateInterval) {
+    this();
+    this.pusherUpdateInterval = PixelPusherUpdateInterval;
+  }
 
   public void expireDevice(String macAddr) {
     LOGGER.info("Device gone: " + macAddr);
@@ -99,7 +104,15 @@ public class DeviceRegistry extends Observable {
     this.setChanged();
     this.notifyObservers();
   }
-
+  
+  public void setUpdateInterval(long PixelPusherUpdateInterval) {
+    this.pusherUpdateInterval = PixelPusherUpdateInterval;
+    if(this.pushing){
+      this.stopPushing();
+      this.startPushing();
+    }
+  }
+  
   public void setStripValues(String macAddress, int stripNumber, Pixel[] pixels) {
     this.pusherMap.get(macAddress).setStripValues(stripNumber, pixels);
 
@@ -107,13 +120,16 @@ public class DeviceRegistry extends Observable {
 
   public void startPushing() {
     if (!this.pushing) {
-      this.pusherTaskTimer.schedule(this.pusherTask, 0, PUSHER_UPDATE_INTERVAL);
+      this.pusherTaskTimer.schedule(this.pusherTask, 0, pusherUpdateInterval);
       this.pushing = true;
     }
   }
 
   public void stopPushing() {
-    this.pusherTaskTimer.cancel();
+    if (this.pushing) {
+      this.pushing = false;
+      this.pusherTaskTimer.cancel();
+    }
   }
 
   public void receive(byte[] data) {

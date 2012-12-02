@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import com.heroicrobot.dropbit.common.ByteUtils;
 import com.heroicrobot.dropbit.devices.DeviceImpl;
 import com.heroicrobot.dropbit.discovery.DeviceHeader;
-import com.heroicrobot.dropbit.registry.DeviceRegistryTest;
 
 public class PixelPusher extends DeviceImpl {
   /**

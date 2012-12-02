@@ -1,6 +1,5 @@
 package com.heroicrobot.dropbit.registry;
 
-import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;

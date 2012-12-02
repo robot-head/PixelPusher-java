@@ -35,7 +35,7 @@ public class SceneThread extends Thread implements Observer {
       Map<String, PixelPusher> newPusherMap = new HashMap<String, PixelPusher>(
           incomingPusherMap);
       Map<String, PixelPusher> deadPusherMap = new HashMap<String, PixelPusher>(
-          incomingPusherMap);
+          pusherMap);
 
       for (String key : newPusherMap.keySet()) {
         if (pusherMap.containsKey(key)) { // if we already know about it
@@ -44,7 +44,7 @@ public class SceneThread extends Thread implements Observer {
         }
       }
       for (String key : pusherMap.keySet()) {
-        if (deadPusherMap.containsKey(key)) { // if it's in the new pusher map
+        if (newPusherMap.containsKey(key)) { // if it's in the new pusher map
           deadPusherMap.remove(key); // it can't be dead
         }
       }

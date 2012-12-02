@@ -8,7 +8,7 @@ import java.util.List;
 
 public class CardThread extends Thread {
 
-  private static final long THREAD_SLEEP_MS = 4;
+  private long threadSleepMsec = 4;
   private PixelPusher pusher;
   private byte[] packet;
   private UDP udp;
@@ -21,6 +21,8 @@ public class CardThread extends Thread {
     this.packet = new byte[1460];
     this.udp = new UDP(this);
     this.cancel = false;
+    if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 1000000)
+        this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
   }
 
   @Override
@@ -40,6 +42,8 @@ public class CardThread extends Thread {
     int packetLength = 0;
     int stripPerPacket = pusher.getMaxStripsPerPacket();
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
+    if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 1000000)
+      this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
     while (!remainingStrips.isEmpty()) {
       for (int i = 0; i < stripPerPacket; i++) {
         if (remainingStrips.isEmpty()) {
@@ -57,7 +61,7 @@ public class CardThread extends Thread {
       byte[] slicedPacket = Arrays.copyOf(packet, packetLength);
       this.udp.send(slicedPacket, pusher.getIp().getHostAddress(), pusherPort);
       try {
-        Thread.sleep(THREAD_SLEEP_MS);
+        Thread.sleep(threadSleepMsec);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

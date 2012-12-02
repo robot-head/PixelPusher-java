@@ -17,9 +17,13 @@ public class SceneThread extends Thread implements Observer {
 
   private boolean drain;
 
+  private boolean running;
+
   public SceneThread() {
     this.pusherMap = new HashMap<String, PixelPusher>();
     this.cardThreadMap = new HashMap<String, CardThread>();
+    this.drain = false;
+    this.running = false;
 
   }
 
@@ -47,7 +51,8 @@ public class SceneThread extends Thread implements Observer {
       for (String key : newPusherMap.keySet()) {
         CardThread newCardThread = new CardThread(pusherMap.get(key),
             PUSHER_PORT);
-        newCardThread.run();
+        if (running)
+          newCardThread.run();
         cardThreadMap.put(key, newCardThread);
       }
       for (String key : deadPusherMap.keySet()) {
@@ -59,7 +64,11 @@ public class SceneThread extends Thread implements Observer {
 
   @Override
   public void run() {
+    this.running = true;
     this.drain = false;
+    for (CardThread thread : cardThreadMap.values()) {
+      thread.run();
+    }
   }
 
   public boolean cancel() {

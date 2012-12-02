@@ -44,7 +44,7 @@ public class SceneThread extends Thread implements Observer {
         }
       }
       for (String key : pusherMap.keySet()) {
-        if (newPusherMap.containsKey(key)) { // if it's in the new pusher map
+        if (deadPusherMap.containsKey(key)) { // if it's in the new pusher map
           deadPusherMap.remove(key); // it can't be dead
         }
       }
@@ -59,9 +59,8 @@ public class SceneThread extends Thread implements Observer {
       }
       for (String key : deadPusherMap.keySet()) {
         System.out.println("Killing old CardThread " + key);
-        // FIXME: this is buggy.
-        // cardThreadMap.get(key).cancel();
-        // cardThreadMap.remove(key);
+        cardThreadMap.get(key).cancel();
+        cardThreadMap.remove(key);
       }
     }
   }

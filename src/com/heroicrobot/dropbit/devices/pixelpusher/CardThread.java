@@ -11,7 +11,6 @@ public class CardThread extends Thread {
   private static final long THREAD_SLEEP_MS = 4;
   private PixelPusher pusher;
   private byte[] packet;
-  private int packetLength;
   private UDP udp;
   private boolean cancel;
   private int pusherPort;
@@ -20,7 +19,6 @@ public class CardThread extends Thread {
     this.pusher = pusher;
     this.pusherPort = pusherPort;
     this.packet = new byte[1460];
-    this.packetLength = 0;
     this.udp = new UDP(this);
     this.cancel = false;
   }
@@ -45,6 +43,7 @@ public class CardThread extends Thread {
   }
 
   private void sendPacketToPusher(PixelPusher pusher) {
+    int packetLength = 0;
     int stripPerPacket = pusher.getMaxStripsPerPacket();
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     while (!remainingStrips.isEmpty()) {
@@ -58,13 +57,12 @@ public class CardThread extends Thread {
         for (int j = 0; j < stripPacket.length; j++) {
           this.packet[packetLength + j] = stripPacket[j];
         }
-        this.packetLength += stripPacket.length;
+        packetLength += stripPacket.length;
       }
-      this.udp.setBuffer(this.packetLength);
-      byte[] slicedPacket = Arrays.copyOfRange(packet, 0, packetLength);
+      this.udp.setBuffer(packetLength);
+      byte[] slicedPacket = Arrays.copyOf(packet, packetLength);
       this.udp.send(slicedPacket, pusher.getIp().getHostAddress(), pusherPort);
       // System.out.println(Arrays.toString(this.packet));
-      this.packetLength = 0;
     }
   }
 }

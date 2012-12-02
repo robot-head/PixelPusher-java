@@ -52,7 +52,7 @@ public class SceneThread extends Thread implements Observer {
         CardThread newCardThread = new CardThread(pusherMap.get(key),
             PUSHER_PORT);
         if (running)
-          newCardThread.run();
+          newCardThread.start();
         cardThreadMap.put(key, newCardThread);
       }
       for (String key : deadPusherMap.keySet()) {
@@ -67,7 +67,7 @@ public class SceneThread extends Thread implements Observer {
     this.running = true;
     this.drain = false;
     for (CardThread thread : cardThreadMap.values()) {
-      thread.run();
+      thread.start();
     }
   }
 

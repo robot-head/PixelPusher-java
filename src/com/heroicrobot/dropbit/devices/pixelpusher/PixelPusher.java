@@ -3,7 +3,6 @@ package com.heroicrobot.dropbit.devices.pixelpusher;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
 import com.heroicrobot.dropbit.devices.DeviceImpl;
@@ -18,9 +17,6 @@ public class PixelPusher extends DeviceImpl {
    * uint32_t power_total; // in PWM units
    */
 
-  private final static Logger LOGGER = Logger
-      .getLogger(PixelPusher.class.getName());
-  
   private List<Strip> strips;
 
   /**
@@ -29,11 +25,11 @@ public class PixelPusher extends DeviceImpl {
   public int getNumberOfStrips() {
     return strips.size();
   }
-  
+
   public List<Strip> getStrips() {
     return this.strips;
   }
-  
+
   public Strip getStrip(int stripNumber) {
     return this.strips.get(stripNumber);
   }
@@ -76,7 +72,7 @@ public class PixelPusher extends DeviceImpl {
   public void setStripValues(int stripNumber, Pixel[] pixels) {
     this.strips.get(stripNumber).setPixels(pixels);
   }
-  
+
   public PixelPusher(byte[] packet, DeviceHeader header) {
     super(header);
     if (packet.length < 12) {
@@ -96,7 +92,7 @@ public class PixelPusher extends DeviceImpl {
     for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
       this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
     }
-    
+
   }
 
   /*

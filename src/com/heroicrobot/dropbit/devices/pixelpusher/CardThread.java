@@ -62,7 +62,7 @@ public class CardThread extends Thread {
       this.udp.setBuffer(packetLength);
       byte[] slicedPacket = Arrays.copyOf(packet, packetLength);
       this.udp.send(slicedPacket, pusher.getIp().getHostAddress(), pusherPort);
-      // System.out.println(Arrays.toString(this.packet));
+      System.out.println(Arrays.toString(this.packet));
     }
   }
 }

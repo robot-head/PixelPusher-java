@@ -25,14 +25,8 @@ public class CardThread extends Thread {
 
   @Override
   public void run() {
-    System.out.println("Run called for thread: " + this.pusher.getMacAddress());
     while (!cancel) {
       sendPacketToPusher(pusher);
-      try {
-        this.wait(THREAD_SLEEP_MS);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
     }
 
   }
@@ -43,7 +37,7 @@ public class CardThread extends Thread {
   }
 
   private void sendPacketToPusher(PixelPusher pusher) {
-    int packetLength = 0;
+    int packetLength=0;
     int stripPerPacket = pusher.getMaxStripsPerPacket();
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     while (!remainingStrips.isEmpty()) {
@@ -62,7 +56,12 @@ public class CardThread extends Thread {
       this.udp.setBuffer(packetLength);
       byte[] slicedPacket = Arrays.copyOf(packet, packetLength);
       this.udp.send(slicedPacket, pusher.getIp().getHostAddress(), pusherPort);
-      System.out.println(Arrays.toString(this.packet));
+      try {
+        Thread.sleep(THREAD_SLEEP_MS);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      packetLength=0;
     }
   }
 }

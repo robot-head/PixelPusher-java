@@ -100,13 +100,13 @@ public class DeviceRegistry extends Observable {
   }
 
   public void startPushing() {
-    if (!sceneThread.isAlive()) {
+    if (!sceneThread.isRunning()) {
       sceneThread.run();
     }
   }
 
   public void stopPushing() {
-    if (sceneThread.isAlive()) {
+    if (sceneThread.isRunning()) {
       sceneThread.cancel();
     }
   }

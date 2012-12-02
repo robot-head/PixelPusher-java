@@ -22,10 +22,12 @@ public class CardThread extends Thread {
     this.packet = new byte[1460];
     this.packetLength = 0;
     this.udp = new UDP(this);
+    this.cancel = false;
   }
 
   @Override
   public void run() {
+    System.out.println("Run called for thread: " + this.pusher.getMacAddress());
     while (!cancel) {
       sendPacketToPusher(pusher);
       try {
@@ -60,8 +62,7 @@ public class CardThread extends Thread {
       }
       this.udp.setBuffer(this.packetLength);
       byte[] slicedPacket = Arrays.copyOfRange(packet, 0, packetLength);
-      this.udp
-          .send(slicedPacket, pusher.getIp().getHostAddress(), pusherPort);
+      this.udp.send(slicedPacket, pusher.getIp().getHostAddress(), pusherPort);
       // System.out.println(Arrays.toString(this.packet));
       this.packetLength = 0;
     }

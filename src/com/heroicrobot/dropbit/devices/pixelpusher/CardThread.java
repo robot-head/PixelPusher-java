@@ -3,6 +3,7 @@ package com.heroicrobot.dropbit.devices.pixelpusher;
 import hypermedia.net.UDP;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CardThread extends Thread {
@@ -58,8 +59,9 @@ public class CardThread extends Thread {
         this.packetLength += stripPacket.length;
       }
       this.udp.setBuffer(this.packetLength);
+      byte[] slicedPacket = Arrays.copyOfRange(packet, 0, packetLength);
       this.udp
-          .send(this.packet, pusher.getIp().getHostAddress(), pusherPort);
+          .send(slicedPacket, pusher.getIp().getHostAddress(), pusherPort);
       // System.out.println(Arrays.toString(this.packet));
       this.packetLength = 0;
     }

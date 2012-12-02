@@ -6,7 +6,7 @@ import java.util.Observable;
 import java.util.Observer;
 import com.heroicrobot.dropbit.registry.DeviceRegistry;
 
-public class PusherTask extends Thread implements Observer {
+public class SceneThread extends Thread implements Observer {
 
   private static int PUSHER_PORT = 9897;
 
@@ -17,7 +17,7 @@ public class PusherTask extends Thread implements Observer {
 
   private boolean drain;
 
-  public PusherTask() {
+  public SceneThread() {
     this.pusherMap = new HashMap<String, PixelPusher>();
     this.cardThreadMap = new HashMap<String, CardThread>();
 

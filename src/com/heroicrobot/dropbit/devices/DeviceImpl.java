@@ -8,7 +8,7 @@ import com.heroicrobot.dropbit.discovery.DeviceType;
 public abstract class DeviceImpl implements Device {
 
   private DeviceHeader header;
-  
+
   public DeviceImpl(DeviceHeader header) {
     this.header = header;
   }

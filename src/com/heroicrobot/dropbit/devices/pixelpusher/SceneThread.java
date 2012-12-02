@@ -31,7 +31,7 @@ public class SceneThread extends Thread implements Observer {
   public void update(Observable observable, Object update) {
     if (!drain) {
       Map<String, PixelPusher> incomingPusherMap = ((DeviceRegistry) observable)
-          .getPusherMap();  // all observed pushers
+          .getPusherMap(); // all observed pushers
       Map<String, PixelPusher> newPusherMap = new HashMap<String, PixelPusher>(
           incomingPusherMap);
       Map<String, PixelPusher> deadPusherMap = new HashMap<String, PixelPusher>(
@@ -39,11 +39,12 @@ public class SceneThread extends Thread implements Observer {
 
       for (String key : newPusherMap.keySet()) {
         if (pusherMap.containsKey(key)) { // if we already know about it
-          newPusherMap.remove(key); // remove it from the new pusher map (is old)
+          newPusherMap.remove(key); // remove it from the new pusher map (is
+                                    // old)
         }
       }
       for (String key : pusherMap.keySet()) {
-        if (newPusherMap.containsKey(key)) {  // if it's in the new pusher map
+        if (newPusherMap.containsKey(key)) { // if it's in the new pusher map
           deadPusherMap.remove(key); // it can't be dead
         }
       }
@@ -57,14 +58,14 @@ public class SceneThread extends Thread implements Observer {
         cardThreadMap.put(key, newCardThread);
       }
       for (String key : deadPusherMap.keySet()) {
-        System.out.println("Killing old CardThread "+key);
-     // FIXME:  this is buggy.
-     //   cardThreadMap.get(key).cancel();
-     //   cardThreadMap.remove(key);
+        System.out.println("Killing old CardThread " + key);
+        // FIXME: this is buggy.
+        // cardThreadMap.get(key).cancel();
+        // cardThreadMap.remove(key);
       }
     }
   }
-  
+
   public boolean isRunning() {
     return this.running;
   }

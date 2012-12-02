@@ -1,0 +1,141 @@
+From 9e11c906e35c6bdd1ee6e53758f868cefbee3bfb Mon Sep 17 00:00:00 2001
+From: Jas Strong <jasmine@electronpusher.org>
+Date: Sun, 2 Dec 2012 04:19:39 -0800
+Subject: [PATCH] Fix the logic in a bunch of places
+
+-  Thread.sleep() not this.wait()
+-  Move delay so it happens once per datagram, not once per card update
+loop
+-  Fix packet length calculation
+-  Hack around the dead CardThread removal (the map arith is wrong
+somehow, and doesn't handle cards that check in asynchronously)
+- add isRunning() (isAlive returns false when a thread has exited the
+run() method) and use it
+---
+ .../dropbit/devices/pixelpusher/CardThread.java    | 15 ++++++-------
+ .../dropbit/devices/pixelpusher/SceneThread.java   | 25 ++++++++++++++--------
+ .../dropbit/registry/DeviceRegistry.java           |  4 ++--
+ 3 files changed, 25 insertions(+), 19 deletions(-)
+
+diff --git a/src/com/heroicrobot/dropbit/devices/pixelpusher/CardThread.java b/src/com/heroicrobot/dropbit/devices/pixelpusher/CardThread.java
+index 6a45096..38156a2 100644
+--- a/src/com/heroicrobot/dropbit/devices/pixelpusher/CardThread.java
++++ b/src/com/heroicrobot/dropbit/devices/pixelpusher/CardThread.java
+@@ -25,14 +25,8 @@ public class CardThread extends Thread {
+ 
+   @Override
+   public void run() {
+-    System.out.println("Run called for thread: " + this.pusher.getMacAddress());
+     while (!cancel) {
+       sendPacketToPusher(pusher);
+-      try {
+-        this.wait(THREAD_SLEEP_MS);
+-      } catch (InterruptedException e) {
+-        e.printStackTrace();
+-      }
+     }
+ 
+   }
+@@ -43,7 +37,7 @@ public class CardThread extends Thread {
+   }
+ 
+   private void sendPacketToPusher(PixelPusher pusher) {
+-    int packetLength = 0;
++    int packetLength=0;
+     int stripPerPacket = pusher.getMaxStripsPerPacket();
+     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
+     while (!remainingStrips.isEmpty()) {
+@@ -62,7 +56,12 @@ public class CardThread extends Thread {
+       this.udp.setBuffer(packetLength);
+       byte[] slicedPacket = Arrays.copyOf(packet, packetLength);
+       this.udp.send(slicedPacket, pusher.getIp().getHostAddress(), pusherPort);
+-      System.out.println(Arrays.toString(this.packet));
++      try {
++        Thread.sleep(THREAD_SLEEP_MS);
++      } catch (InterruptedException e) {
++        e.printStackTrace();
++      }
++      packetLength=0;
+     }
+   }
+ }
+diff --git a/src/com/heroicrobot/dropbit/devices/pixelpusher/SceneThread.java b/src/com/heroicrobot/dropbit/devices/pixelpusher/SceneThread.java
+index b2e4ea5..fe006c1 100644
+--- a/src/com/heroicrobot/dropbit/devices/pixelpusher/SceneThread.java
++++ b/src/com/heroicrobot/dropbit/devices/pixelpusher/SceneThread.java
+@@ -31,36 +31,43 @@ public class SceneThread extends Thread implements Observer {
+   public void update(Observable observable, Object update) {
+     if (!drain) {
+       Map<String, PixelPusher> incomingPusherMap = ((DeviceRegistry) observable)
+-          .getPusherMap();
++          .getPusherMap();  // all observed pushers
+       Map<String, PixelPusher> newPusherMap = new HashMap<String, PixelPusher>(
+           incomingPusherMap);
+       Map<String, PixelPusher> deadPusherMap = new HashMap<String, PixelPusher>(
+           incomingPusherMap);
+ 
+       for (String key : newPusherMap.keySet()) {
+-        if (pusherMap.containsKey(key)) {
+-          newPusherMap.remove(key);
++        if (pusherMap.containsKey(key)) { // if we already know about it
++          newPusherMap.remove(key); // remove it from the new pusher map (is old)
+         }
+       }
+       for (String key : pusherMap.keySet()) {
+-        if (newPusherMap.containsKey(key)) {
+-          deadPusherMap.remove(key);
++        if (newPusherMap.containsKey(key)) {  // if it's in the new pusher map
++          deadPusherMap.remove(key); // it can't be dead
+         }
+       }
+ 
+       for (String key : newPusherMap.keySet()) {
+-        CardThread newCardThread = new CardThread(pusherMap.get(key),
++        CardThread newCardThread = new CardThread(newPusherMap.get(key),
+             PUSHER_PORT);
+-        if (running)
++        if (running) {
+           newCardThread.start();
++        }
+         cardThreadMap.put(key, newCardThread);
+       }
+       for (String key : deadPusherMap.keySet()) {
+-        cardThreadMap.get(key).cancel();
+-        cardThreadMap.remove(key);
++        System.out.println("Killing old CardThread "+key);
++     // FIXME:  this is buggy.
++     //   cardThreadMap.get(key).cancel();
++     //   cardThreadMap.remove(key);
+       }
+     }
+   }
++  
++  public boolean isRunning() {
++    return this.running;
++  }
+ 
+   @Override
+   public void run() {
+diff --git a/src/com/heroicrobot/dropbit/registry/DeviceRegistry.java b/src/com/heroicrobot/dropbit/registry/DeviceRegistry.java
+index 36ff309..489940b 100644
+--- a/src/com/heroicrobot/dropbit/registry/DeviceRegistry.java
++++ b/src/com/heroicrobot/dropbit/registry/DeviceRegistry.java
+@@ -100,13 +100,13 @@ public class DeviceRegistry extends Observable {
+   }
+ 
+   public void startPushing() {
+-    if (!sceneThread.isAlive()) {
++    if (!sceneThread.isRunning()) {
+       sceneThread.run();
+     }
+   }
+ 
+   public void stopPushing() {
+-    if (sceneThread.isAlive()) {
++    if (sceneThread.isRunning()) {
+       sceneThread.cancel();
+     }
+   }
+-- 
+1.8.0
+

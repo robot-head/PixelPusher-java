@@ -37,7 +37,7 @@ public class CardThread extends Thread {
   }
 
   private void sendPacketToPusher(PixelPusher pusher) {
-    int packetLength=0;
+    int packetLength = 0;
     int stripPerPacket = pusher.getMaxStripsPerPacket();
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     while (!remainingStrips.isEmpty()) {
@@ -61,7 +61,7 @@ public class CardThread extends Thread {
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      packetLength=0;
+      packetLength = 0;
     }
   }
 }

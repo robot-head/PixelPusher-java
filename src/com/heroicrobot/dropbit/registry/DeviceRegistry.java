@@ -100,7 +100,9 @@ public class DeviceRegistry extends Observable {
   }
 
   public void startPushing() {
+    System.out.println("StartPushing called");
     if (!sceneThread.isAlive()) {
+      System.out.println("Starting sceneThread");
       sceneThread.run();
     }
   }

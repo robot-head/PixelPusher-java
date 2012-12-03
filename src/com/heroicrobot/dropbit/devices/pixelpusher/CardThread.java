@@ -26,14 +26,10 @@ public class CardThread extends Thread {
       System.err.println("SocketException: " + se.getMessage());
     }
     this.packet = new byte[1460];
-    try {
-      this.cardAddress = InetAddress.getByName(pusher.getIp().getHostAddress());
-    } catch (UnknownHostException uhe) {
-      System.err.println("UnknownHostException: " + uhe.getMessage());
-    }
+    this.cardAddress = pusher.getIp();
     this.cancel = false;
     if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 1000000)
-        this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
+      this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
   }
 
   @Override
@@ -67,7 +63,8 @@ public class CardThread extends Thread {
         }
         packetLength += stripPacket.length;
       }
-      udppacket = new DatagramPacket(packet, packetLength, cardAddress, pusherPort);
+      udppacket = new DatagramPacket(packet, packetLength, cardAddress,
+          pusherPort);
       try {
         udpsocket.send(udppacket);
       } catch (IOException ioe) {

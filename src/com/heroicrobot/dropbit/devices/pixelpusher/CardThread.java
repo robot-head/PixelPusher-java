@@ -1,9 +1,9 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
-import hypermedia.net.UDP;
+import java.io.*;
+import java.net.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CardThread extends Thread {
@@ -11,15 +11,26 @@ public class CardThread extends Thread {
   private long threadSleepMsec = 4;
   private PixelPusher pusher;
   private byte[] packet;
-  private UDP udp;
+  private DatagramPacket udppacket;
+  private DatagramSocket udpsocket;
   private boolean cancel;
   private int pusherPort;
+  private InetAddress cardAddress;
 
   CardThread(PixelPusher pusher, int pusherPort) {
     this.pusher = pusher;
     this.pusherPort = pusherPort;
+    try {
+      this.udpsocket = new DatagramSocket();
+    } catch (SocketException se) {
+      System.err.println("SocketException: " + se.getMessage());
+    }
     this.packet = new byte[1460];
-    this.udp = new UDP(this);
+    try {
+      this.cardAddress = InetAddress.getByName(pusher.getIp().getHostAddress());
+    } catch (UnknownHostException uhe) {
+      System.err.println("UnknownHostException: " + uhe.getMessage());
+    }
     this.cancel = false;
     if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 1000000)
         this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
@@ -30,7 +41,6 @@ public class CardThread extends Thread {
     while (!cancel) {
       sendPacketToPusher(pusher);
     }
-
   }
 
   public boolean cancel() {
@@ -57,9 +67,12 @@ public class CardThread extends Thread {
         }
         packetLength += stripPacket.length;
       }
-      this.udp.setBuffer(packetLength);
-      byte[] slicedPacket = Arrays.copyOf(packet, packetLength);
-      this.udp.send(slicedPacket, pusher.getIp().getHostAddress(), pusherPort);
+      udppacket = new DatagramPacket(packet, packetLength, cardAddress, pusherPort);
+      try {
+        udpsocket.send(udppacket);
+      } catch (IOException ioe) {
+        System.err.println("IOException: " + ioe.getMessage());
+      }
       try {
         Thread.sleep(threadSleepMsec);
       } catch (InterruptedException e) {

@@ -9,6 +9,8 @@ import java.util.List;
 public class CardThread extends Thread {
 
   private long threadSleepMsec = 4;
+  private long threadExtraDelayMsec = 0;
+  private long bandwidthEstimate = 0;
   private PixelPusher pusher;
   private byte[] packet;
   private DatagramPacket udppacket;
@@ -32,10 +34,22 @@ public class CardThread extends Thread {
       this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
   }
 
+  public void setExtraDelay(long msec) {
+    threadExtraDelayMsec = msec;
+  }
+  
+  public int getBandwidthEstimate() {
+    return (int) bandwidthEstimate;
+  }
+  
   @Override
   public void run() {
     while (!cancel) {
-      sendPacketToPusher(pusher);
+      int bytesSent;
+      long startTime = System.nanoTime();
+      bytesSent = sendPacketToPusher(pusher);
+      long endTime = System.nanoTime();
+      bandwidthEstimate = bytesSent / ((endTime - startTime) / 1000000);
     }
   }
 
@@ -44,8 +58,9 @@ public class CardThread extends Thread {
     return true;
   }
 
-  private void sendPacketToPusher(PixelPusher pusher) {
+  private int sendPacketToPusher(PixelPusher pusher) {
     int packetLength = 0;
+    int totalLength = 0;
     int stripPerPacket = pusher.getMaxStripsPerPacket();
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 1000000)
@@ -70,12 +85,15 @@ public class CardThread extends Thread {
       } catch (IOException ioe) {
         System.err.println("IOException: " + ioe.getMessage());
       }
+      totalLength += packetLength;
+      
       try {
-        Thread.sleep(threadSleepMsec);
+        Thread.sleep(threadSleepMsec+threadExtraDelayMsec);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
       packetLength = 0;
     }
+    return totalLength;
   }
 }

@@ -27,6 +27,20 @@ public class SceneThread extends Thread implements Observer {
 
   }
 
+  public long getTotalBandwidth() {
+    long totalBandwidth=0;
+    for (CardThread thread : cardThreadMap.values()) {
+      totalBandwidth += thread.getBandwidthEstimate();
+    }
+    return totalBandwidth;
+  }
+  
+  public void setExtraDelay(int msec) {
+    for (CardThread thread : cardThreadMap.values()) {
+      thread.setExtraDelay(msec);
+    }
+  }
+  
   @Override
   public void update(Observable observable, Object update) {
     if (!drain) {

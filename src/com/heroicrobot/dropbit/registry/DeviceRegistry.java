@@ -42,6 +42,14 @@ public class DeviceRegistry extends Observable {
     return pusherMap;
   }
 
+  public void setExtraDelay(int msec) {
+    sceneThread.setExtraDelay(msec);
+  }
+  
+  public long getTotalBandwidth() {
+    return sceneThread.getTotalBandwidth();
+  }
+  
   public List<Strip> getStrips() {
     List<Strip> strips = new ArrayList<Strip>();
     for (PixelPusher pusher : pusherMap.values()) {
@@ -60,7 +68,7 @@ public class DeviceRegistry extends Observable {
 
     @Override
     public void run() {
-      LOGGER.fine("Expiry Task running");
+      LOGGER.fine("Expiry and preening task running");
       for (String deviceMac : pusherMap.keySet()) {
         Seconds lastSeenSeconds = Seconds.secondsBetween(
             pusherLastSeenMap.get(deviceMac), DateTime.now());

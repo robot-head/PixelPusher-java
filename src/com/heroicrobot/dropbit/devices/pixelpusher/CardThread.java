@@ -67,13 +67,13 @@ public class CardThread extends Thread {
     int totalLength = 0;
     int stripPerPacket = pusher.getMaxStripsPerPacket();
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
-    if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 1000000)
-      this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
-    byte[] packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
-    for(int i = 0; i < packetNumberArray.length; i++) {
-      this.packet[packetLength++] = packetNumberArray[i];
-    }
     while (!remainingStrips.isEmpty()) {
+      if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 1000000)
+        this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
+      byte[] packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
+      for(int i = 0; i < packetNumberArray.length; i++) {
+        this.packet[packetLength++] = packetNumberArray[i];
+      }
       for (int i = 0; i < stripPerPacket; i++) {
         if (remainingStrips.isEmpty()) {
           break;

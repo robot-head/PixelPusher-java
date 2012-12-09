@@ -14,6 +14,7 @@ public class SceneThread extends Thread implements Observer {
   private Map<String, CardThread> cardThreadMap;
   byte[] packet;
   int packetLength;
+  private int extraDelay = 0;
 
   private boolean drain;
 
@@ -36,6 +37,7 @@ public class SceneThread extends Thread implements Observer {
   }
   
   public void setExtraDelay(int msec) {
+    extraDelay = msec;
     for (CardThread thread : cardThreadMap.values()) {
       thread.setExtraDelay(msec);
     }
@@ -68,6 +70,7 @@ public class SceneThread extends Thread implements Observer {
             PUSHER_PORT);
         if (running) {
           newCardThread.start();
+          newCardThread.setExtraDelay(extraDelay);
         }
         cardThreadMap.put(key, newCardThread);
       }

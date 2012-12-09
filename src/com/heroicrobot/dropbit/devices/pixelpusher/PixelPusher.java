@@ -15,6 +15,8 @@ public class PixelPusher extends DeviceImpl {
    * uint16_t pixels_per_strip; // uint16_t used to make alignment work
    * uint32_t update_period; // in microseconds
    * uint32_t power_total; // in PWM units
+   * uint32_t delta_sequence; // difference between received and expected
+   * sequence numbers
    */
 
   private List<Strip> strips;
@@ -65,9 +67,14 @@ public class PixelPusher extends DeviceImpl {
     return powerTotal;
   }
 
+  public long getDeltaSequence() {
+    return deltaSequence;
+  }
+
   private int maxStripsPerPacket;
   private long updatePeriod;
   private long powerTotal;
+  private long deltaSequence;
 
   public void setStripValues(int stripNumber, Pixel[] pixels) {
     this.strips.get(stripNumber).setPixels(pixels);
@@ -88,6 +95,8 @@ public class PixelPusher extends DeviceImpl {
     updatePeriod = ByteUtils
         .unsignedIntToLong(Arrays.copyOfRange(packet, 4, 8));
     powerTotal = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 8, 12));
+    deltaSequence = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 12,
+        16));
     this.strips = new ArrayList<Strip>();
     for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
       this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
@@ -134,6 +143,8 @@ public class PixelPusher extends DeviceImpl {
     return super.toString() + " # Strips(" + getNumberOfStrips()
         + ") Max Strips Per Packet(" + maxStripsPerPacket
         + ") PixelsPerStrip (" + getPixelsPerStrip() + ") Update Period ("
-        + updatePeriod + ") Power Total (" + powerTotal + ")";
+        + updatePeriod + ") Power Total (" + powerTotal + ") Delta Sequence ( "
+        + deltaSequence + ")";
   }
+
 }

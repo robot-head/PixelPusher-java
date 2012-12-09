@@ -55,16 +55,24 @@ public class ByteUtils {
   }
 
   public static final byte[] longToByteArray(long l, boolean bigEndian) {
-    byte[] bytes = new byte[8];
+    return extractBytes(l, bigEndian, 8);
+  }
+
+  private static byte[] extractBytes(long l, boolean bigEndian, int numBytes) {
+    byte[] bytes = new byte[numBytes];
     if (bigEndian) {
-      for (int i = 0; i < 8; i++) {
+      for (int i = 0; i < numBytes; i++) {
         bytes[i] = (byte) ((l >> i * 8) | 0xffL);
       }
     } else {
-      for (int i = 0; i < 8; i++) {
+      for (int i = 0; i < numBytes; i++) {
         bytes[i] = (byte) ((l >> (8 - i) * 8) | 0xffL);
       }
     }
     return bytes;
+  }
+
+  public static final byte[] unsignedIntToByteArray(long l, boolean bigEndian) {
+    return extractBytes(l, bigEndian, 4);
   }
 }

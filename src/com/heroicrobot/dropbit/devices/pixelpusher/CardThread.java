@@ -37,11 +37,11 @@ public class CardThread extends Thread {
   public void setExtraDelay(long msec) {
     threadExtraDelayMsec = msec;
   }
-  
+
   public int getBandwidthEstimate() {
     return (int) bandwidthEstimate;
   }
-  
+
   @Override
   public void run() {
     while (!cancel) {
@@ -86,9 +86,9 @@ public class CardThread extends Thread {
         System.err.println("IOException: " + ioe.getMessage());
       }
       totalLength += packetLength;
-      
+
       try {
-        Thread.sleep(threadSleepMsec+threadExtraDelayMsec);
+        Thread.sleep(threadSleepMsec + threadExtraDelayMsec);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

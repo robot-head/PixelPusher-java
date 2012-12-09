@@ -6,6 +6,8 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.heroicrobot.dropbit.common.ByteUtils;
+
 public class CardThread extends Thread {
 
   private long threadSleepMsec = 4;
@@ -18,6 +20,7 @@ public class CardThread extends Thread {
   private boolean cancel;
   private int pusherPort;
   private InetAddress cardAddress;
+  private long packetNumber;
 
   CardThread(PixelPusher pusher, int pusherPort) {
     this.pusher = pusher;
@@ -29,6 +32,7 @@ public class CardThread extends Thread {
     }
     this.packet = new byte[1460];
     this.cardAddress = pusher.getIp();
+    this.packetNumber = 0;
     this.cancel = false;
     if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 1000000)
       this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
@@ -65,6 +69,10 @@ public class CardThread extends Thread {
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 1000000)
       this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
+    byte[] packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
+    for(int i = 0; i < packetNumberArray.length; i++) {
+      this.packet[packetLength++] = packetNumberArray[i];
+    }
     while (!remainingStrips.isEmpty()) {
       for (int i = 0; i < stripPerPacket; i++) {
         if (remainingStrips.isEmpty()) {
@@ -94,6 +102,7 @@ public class CardThread extends Thread {
       }
       packetLength = 0;
     }
+    packetNumber++;
     return totalLength;
   }
 }

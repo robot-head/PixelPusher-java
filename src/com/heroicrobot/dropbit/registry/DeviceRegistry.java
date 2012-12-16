@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.joda.time.DateTime;
@@ -82,7 +83,7 @@ public class DeviceRegistry extends Observable {
 
   public DeviceRegistry() {
     udp = new UDP(this, DISCOVERY_PORT);
-    pusherMap = new HashMap<String, PixelPusher>();
+    pusherMap = new TreeMap<String, PixelPusher>();
     pusherLastSeenMap = new HashMap<String, DateTime>();
     udp.setReceiveHandler("receive");
     udp.log(false);

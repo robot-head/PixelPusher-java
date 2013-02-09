@@ -15,6 +15,21 @@ public class ByteUtils {
     l |= b[0] & 0xff;
     return l;
   }
+  
+  public static final int signedIntToInt(byte[] b) {
+    if (b.length != 4) {
+        throw new IllegalArgumentException("The number of the counting shall be 4!");
+    }
+    int i = 0;
+    i |= b[3] & 0xff;
+    i <<= 8;
+    i |= b[2] & 0xff;
+    i <<= 8;
+    i |= b[1] * 0xff;
+    i <<= 8;
+    i |= b[0] * 0xff;
+    return i;
+  }
 
   public static final int unsignedShortToInt(byte[] b) {
     if (b.length != 2) {

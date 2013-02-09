@@ -17,6 +17,8 @@ public class PixelPusher extends DeviceImpl {
    * uint32_t power_total; // in PWM units
    * uint32_t delta_sequence; // difference between received and expected
    * sequence numbers
+   * int32_t controller_ordinal;  // configured order number for controller
+   * int32_t group_ordinal;  // configured group number for this controller
    */
 
   private List<Strip> strips;
@@ -71,10 +73,20 @@ public class PixelPusher extends DeviceImpl {
     return deltaSequence;
   }
 
+  public int getControllerOrdinal() {
+      return controllerOrdinal;
+  }
+  
+  public int getGroupOrdinal() {
+    return groupOrdinal;
+  }
+  
   private int maxStripsPerPacket;
   private long updatePeriod;
   private long powerTotal;
   private long deltaSequence;
+  private int controllerOrdinal;
+  private int groupOrdinal;
 
   public void setStripValues(int stripNumber, Pixel[] pixels) {
     this.strips.get(stripNumber).setPixels(pixels);
@@ -97,6 +109,8 @@ public class PixelPusher extends DeviceImpl {
     powerTotal = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 8, 12));
     deltaSequence = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 12,
         16));
+    controllerOrdinal = ByteUtils.signedIntToInt(Arrays.copyOfRange(packet, 16, 20));
+    groupOrdinal = ByteUtils.signedIntToInt(Arrays.copyOfRange(packet, 20, 24));
     this.strips = new ArrayList<Strip>();
     for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
       this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
@@ -144,7 +158,7 @@ public class PixelPusher extends DeviceImpl {
         + ") Max Strips Per Packet(" + maxStripsPerPacket
         + ") PixelsPerStrip (" + getPixelsPerStrip() + ") Update Period ("
         + updatePeriod + ") Power Total (" + powerTotal + ") Delta Sequence ( "
-        + deltaSequence + ")";
+        + deltaSequence + ") Group (" +groupOrdinal +") Controller (" 
+        + controllerOrdinal + " )";
   }
-
 }

@@ -1,6 +1,8 @@
 package com.heroicrobot.dropbit.registry;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,11 +48,11 @@ public class DeviceRegistry extends Observable {
   public void setExtraDelay(int msec) {
     sceneThread.setExtraDelay(msec);
   }
-  
+
   public long getTotalBandwidth() {
     return sceneThread.getTotalBandwidth();
   }
-  
+
   public List<Strip> getStrips() {
     List<Strip> strips = new ArrayList<Strip>();
     for (PixelPusher pusher : pusherMap.values()) {
@@ -77,6 +79,32 @@ public class DeviceRegistry extends Observable {
           registry.expireDevice(deviceMac);
         }
       }
+    }
+
+  }
+
+  private class DefaultPusherComparator implements Comparator<PixelPusher> {
+
+
+    @Override
+    public int compare(PixelPusher arg0, PixelPusher arg1) {
+      int group0 = arg0.getGroupOrdinal();
+      int group1 = arg1.getGroupOrdinal();
+      if (group0 != group1) {
+        if (group0 < group1)
+          return -1;
+        return 1;
+      }
+
+      int ord0 = arg0.getControllerOrdinal();
+      int ord1 = arg1.getControllerOrdinal();
+      if (ord0 != ord1) {
+        if (ord0 < ord1)
+          return -1;
+        return 1;
+      }
+
+      return arg0.getMacAddress().compareTo(arg1.getMacAddress());
     }
 
   }

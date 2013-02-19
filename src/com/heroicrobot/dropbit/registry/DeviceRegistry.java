@@ -7,9 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import org.joda.time.DateTime;
@@ -17,6 +19,7 @@ import org.joda.time.Seconds;
 
 import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
 import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
+import com.heroicrobot.dropbit.devices.pixelpusher.PusherGroup;
 import com.heroicrobot.dropbit.devices.pixelpusher.SceneThread;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import com.heroicrobot.dropbit.discovery.DeviceHeader;
@@ -41,6 +44,10 @@ public class DeviceRegistry extends Observable {
 
   private SceneThread sceneThread;
 
+  private TreeMap<Integer, PusherGroup> groupMap;
+
+  private TreeSet<PixelPusher> sortedPushers;
+
   public Map<String, PixelPusher> getPusherMap() {
     return pusherMap;
   }
@@ -55,10 +62,14 @@ public class DeviceRegistry extends Observable {
 
   public List<Strip> getStrips() {
     List<Strip> strips = new ArrayList<Strip>();
-    for (PixelPusher pusher : pusherMap.values()) {
-      strips.addAll(pusher.getStrips());
+    for (PixelPusher p : this.sortedPushers) {
+      strips.addAll(p.getStrips());
     }
     return strips;
+  }
+
+  public List<Strip> getStrips(int groupNumber) {
+    return this.groupMap.get(groupNumber).getStrips();
   }
 
   class DeviceExpiryTask extends TimerTask {
@@ -84,7 +95,6 @@ public class DeviceRegistry extends Observable {
   }
 
   private class DefaultPusherComparator implements Comparator<PixelPusher> {
-
 
     @Override
     public int compare(PixelPusher arg0, PixelPusher arg1) {
@@ -112,6 +122,8 @@ public class DeviceRegistry extends Observable {
   public DeviceRegistry() {
     udp = new UDP(this, DISCOVERY_PORT);
     pusherMap = new TreeMap<String, PixelPusher>();
+    groupMap = new TreeMap<Integer, PusherGroup>();
+    sortedPushers = new TreeSet<PixelPusher>(new DefaultPusherComparator());
     pusherLastSeenMap = new HashMap<String, DateTime>();
     udp.setReceiveHandler("receive");
     udp.log(false);
@@ -125,8 +137,10 @@ public class DeviceRegistry extends Observable {
 
   public void expireDevice(String macAddr) {
     LOGGER.info("Device gone: " + macAddr);
-    pusherMap.remove(macAddr);
+    PixelPusher pusher = pusherMap.remove(macAddr);
     pusherLastSeenMap.remove(macAddr);
+    sortedPushers.remove(pusher);
+    this.groupMap.get(pusher.getGroupOrdinal()).removePusher(pusher);
     this.setChanged();
     this.notifyObservers();
   }
@@ -162,24 +176,34 @@ public class DeviceRegistry extends Observable {
     pusherLastSeenMap.put(macAddr, DateTime.now());
     if (!pusherMap.containsKey(macAddr)) {
       // We haven't seen this device before
-      LOGGER.info("New device: " + macAddr);
-      pusherMap.put(macAddr, device);
-      this.setChanged();
-      this.notifyObservers(device);
+      addNewPusher(macAddr, device);
     } else {
       if (!pusherMap.get(macAddr).equals(device)) {
-        // We already knew about this device at the given MAC, but its details
-        // have changed
-        LOGGER.info("Device changed: " + macAddr);
-        pusherMap.put(macAddr, device);
-        this.setChanged();
-        this.notifyObservers(device);
+        updatePusher(macAddr, device);
       } else {
         // The device is identical, nothing has changed
         LOGGER.fine("Device still present: " + macAddr);
         System.out.println(device.toString());
       }
     }
+  }
+
+  private void updatePusher(String macAddr, PixelPusher device) {
+    // We already knew about this device at the given MAC, but its details
+    // have changed
+    LOGGER.info("Device changed: " + macAddr);
+    pusherMap.get(macAddr).copyHeader(device);
+    this.setChanged();
+    this.notifyObservers(device);
+  }
+
+  private void addNewPusher(String macAddr, PixelPusher pusher) {
+    LOGGER.info("New device: " + macAddr);
+    pusherMap.put(macAddr, pusher);
+    sortedPushers.add(pusher);
+    groupMap.get(pusher.getGroupOrdinal()).addPusher(pusher);
+    this.setChanged();
+    this.notifyObservers(pusher);
   }
 
 }

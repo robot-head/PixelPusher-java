@@ -76,11 +76,11 @@ public class PixelPusher extends DeviceImpl {
   public int getControllerOrdinal() {
       return controllerOrdinal;
   }
-  
+
   public int getGroupOrdinal() {
     return groupOrdinal;
   }
-  
+
   private int maxStripsPerPacket;
   private long updatePeriod;
   private long powerTotal;
@@ -120,7 +120,7 @@ public class PixelPusher extends DeviceImpl {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#hashCode()
    */
   @Override
@@ -134,7 +134,7 @@ public class PixelPusher extends DeviceImpl {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
@@ -158,7 +158,17 @@ public class PixelPusher extends DeviceImpl {
         + ") Max Strips Per Packet(" + maxStripsPerPacket
         + ") PixelsPerStrip (" + getPixelsPerStrip() + ") Update Period ("
         + updatePeriod + ") Power Total (" + powerTotal + ") Delta Sequence ( "
-        + deltaSequence + ") Group (" +groupOrdinal +") Controller (" 
+        + deltaSequence + ") Group (" +groupOrdinal +") Controller ("
         + controllerOrdinal + " )";
+  }
+
+  public void copyHeader(PixelPusher device) {
+    this.controllerOrdinal = device.controllerOrdinal;
+    this.deltaSequence = device.deltaSequence;
+    this.groupOrdinal = device.groupOrdinal;
+    this.maxStripsPerPacket = device.maxStripsPerPacket;
+    this.powerTotal = device.powerTotal;
+    this.updatePeriod = device.updatePeriod;
+
   }
 }

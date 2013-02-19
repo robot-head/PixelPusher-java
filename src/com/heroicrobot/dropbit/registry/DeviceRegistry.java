@@ -35,7 +35,7 @@ public class DeviceRegistry extends Observable {
   private UDP udp;
   private static int DISCOVERY_PORT = 7331;
   private static int MAX_DISCONNECT_SECONDS = 2;
-  private static long EXPIRY_TIMER_MSEC = 1000000L;
+  private static long EXPIRY_TIMER_MSEC = 30000L;
 
   private Map<String, PixelPusher> pusherMap;
   private Map<String, DateTime> pusherLastSeenMap;

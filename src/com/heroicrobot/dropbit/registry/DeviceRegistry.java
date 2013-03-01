@@ -167,7 +167,7 @@ public class DeviceRegistry extends Observable {
     DeviceHeader header = new DeviceHeader(data);
     String macAddr = header.GetMacAddressString();
     if (header.DeviceType != DeviceType.PIXELPUSHER) {
-      LOGGER.fine("Ignoring non-pixel pusher discovery packet from "
+      LOGGER.fine("Ignoring non-PixelPusher discovery packet from "
           + header.toString());
       return;
     }

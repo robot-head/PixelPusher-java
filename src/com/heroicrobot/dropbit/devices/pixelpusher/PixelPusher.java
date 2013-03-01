@@ -109,8 +109,8 @@ public class PixelPusher extends DeviceImpl {
     powerTotal = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 8, 12));
     deltaSequence = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 12,
         16));
-    controllerOrdinal = ByteUtils.signedIntToInt(Arrays.copyOfRange(packet, 16, 20));
-    groupOrdinal = ByteUtils.signedIntToInt(Arrays.copyOfRange(packet, 20, 24));
+    controllerOrdinal = (int) ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 16, 20));
+    groupOrdinal = (int) ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 20, 24));
     this.strips = new ArrayList<Strip>();
     for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
       this.strips.add(new Strip(this, stripNo, pixelsPerStrip));

@@ -1,6 +1,7 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -14,7 +15,7 @@ public class PusherGroup {
   }
 
   public PusherGroup() {
-    pushers = new TreeSet<PixelPusher>();
+    pushers = Collections.synchronizedSortedSet(new TreeSet<PixelPusher>());
   }
 
   public Set<PixelPusher> getPushers() {

@@ -8,7 +8,8 @@ import com.heroicrobot.dropbit.common.ByteUtils;
 import com.heroicrobot.dropbit.devices.DeviceImpl;
 import com.heroicrobot.dropbit.discovery.DeviceHeader;
 
-public class PixelPusher extends DeviceImpl {
+public class PixelPusher extends DeviceImpl 
+  implements java.lang.Comparable<PixelPusher> {
   /**
    * uint8_t strips_attached;
    * uint8_t max_strips_per_packet;
@@ -170,5 +171,25 @@ public class PixelPusher extends DeviceImpl {
     this.powerTotal = device.powerTotal;
     this.updatePeriod = device.updatePeriod;
 
+  }
+
+  @Override
+  public int compareTo(PixelPusher comp) {
+    int group0 = this.getGroupOrdinal();
+    int group1 = ((PixelPusher) comp).getGroupOrdinal();
+    if (group0 != group1) {
+      if (group0 < group1)
+        return -1;
+      return 1;
+    }
+    int ord0 = this.getControllerOrdinal();
+    int ord1 = ((PixelPusher) comp).getControllerOrdinal();
+    if (ord0 != ord1) {
+      if (ord0 < ord1)
+        return -1;
+      return 1;
+    }
+
+    return this.getMacAddress().compareTo(((DeviceImpl) comp).getMacAddress());
   }
 }

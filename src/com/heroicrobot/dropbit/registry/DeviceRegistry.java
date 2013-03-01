@@ -198,10 +198,19 @@ public class DeviceRegistry extends Observable {
   }
 
   private void addNewPusher(String macAddr, PixelPusher pusher) {
-    LOGGER.info("New device: " + macAddr);
+    LOGGER.info("New device: " + macAddr +" has group ordinal "+ pusher.getGroupOrdinal());
     pusherMap.put(macAddr, pusher);
+    LOGGER.info("Adding to sorted list");
     sortedPushers.add(pusher);
-    groupMap.get(pusher.getGroupOrdinal()).addPusher(pusher);
+    LOGGER.info("Adding to group map");
+    if (groupMap.get(pusher.getGroupOrdinal()) != null) {
+      groupMap.get(pusher.getGroupOrdinal()).addPusher(pusher);
+    } else {
+      // we need to create a PusherGroup since it doesn't exist yet.
+      PusherGroup pg = new PusherGroup();
+      groupMap.put(pusher.getGroupOrdinal(), pg); 
+    }
+    LOGGER.info("Notifying observers");
     this.setChanged();
     this.notifyObservers(pusher);
   }

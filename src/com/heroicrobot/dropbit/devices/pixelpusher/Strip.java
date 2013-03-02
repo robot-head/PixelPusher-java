@@ -36,7 +36,7 @@ public class Strip {
   }
 
   public synchronized void setPixel(int color, int position) {
-    this.pixels[position].setColor(int color);
+    this.pixels[position].setColor(color);
   }
   
   public synchronized void setPixel(Pixel pixel, int position) {

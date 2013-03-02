@@ -11,6 +11,18 @@ public class Pixel {
     green = 0;
     blue = 0;
   }
+  
+  public void setColor(int color) {
+    this.blue = (byte)(color & 0xff);
+    this.green = (byte) ((color >> 8) & 0xff);
+    this.red = (byte) ((color >> 16) & 0xff);
+  }
+  
+  public void setColor(Pixel pixel) {
+    this.red = pixel.red;
+    this.blue = pixel.blue;
+    this.green = pixel.green;
+  }
 
   public Pixel(Pixel pixel) {
     this.red = pixel.red;

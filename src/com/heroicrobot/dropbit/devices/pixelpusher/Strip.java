@@ -35,8 +35,12 @@ public class Strip {
     this.pixels = Arrays.copyOfRange(pixels, 0, this.pixels.length);
   }
 
+  public synchronized void setPixel(int color, int position) {
+    this.pixels[position].setColor(int color);
+  }
+  
   public synchronized void setPixel(Pixel pixel, int position) {
-    this.pixels[position] = new Pixel(pixel);
+    this.pixels[position].setColor(pixel);
   }
 
   public byte[] serialize() {

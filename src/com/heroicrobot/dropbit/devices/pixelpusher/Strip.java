@@ -10,6 +10,9 @@ public class Strip {
 
   public Strip(PixelPusher pusher, int stripNumber, int length) {
     this.pixels = new Pixel[length];
+    for (int i = 0; i < this.pixels.length; i++) {
+      this.pixels[i] = new Pixel();
+    }
     this.pusher = pusher;
     this.stripNumber = stripNumber;
   }

@@ -12,6 +12,7 @@ public class CardThread extends Thread {
 
   private long threadSleepMsec = 4;
   private long threadExtraDelayMsec = 0;
+  private long threadSendTime = 0;
   private long bandwidthEstimate = 0;
   private PixelPusher pusher;
   private byte[] packet;
@@ -68,12 +69,17 @@ public class CardThread extends Thread {
     int stripPerPacket = pusher.getMaxStripsPerPacket();
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     while (!remainingStrips.isEmpty()) {
-      if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 1000000)
+      if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 10000000)
         this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
       byte[] packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
       for(int i = 0; i < packetNumberArray.length; i++) {
         this.packet[packetLength++] = packetNumberArray[i];
       }
+      packetNumber++;
+      /* System.err.println(" Packet number array = length "+ packetLength + 
+       *      " seq "+ packetNumber +" data " + String.format("%02x, %02x, %02x, %02x", 
+       *          packetNumberArray[0], packetNumberArray[1], packetNumberArray[2], packetNumberArray[3]));
+       */
       for (int i = 0; i < stripPerPacket; i++) {
         if (remainingStrips.isEmpty()) {
           break;
@@ -89,20 +95,23 @@ public class CardThread extends Thread {
       udppacket = new DatagramPacket(packet, packetLength, cardAddress,
           pusherPort);
       try {
+        long startTime = System.nanoTime();
         udpsocket.send(udppacket);
+        long endTime = System.nanoTime();
+        threadSendTime = (endTime - startTime) / 1000000;
+        
       } catch (IOException ioe) {
         System.err.println("IOException: " + ioe.getMessage());
       }
       totalLength += packetLength;
 
       try {
-        Thread.sleep(threadSleepMsec + threadExtraDelayMsec);
+        Thread.sleep(threadSleepMsec + threadExtraDelayMsec + threadSendTime + pusher.getExtraDelay());
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
       packetLength = 0;
     }
-    packetNumber++;
     return totalLength;
   }
 }

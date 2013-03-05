@@ -77,11 +77,11 @@ public class ByteUtils {
     byte[] bytes = new byte[numBytes];
     if (bigEndian) {
       for (int i = 0; i < numBytes; i++) {
-        bytes[i] = (byte) ((l >> i * 8) | 0xffL);
+        bytes[i] = (byte) ((l >> i * 8) & 0xffL);
       }
     } else {
       for (int i = 0; i < numBytes; i++) {
-        bytes[i] = (byte) ((l >> (8 - i) * 8) | 0xffL);
+        bytes[i] = (byte) ((l >> (8 - i) * 8) & 0xffL);
       }
     }
     return bytes;

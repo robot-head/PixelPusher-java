@@ -23,6 +23,7 @@ public class PixelPusher extends DeviceImpl
    */
 
   private List<Strip> strips;
+  long extraDelayMsec = 0;
 
   /**
    * @return the stripsAttached
@@ -73,7 +74,16 @@ public class PixelPusher extends DeviceImpl
   public long getDeltaSequence() {
     return deltaSequence;
   }
-
+  public void increaseExtraDelay(long i) {
+    extraDelayMsec += i;
+    System.err.println("Extra delay now "+extraDelayMsec);
+  }
+  public long getExtraDelay() {
+    return extraDelayMsec;
+  }
+  public void setExtraDelay(long i) {
+    extraDelayMsec = i;
+  }
   public int getControllerOrdinal() {
       return controllerOrdinal;
   }

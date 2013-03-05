@@ -178,11 +178,14 @@ public class DeviceRegistry extends Observable {
       // We haven't seen this device before
       addNewPusher(macAddr, device);
     } else {
-      if (!pusherMap.get(macAddr).equals(device)) {
+      if (!pusherMap.get(macAddr).equals(device)) { // we already saw it
         updatePusher(macAddr, device);
       } else {
         // The device is identical, nothing has changed
         LOGGER.fine("Device still present: " + macAddr);
+        // if we dropped more than occasional packets, slow down a little
+        if (device.getDeltaSequence() > 2)
+            pusherMap.get(macAddr).increaseExtraDelay(5);
         System.out.println(device.toString());
       }
     }
@@ -193,6 +196,7 @@ public class DeviceRegistry extends Observable {
     // have changed
     LOGGER.info("Device changed: " + macAddr);
     pusherMap.get(macAddr).copyHeader(device);
+    
     this.setChanged();
     this.notifyObservers(device);
   }

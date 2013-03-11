@@ -141,6 +141,8 @@ public class DeviceRegistry extends Observable {
     pusherLastSeenMap.remove(macAddr);
     sortedPushers.remove(pusher);
     this.groupMap.get(pusher.getGroupOrdinal()).removePusher(pusher);
+    if (sceneThread.isRunning())
+      sceneThread.removePusherThread(pusher);
     this.setChanged();
     this.notifyObservers();
   }

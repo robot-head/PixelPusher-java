@@ -43,6 +43,15 @@ public class SceneThread extends Thread implements Observer {
     }
   }
   
+  public void removePusherThread(PixelPusher card) {
+    for (CardThread th : cardThreadMap.values()) {
+        if (th.controls(card)) {
+          th.cancel();
+          cardThreadMap.remove(card.getMacAddress());
+       }
+     }
+   }
+  
   @Override
   public void update(Observable observable, Object update) {
     if (!drain) {

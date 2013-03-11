@@ -42,6 +42,9 @@ public class CardThread extends Thread {
   public void setExtraDelay(long msec) {
     threadExtraDelayMsec = msec;
   }
+  public boolean controls(PixelPusher test) {
+    return test.equals(this.pusher);
+  }
 
   public int getBandwidthEstimate() {
     return (int) bandwidthEstimate;

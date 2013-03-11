@@ -78,6 +78,11 @@ public class PixelPusher extends DeviceImpl
     extraDelayMsec += i;
     System.err.println("Extra delay now "+extraDelayMsec);
   }
+  public void decreaseExtraDelay(long i) {
+    extraDelayMsec -= i;
+    if (extraDelayMsec < 0)
+       extraDelayMsec = 0;
+  }
   public long getExtraDelay() {
     return extraDelayMsec;
   }

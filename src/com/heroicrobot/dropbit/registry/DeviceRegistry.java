@@ -184,8 +184,10 @@ public class DeviceRegistry extends Observable {
         // The device is identical, nothing has changed
         LOGGER.fine("Device still present: " + macAddr);
         // if we dropped more than occasional packets, slow down a little
-        if (device.getDeltaSequence() > 2)
+        if (device.getDeltaSequence() > 3)
             pusherMap.get(macAddr).increaseExtraDelay(5);
+        if (device.getDeltaSequence() < 1)
+            pusherMap.get(macAddr).decreaseExtraDelay(1);
         System.out.println(device.toString());
       }
     }

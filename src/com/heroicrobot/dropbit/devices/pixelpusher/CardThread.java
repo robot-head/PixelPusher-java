@@ -69,45 +69,53 @@ public class CardThread extends Thread {
   private int sendPacketToPusher(PixelPusher pusher) {
     int packetLength = 0;
     int totalLength = 0;
+    boolean payload;
+    
     int stripPerPacket = pusher.getMaxStripsPerPacket();
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     while (!remainingStrips.isEmpty()) {
+      payload = false;
       if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 10000000)
         this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
       byte[] packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
       for(int i = 0; i < packetNumberArray.length; i++) {
         this.packet[packetLength++] = packetNumberArray[i];
       }
-      packetNumber++;
-      /* System.err.println(" Packet number array = length "+ packetLength + 
-       *      " seq "+ packetNumber +" data " + String.format("%02x, %02x, %02x, %02x", 
-       *          packetNumberArray[0], packetNumberArray[1], packetNumberArray[2], packetNumberArray[3]));
-       */
       for (int i = 0; i < stripPerPacket; i++) {
         if (remainingStrips.isEmpty()) {
           break;
         }
         Strip strip = remainingStrips.remove(0);
-        byte[] stripPacket = strip.serialize();
-        this.packet[packetLength++] = (byte) strip.getStripNumber();
-        for (int j = 0; j < stripPacket.length; j++) {
-          this.packet[packetLength + j] = stripPacket[j];
+        if (strip.isTouched()) {
+          byte[] stripPacket = strip.serialize();
+          this.packet[packetLength++] = (byte) strip.getStripNumber();
+          for (int j = 0; j < stripPacket.length; j++) {
+            this.packet[packetLength + j] = stripPacket[j];
+          }
+          packetLength += stripPacket.length;
+          payload = true;
         }
-        packetLength += stripPacket.length;
       }
-      udppacket = new DatagramPacket(packet, packetLength, cardAddress,
-          pusherPort);
-      try {
-        long startTime = System.nanoTime();
-        udpsocket.send(udppacket);
-        long endTime = System.nanoTime();
-        threadSendTime = (endTime - startTime) / 1000000;
+      if (payload) {
+        packetNumber++;
+        /* System.err.println(" Packet number array = length "+ packetLength + 
+         *      " seq "+ packetNumber +" data " + String.format("%02x, %02x, %02x, %02x", 
+         *          packetNumberArray[0], packetNumberArray[1], packetNumberArray[2], packetNumberArray[3]));
+         */
+        udppacket = new DatagramPacket(packet, packetLength, cardAddress,
+            pusherPort);
+        try {
+          long startTime = System.nanoTime();
+          udpsocket.send(udppacket);
+          long endTime = System.nanoTime();
+          threadSendTime = (endTime - startTime) / 1000000;
         
-      } catch (IOException ioe) {
-        System.err.println("IOException: " + ioe.getMessage());
+        } catch (IOException ioe) {
+          System.err.println("IOException: " + ioe.getMessage());
+        }
+       
+        totalLength += packetLength;
       }
-      totalLength += packetLength;
-
       try {
         Thread.sleep(threadSleepMsec + threadExtraDelayMsec + threadSendTime + pusher.getExtraDelay());
       } catch (InterruptedException e) {

@@ -7,6 +7,7 @@ public class Strip {
   private Pixel[] pixels;
   private PixelPusher pusher;
   private int stripNumber;
+  private boolean touched;
 
   public Strip(PixelPusher pusher, int stripNumber, int length) {
     this.pixels = new Pixel[length];
@@ -15,6 +16,7 @@ public class Strip {
     }
     this.pusher = pusher;
     this.stripNumber = stripNumber;
+    this.touched = false;
   }
 
   public int getLength() {
@@ -25,6 +27,10 @@ public class Strip {
     return this.pusher.getMacAddress();
   }
 
+  public boolean isTouched() {
+    return this.touched;
+  }
+  
   public int getStripNumber() {
     return stripNumber;
   }
@@ -36,14 +42,17 @@ public class Strip {
 
   public synchronized void setPixels(Pixel[] pixels) {
     this.pixels = Arrays.copyOfRange(pixels, 0, this.pixels.length);
+    this.touched = true;
   }
 
   public synchronized void setPixel(int color, int position) {
     this.pixels[position].setColor(color);
+    this.touched = true;
   }
   
   public synchronized void setPixel(Pixel pixel, int position) {
     this.pixels[position].setColor(pixel);
+    this.touched = true;
   }
 
   public byte[] serialize() {
@@ -56,6 +65,7 @@ public class Strip {
       msg[i++] = pixel.green;
       msg[i++] = pixel.blue;
     }
+    this.touched = false;
     return msg;
   }
 

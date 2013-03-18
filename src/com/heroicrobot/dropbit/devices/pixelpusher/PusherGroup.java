@@ -21,6 +21,10 @@ public class PusherGroup {
   public Set<PixelPusher> getPushers() {
     return this.pushers;
   }
+  
+  public int size() {
+    return pushers.size();
+  }
 
   public List<Strip> getStrips() {
     List<Strip> strips = new ArrayList<Strip>();

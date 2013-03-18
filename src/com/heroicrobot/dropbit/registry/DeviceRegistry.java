@@ -69,7 +69,12 @@ public class DeviceRegistry extends Observable {
   }
 
   public List<Strip> getStrips(int groupNumber) {
-    return this.groupMap.get(groupNumber).getStrips();
+    if (this.groupMap.containsKey(groupNumber)) {
+      return this.groupMap.get(groupNumber).getStrips();
+    } else {
+      List<Strip> emptyList = new ArrayList<Strip>();
+      return emptyList;
+    }
   }
 
   class DeviceExpiryTask extends TimerTask {
@@ -212,10 +217,13 @@ public class DeviceRegistry extends Observable {
     sortedPushers.add(pusher);
     LOGGER.info("Adding to group map");
     if (groupMap.get(pusher.getGroupOrdinal()) != null) {
+      LOGGER.info("Adding pusher to group "+pusher.getGroupOrdinal());
       groupMap.get(pusher.getGroupOrdinal()).addPusher(pusher);
     } else {
       // we need to create a PusherGroup since it doesn't exist yet.
       PusherGroup pg = new PusherGroup();
+      LOGGER.info("Creating group and adding pusher to group "+pusher.getGroupOrdinal());
+      pg.addPusher(pusher);
       groupMap.put(pusher.getGroupOrdinal(), pg); 
     }
     LOGGER.info("Notifying observers");

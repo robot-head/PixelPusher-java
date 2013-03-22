@@ -1,13 +1,12 @@
 package com.heroicrobot.dropbit.registry;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
@@ -36,7 +35,11 @@ public class DeviceRegistry extends Observable {
   private static int DISCOVERY_PORT = 7331;
   private static int MAX_DISCONNECT_SECONDS = 10;
   private static long EXPIRY_TIMER_MSEC = 1000L;
-
+  
+  private static long totalPower = 0;
+  private static long totalPowerLimit = -1;
+  private static double powerScale = 1.0;
+  
   private Map<String, PixelPusher> pusherMap;
   private Map<String, DateTime> pusherLastSeenMap;
 
@@ -60,6 +63,22 @@ public class DeviceRegistry extends Observable {
     return sceneThread.getTotalBandwidth();
   }
 
+  public long getTotalPower() {
+    return totalPower;
+  }
+  
+  public void setTotalPowerLimit(long powerLimit) {
+    totalPowerLimit = powerLimit;
+  }
+  
+  public long getTotalPowerLimit() {
+    return totalPowerLimit;
+  }
+  
+  public double getPowerScale() {
+    return powerScale;
+  }
+  
   public List<Strip> getStrips() {
     List<Strip> strips = new ArrayList<Strip>();
     for (PixelPusher p : this.sortedPushers) {
@@ -196,6 +215,21 @@ public class DeviceRegistry extends Observable {
         if (device.getDeltaSequence() < 1)
             pusherMap.get(macAddr).decreaseExtraDelay(1);
         System.out.println(device.toString());
+      }
+    }
+    
+    // update the power limit variables
+    if (totalPowerLimit > 0) {
+      totalPower = 0;
+      for (Iterator<PixelPusher> iterator = sortedPushers.iterator(); iterator
+          .hasNext();) {
+        PixelPusher pusher = iterator.next();
+        totalPower += pusher.getPowerTotal();
+      }
+      if (totalPower > totalPowerLimit) {
+        powerScale = totalPowerLimit / totalPower;
+      } else {
+        powerScale = 1.0;
       }
     }
   }

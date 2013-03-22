@@ -76,7 +76,7 @@ public class SceneThread extends Thread implements Observer {
 
       for (String key : newPusherMap.keySet()) {
         CardThread newCardThread = new CardThread(newPusherMap.get(key),
-            PUSHER_PORT);
+            PUSHER_PORT, ((DeviceRegistry) observable));
         if (running) {
           newCardThread.start();
           newCardThread.setExtraDelay(extraDelay);

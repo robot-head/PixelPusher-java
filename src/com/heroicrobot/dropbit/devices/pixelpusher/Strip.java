@@ -8,7 +8,8 @@ public class Strip {
   private PixelPusher pusher;
   private int stripNumber;
   private boolean touched;
-
+  private double powerScale;
+  
   public Strip(PixelPusher pusher, int stripNumber, int length) {
     this.pixels = new Pixel[length];
     for (int i = 0; i < this.pixels.length; i++) {
@@ -17,12 +18,18 @@ public class Strip {
     this.pusher = pusher;
     this.stripNumber = stripNumber;
     this.touched = false;
+    this.powerScale = 1.0;
   }
 
   public int getLength() {
     return pixels.length;
   }
 
+  public void setPowerScale(double scale)
+  {
+    this.powerScale = scale;
+  }
+  
   public String getMacAddress() {
     return this.pusher.getMacAddress();
   }
@@ -61,12 +68,11 @@ public class Strip {
     for (Pixel pixel : pixels) {
       if (pixel == null)
         pixel = new Pixel();
-      msg[i++] = pixel.red;
-      msg[i++] = pixel.green;
-      msg[i++] = pixel.blue;
+      msg[i++] = (byte) (((double)pixel.red) * powerScale);
+      msg[i++] = (byte) (((double)pixel.green) * powerScale);
+      msg[i++] = (byte) (((double)pixel.blue) * powerScale);
     }
     this.touched = false;
     return msg;
   }
-
 }

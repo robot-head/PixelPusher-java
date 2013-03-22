@@ -1,12 +1,14 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.io.*;
+
 import java.net.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
+import com.heroicrobot.dropbit.registry.DeviceRegistry;
 
 public class CardThread extends Thread {
 
@@ -22,10 +24,12 @@ public class CardThread extends Thread {
   private int pusherPort;
   private InetAddress cardAddress;
   private long packetNumber;
+  private DeviceRegistry registry;
 
-  CardThread(PixelPusher pusher, int pusherPort) {
+  CardThread(PixelPusher pusher, int pusherPort, DeviceRegistry dr) {
     this.pusher = pusher;
     this.pusherPort = pusherPort;
+    this.registry = dr;
     try {
       this.udpsocket = new DatagramSocket();
     } catch (SocketException se) {
@@ -70,6 +74,9 @@ public class CardThread extends Thread {
     int packetLength = 0;
     int totalLength = 0;
     boolean payload;
+    double powerScale;
+    
+    powerScale = registry.getPowerScale();
     
     int stripPerPacket = pusher.getMaxStripsPerPacket();
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
@@ -87,6 +94,7 @@ public class CardThread extends Thread {
         }
         Strip strip = remainingStrips.remove(0);
         if (strip.isTouched()) {
+          strip.setPowerScale(powerScale);
           byte[] stripPacket = strip.serialize();
           this.packet[packetLength++] = (byte) strip.getStripNumber();
           for (int j = 0; j < stripPacket.length; j++) {

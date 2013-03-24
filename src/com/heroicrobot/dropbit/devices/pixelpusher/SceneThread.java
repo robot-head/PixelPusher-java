@@ -15,6 +15,7 @@ public class SceneThread extends Thread implements Observer {
   byte[] packet;
   int packetLength;
   private int extraDelay = 0;
+  private boolean autoThrottle=false;
 
   private boolean drain;
 
@@ -25,7 +26,13 @@ public class SceneThread extends Thread implements Observer {
     this.cardThreadMap = new HashMap<String, CardThread>();
     this.drain = false;
     this.running = false;
-
+  }
+  
+  public void setAutoThrottle(boolean autothrottle) {
+    autoThrottle = autothrottle;
+    for (PixelPusher pusher : pusherMap.values()) {
+      pusher.setAutoThrottle(autothrottle);
+    }
   }
 
   public long getTotalBandwidth() {
@@ -80,6 +87,7 @@ public class SceneThread extends Thread implements Observer {
         if (running) {
           newCardThread.start();
           newCardThread.setExtraDelay(extraDelay);
+          newPusherMap.get(key).setAutoThrottle(autoThrottle);
         }
         cardThreadMap.put(key, newCardThread);
       }

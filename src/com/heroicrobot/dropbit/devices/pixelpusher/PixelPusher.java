@@ -24,6 +24,7 @@ public class PixelPusher extends DeviceImpl
 
   private List<Strip> strips;
   long extraDelayMsec = 0;
+  boolean autothrottle = false;
 
   /**
    * @return the stripsAttached
@@ -38,6 +39,10 @@ public class PixelPusher extends DeviceImpl
 
   public Strip getStrip(int stripNumber) {
     return this.strips.get(stripNumber);
+  }
+  
+  public void setAutoThrottle(boolean state) {
+    autothrottle = state;
   }
 
   /**
@@ -75,8 +80,12 @@ public class PixelPusher extends DeviceImpl
     return deltaSequence;
   }
   public void increaseExtraDelay(long i) {
-    extraDelayMsec += i;
-    System.err.println("Extra delay now "+extraDelayMsec);
+    if (autothrottle) {
+      extraDelayMsec += i;
+      System.err.println("Extra delay now "+extraDelayMsec);
+    } else {
+      System.err.println("Would increase delay, but autothrottle is disabled.");
+    }
   }
   public void decreaseExtraDelay(long i) {
     extraDelayMsec -= i;
@@ -84,7 +93,10 @@ public class PixelPusher extends DeviceImpl
        extraDelayMsec = 0;
   }
   public long getExtraDelay() {
-    return extraDelayMsec;
+    if (autothrottle)
+      return extraDelayMsec;
+    else
+      return 0;
   }
   public void setExtraDelay(long i) {
     extraDelayMsec = i;

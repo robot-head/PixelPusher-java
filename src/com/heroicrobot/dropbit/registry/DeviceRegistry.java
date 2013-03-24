@@ -58,6 +58,10 @@ public class DeviceRegistry extends Observable {
   public void setExtraDelay(int msec) {
     sceneThread.setExtraDelay(msec);
   }
+  
+  public void setAutoThrottle(boolean autothrottle) {
+    sceneThread.setAutoThrottle(autothrottle);
+  }
 
   public long getTotalBandwidth() {
     return sceneThread.getTotalBandwidth();

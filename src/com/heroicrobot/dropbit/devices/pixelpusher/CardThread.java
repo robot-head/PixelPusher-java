@@ -125,7 +125,7 @@ public class CardThread extends Thread {
         totalLength += packetLength;
       }
       try {
-        Thread.sleep(threadSleepMsec + threadExtraDelayMsec + threadSendTime + pusher.getExtraDelay());
+        Thread.sleep(threadSleepMsec + threadExtraDelayMsec + threadSendTime + pusher.getExtraDelay() );
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

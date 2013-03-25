@@ -39,6 +39,7 @@ public class DeviceRegistry extends Observable {
   private static long totalPower = 0;
   private static long totalPowerLimit = -1;
   private static double powerScale = 1.0;
+  private static boolean autoThrottle = false;
   
   private Map<String, PixelPusher> pusherMap;
   private Map<String, DateTime> pusherLastSeenMap;
@@ -60,6 +61,7 @@ public class DeviceRegistry extends Observable {
   }
   
   public void setAutoThrottle(boolean autothrottle) {
+    autoThrottle = autothrottle;
     sceneThread.setAutoThrottle(autothrottle);
   }
 
@@ -264,6 +266,7 @@ public class DeviceRegistry extends Observable {
       pg.addPusher(pusher);
       groupMap.put(pusher.getGroupOrdinal(), pg); 
     }
+    pusher.setAutoThrottle(autoThrottle);
     LOGGER.info("Notifying observers");
     this.setChanged();
     this.notifyObservers(pusher);

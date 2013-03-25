@@ -30,7 +30,10 @@ public class SceneThread extends Thread implements Observer {
   
   public void setAutoThrottle(boolean autothrottle) {
     autoThrottle = autothrottle;
+    //System.err.println("Setting autothrottle in SceneThread.");
     for (PixelPusher pusher : pusherMap.values()) {
+      //System.err.println("Setting card "+pusher.getControllerOrdinal()+" group "+pusher.getGroupOrdinal()+" to "+
+      //      (autothrottle?"throttle":"not throttle"));
       pusher.setAutoThrottle(autothrottle);
     }
   }
@@ -89,6 +92,7 @@ public class SceneThread extends Thread implements Observer {
           newCardThread.setExtraDelay(extraDelay);
           newPusherMap.get(key).setAutoThrottle(autoThrottle);
         }
+        pusherMap.put(key, newPusherMap.get(key));
         cardThreadMap.put(key, newCardThread);
       }
       for (String key : deadPusherMap.keySet()) {

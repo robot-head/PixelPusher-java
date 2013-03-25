@@ -43,6 +43,8 @@ public class PixelPusher extends DeviceImpl
   
   public void setAutoThrottle(boolean state) {
     autothrottle = state;
+   // System.err.println("Setting autothrottle on card "+controllerOrdinal+" in group "+groupOrdinal+" to "+
+   //     (autothrottle?"ON":"OFF"));
   }
 
   /**
@@ -82,9 +84,9 @@ public class PixelPusher extends DeviceImpl
   public void increaseExtraDelay(long i) {
     if (autothrottle) {
       extraDelayMsec += i;
-      System.err.println("Extra delay now "+extraDelayMsec);
+      System.err.println("Group "+groupOrdinal+" card "+controllerOrdinal+" extra delay now "+extraDelayMsec);
     } else {
-      System.err.println("Would increase delay, but autothrottle is disabled.");
+      System.err.println("Group "+groupOrdinal+" card "+controllerOrdinal+" would increase delay, but autothrottle is disabled.");
     }
   }
   public void decreaseExtraDelay(long i) {

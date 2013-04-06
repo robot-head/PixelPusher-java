@@ -117,7 +117,7 @@ public class DeviceRegistry extends Observable {
         Seconds lastSeenSeconds = Seconds.secondsBetween(
             pusherLastSeenMap.get(deviceMac), DateTime.now());
         if (lastSeenSeconds.getSeconds() > MAX_DISCONNECT_SECONDS) {
-          registry.expireDevice(deviceMac);
+          //registry.expireDevice(deviceMac);
         }
       }
     }
@@ -174,7 +174,7 @@ public class DeviceRegistry extends Observable {
     if (sceneThread.isRunning())
       sceneThread.removePusherThread(pusher);
     this.setChanged();
-    this.notifyObservers();
+    this.notifyObservers(); 
   }
 
   public void setStripValues(String macAddress, int stripNumber, Pixel[] pixels) {

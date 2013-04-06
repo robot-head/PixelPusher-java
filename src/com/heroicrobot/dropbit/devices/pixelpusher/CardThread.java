@@ -65,6 +65,10 @@ public class CardThread extends Thread {
     }
   }
 
+  public void shutDown() {
+    
+  }
+  
   public boolean cancel() {
     this.cancel = true;
     return true;
@@ -82,7 +86,7 @@ public class CardThread extends Thread {
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     while (!remainingStrips.isEmpty()) {
       payload = false;
-      if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 10000000)
+      if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 100000)
         this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
       byte[] packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
       for(int i = 0; i < packetNumberArray.length; i++) {
@@ -93,7 +97,7 @@ public class CardThread extends Thread {
           break;
         }
         Strip strip = remainingStrips.remove(0);
-        if (strip.isTouched()) {
+        if (strip.isTouched() ) {
           strip.setPowerScale(powerScale);
           byte[] stripPacket = strip.serialize();
           this.packet[packetLength++] = (byte) strip.getStripNumber();

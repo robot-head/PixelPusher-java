@@ -113,15 +113,24 @@ public class DeviceRegistry extends Observable {
     @Override
     public void run() {
       LOGGER.fine("Expiry and preening task running");
+      
+      // A little sleight of hand here.  We can't call registry.expireDevice()
+      // directly from inside the loop, for the loop is an implicit iterator and
+      // registry.expireDevice modifies the pusherMap.
+      // Instead we create a list of the MAC addresses to kill, then loop over
+      // them outside the iterator.  - jls
+      List<String> toKill = new ArrayList<String>();
       for (String deviceMac : pusherMap.keySet()) {
         Seconds lastSeenSeconds = Seconds.secondsBetween(
             pusherLastSeenMap.get(deviceMac), DateTime.now());
         if (lastSeenSeconds.getSeconds() > MAX_DISCONNECT_SECONDS) {
-          //registry.expireDevice(deviceMac);
+          toKill.add(deviceMac);
         }
       }
+      for (String doomedIndividual : toKill) {
+        registry.expireDevice(doomedIndividual);
+      }
     }
-
   }
 
   private class DefaultPusherComparator implements Comparator<PixelPusher> {

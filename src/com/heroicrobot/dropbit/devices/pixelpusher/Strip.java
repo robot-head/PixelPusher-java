@@ -9,6 +9,8 @@ public class Strip {
   private int stripNumber;
   private boolean touched;
   private double powerScale;
+  private boolean isRGBOW;
+  private byte[] msg;
   
   public Strip(PixelPusher pusher, int stripNumber, int length) {
     this.pixels = new Pixel[length];
@@ -19,10 +21,23 @@ public class Strip {
     this.stripNumber = stripNumber;
     this.touched = false;
     this.powerScale = 1.0;
+    this.isRGBOW = false;
+    this.msg = new byte[pixels.length * 3];
   }
 
+  public boolean getRGBOW() {
+    return isRGBOW;
+  }
+  
+  public void setRGBOW(boolean state) {
+    int length = pixels.length;
+    this.pixels = new Pixel[(int)length/3];
+    this.msg = new byte[pixels.length * 9];
+    isRGBOW = state;
+  }
+  
   public int getLength() {
-    return pixels.length;
+      return pixels.length;
   }
 
   public void setPowerScale(double scale)
@@ -63,14 +78,48 @@ public class Strip {
   }
 
   public byte[] serialize() {
-    byte[] msg = new byte[pixels.length * 3];
     int i = 0;
-    for (Pixel pixel : pixels) {
-      if (pixel == null)
-        pixel = new Pixel();
-      msg[i++] = (byte) (((double)pixel.red) * powerScale);
-      msg[i++] = (byte) (((double)pixel.green) * powerScale);
-      msg[i++] = (byte) (((double)pixel.blue) * powerScale);
+    boolean phase = true;
+    if (isRGBOW) {
+      for (Pixel pixel : pixels) {
+        if (pixel == null)
+          pixel = new Pixel();
+        
+        if (phase) {
+          msg[i++] = (byte) (((double)pixel.red)   * powerScale);    // C
+          msg[i++] = (byte) (((double)pixel.green) * powerScale);
+          msg[i++] = (byte) (((double)pixel.blue)  * powerScale);
+        
+          msg[i++] = (byte) (((double)pixel.orange) * powerScale);   // O
+          msg[i++] = (byte) (((double)pixel.orange) * powerScale);
+          msg[i++] = (byte) (((double)pixel.orange) * powerScale);  
+       
+          msg[i++] = (byte) (((double)pixel.white) * powerScale);    // W
+          msg[i++] = (byte) (((double)pixel.white) * powerScale);
+          msg[i++] = (byte) (((double)pixel.white) * powerScale);  
+        } else {
+          msg[i++] = (byte) (((double)pixel.red)   * powerScale);    // C
+          msg[i++] = (byte) (((double)pixel.green) * powerScale);
+          msg[i++] = (byte) (((double)pixel.blue)  * powerScale);
+
+          msg[i++] = (byte) (((double)pixel.white) * powerScale);    // W
+          msg[i++] = (byte) (((double)pixel.white) * powerScale);
+          msg[i++] = (byte) (((double)pixel.white) * powerScale);  
+
+          msg[i++] = (byte) (((double)pixel.orange) * powerScale);   // O
+          msg[i++] = (byte) (((double)pixel.orange) * powerScale);
+          msg[i++] = (byte) (((double)pixel.orange) * powerScale);           
+        }
+        phase = !phase; 
+      }   
+    } else {
+      for (Pixel pixel : pixels) {
+        if (pixel == null)
+          pixel = new Pixel();
+        msg[i++] = (byte) (((double)pixel.red) * powerScale);
+        msg[i++] = (byte) (((double)pixel.green) * powerScale);
+        msg[i++] = (byte) (((double)pixel.blue) * powerScale);
+      }
     }
     this.touched = false;
     return msg;

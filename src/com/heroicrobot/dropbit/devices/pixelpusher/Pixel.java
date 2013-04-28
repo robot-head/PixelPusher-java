@@ -16,10 +16,14 @@ public class Pixel {
     white = 0;
   }
   
+  
+  // Processing "color" objects only support the axes of red, green and blue.
   public void setColor(int color) {
     this.blue = (byte)(color & 0xff);
     this.green = (byte) ((color >> 8) & 0xff);
     this.red = (byte) ((color >> 16) & 0xff);
+    this.orange = (byte) 0;
+    this.white = (byte) 0;
   }
   
   public void setColor(Pixel pixel) {
@@ -34,6 +38,8 @@ public class Pixel {
     this.red = pixel.red;
     this.blue = pixel.blue;
     this.green = pixel.green;
+    this.orange = pixel.orange;
+    this.white = pixel.white;
   }
 
   public Pixel(byte red, byte green, byte blue) {

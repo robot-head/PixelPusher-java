@@ -116,9 +116,9 @@ public class SceneThread extends Thread implements Observer {
         cardThreadMap.put(key, newCardThread);
       }
       for (String key : deadPusherMap.keySet()) {
-     /*   System.out.println("Killing old CardThread " + key);
+        System.out.println("Killing old CardThread " + key);
         cardThreadMap.get(key).cancel();
-        cardThreadMap.remove(key); */
+        cardThreadMap.remove(key);
       }
       listSemaphore.release();
     }

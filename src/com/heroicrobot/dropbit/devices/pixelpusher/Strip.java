@@ -25,15 +25,30 @@ public class Strip {
     this.msg = new byte[pixels.length * 3];
   }
 
+  // get the RGBOW state of the strip.
   public boolean getRGBOW() {
     return isRGBOW;
   }
   
+  // set the RGBOW state of the strip;  this function is idempotent.
   public void setRGBOW(boolean state) {
     int length = pixels.length;
-    this.pixels = new Pixel[(int)length/3];
-    this.msg = new byte[pixels.length * 9];
-    isRGBOW = state;
+    if (isRGBOW) {  // if we're already set to RGBOW mode
+      if (state)    // don't do anything if we're setting
+         return;
+      this.pixels = new Pixel[length*3];   // else go back to RGB mode
+      this.msg = new byte[pixels.length*3];
+      return;
+    }
+    // otherwise, we were in RGB mode.
+    if (state) { // if we are going to RGBOW mode
+      this.pixels = new Pixel[(int)length/3];  // shorten the pixel array
+      this.msg = new byte[pixels.length * 9];  // but lengthen the serialization buffer.
+      isRGBOW = state;
+      return;
+    }
+    // otherwise, do nothing.
+    
   }
   
   public int getLength() {

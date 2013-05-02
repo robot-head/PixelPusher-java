@@ -82,8 +82,13 @@ public class CardThread extends Thread {
     
     powerScale = registry.getPowerScale();
     
-    int stripPerPacket = pusher.getMaxStripsPerPacket();
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
+    final int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
+    final int supportedStripsPerPacket
+        = (this.packet.length - 4) / (1 + 3 * pusher.getPixelsPerStrip());
+    final int stripPerPacket = Math.min(requestedStripsPerPacket,
+                                        supportedStripsPerPacket);
+
     while (!remainingStrips.isEmpty()) {
       payload = false;
       if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 100000)

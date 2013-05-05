@@ -1,7 +1,6 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.util.HashMap;
-import java.lang.reflect.*;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;

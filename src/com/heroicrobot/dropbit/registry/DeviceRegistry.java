@@ -1,5 +1,7 @@
 package com.heroicrobot.dropbit.registry;
 
+import java.io.IOException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,17 +26,15 @@ import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import com.heroicrobot.dropbit.discovery.DeviceHeader;
 import com.heroicrobot.dropbit.discovery.DeviceType;
 
-import hypermedia.net.UDP;
-
 public class DeviceRegistry extends Observable {
 
   private final static Logger LOGGER = Logger.getLogger(DeviceRegistry.class
       .getName());
-
-  private UDP udp;
+ 
   private static int DISCOVERY_PORT = 7331;
   private static int MAX_DISCONNECT_SECONDS = 10;
   private static long EXPIRY_TIMER_MSEC = 1000L;
+  private DiscoveryListenerThread _dlt;
   
   private static long totalPower = 0;
   private static long totalPowerLimit = -1;
@@ -157,21 +157,50 @@ public class DeviceRegistry extends Observable {
     }
 
   }
+  
+  private class DiscoveryListenerThread extends Thread {
+    private DatagramSocket discovery_socket;
+    private DatagramPacket discovery_buffer;
+    private DeviceRegistry _dr;
+   
+    DiscoveryListenerThread(int discovery_port, DeviceRegistry dr) {
+     try {
+       this.discovery_socket = new DatagramSocket(discovery_port);
+       this.discovery_socket.setBroadcast(true);
+     } catch (SocketException e) {
+       e.printStackTrace();
+     }
+      byte[] buf = new byte[1536];
+      this.discovery_buffer = new DatagramPacket(buf, buf.length);
+      this._dr = dr;
+    }
+    
+    public void run() {
+      while (true) {
+        try {
+          discovery_socket.receive(discovery_buffer);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+        _dr.receive(discovery_buffer.getData());
+      }
+    }
+  }
 
   public DeviceRegistry() {
-    udp = new UDP(this, DISCOVERY_PORT);
+      
     pusherMap = new TreeMap<String, PixelPusher>();
     groupMap = new TreeMap<Integer, PusherGroup>();
     sortedPushers = new TreeSet<PixelPusher>(new DefaultPusherComparator());
     pusherLastSeenMap = new HashMap<String, DateTime>();
-    udp.setReceiveHandler("receive");
-    udp.log(false);
-    udp.listen(true);
+
+    this._dlt = new DiscoveryListenerThread(DISCOVERY_PORT, this);
     this.expiryTimer = new Timer();
     this.expiryTimer.scheduleAtFixedRate(new DeviceExpiryTask(this), 0L,
         EXPIRY_TIMER_MSEC);
     this.sceneThread = new SceneThread();
     this.addObserver(this.sceneThread);
+    this._dlt.start();
   }
 
   public void expireDevice(String macAddr) {

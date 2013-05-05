@@ -171,5 +171,6 @@ public class SceneThread extends Thread implements Observer {
   public void setFrameCallback(Object caller, String method) {
     frameCallbackObject = caller;
     frameCallbackMethod = method;
+    frameCallback = true;
   }
 }

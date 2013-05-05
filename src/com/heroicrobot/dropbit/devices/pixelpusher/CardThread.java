@@ -142,4 +142,12 @@ public class CardThread extends Thread {
     }
     return totalLength;
   }
+
+  public boolean hasTouchedStrips() {
+    List<Strip> allStrips = new ArrayList<Strip>(pusher.getStrips());
+    for (Strip strip: allStrips)
+        if (strip.isTouched())
+          return true;
+    return false;
+  }
 }

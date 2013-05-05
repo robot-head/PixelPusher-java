@@ -60,6 +60,14 @@ public class DeviceRegistry extends Observable {
     sceneThread.setExtraDelay(msec);
   }
   
+  public void stopFrameCallback() {
+    sceneThread.stopFrameCallback();
+  }
+  
+  public void setFrameCallback(Object caller, String method) {
+    sceneThread.setFrameCallback(caller, method);
+  }
+  
   public void setAutoThrottle(boolean autothrottle) {
     autoThrottle = autothrottle;
     sceneThread.setAutoThrottle(autothrottle);

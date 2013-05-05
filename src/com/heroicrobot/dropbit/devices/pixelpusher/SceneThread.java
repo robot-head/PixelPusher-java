@@ -1,6 +1,7 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.util.HashMap;
+import java.lang.reflect.*;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -17,6 +18,9 @@ public class SceneThread extends Thread implements Observer {
   int packetLength;
   private int extraDelay = 0;
   private boolean autoThrottle=false;
+  private Object frameCallbackObject;
+  private String frameCallbackMethod;
+  private boolean frameCallback = false;
 
   private boolean drain;
 
@@ -135,6 +139,21 @@ public class SceneThread extends Thread implements Observer {
     for (CardThread thread : cardThreadMap.values()) {
       thread.start();
     }
+    while (true) {
+      if (frameCallback) {
+        boolean frameDirty = false;
+        for (CardThread thread : cardThreadMap.values()) {
+          frameDirty |= thread.hasTouchedStrips();
+        }
+        if (!frameDirty) {
+          try {
+            frameCallbackObject.getClass().getMethod(frameCallbackMethod).invoke(frameCallbackObject,(Object[])null);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    }
   }
 
   public boolean cancel() {
@@ -144,5 +163,14 @@ public class SceneThread extends Thread implements Observer {
       cardThreadMap.remove(key);
     }
     return true;
+  }
+
+  public void stopFrameCallback() {
+    frameCallback = false;
+  }
+
+  public void setFrameCallback(Object caller, String method) {
+    frameCallbackObject = caller;
+    frameCallbackMethod = method;
   }
 }

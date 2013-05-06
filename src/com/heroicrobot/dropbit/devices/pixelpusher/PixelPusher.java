@@ -176,11 +176,29 @@ public class PixelPusher extends DeviceImpl
     if (getClass() != obj.getClass())
       return false;
     PixelPusher other = (PixelPusher) obj;
+
+    if (this.hasRGBOW() & !other.hasRGBOW()) {
+      if (getPixelsPerStrip() != other.getPixelsPerStrip() / 3)
+        return false;
+    }
+     if (!this.hasRGBOW() & other.hasRGBOW()) {
+      if (getPixelsPerStrip() / 3 != other.getPixelsPerStrip())
+        return false;
+    }
+    if (! (this.hasRGBOW() || other.hasRGBOW()))
     if (getPixelsPerStrip() != other.getPixelsPerStrip())
       return false;
     if (getNumberOfStrips() != other.getNumberOfStrips())
       return false;
     return true;
+  }
+
+  private boolean hasRGBOW() {
+    for (Strip strip: this.strips)
+      if (strip.getRGBOW())
+        return true;
+    
+    return false;
   }
 
   public String toString() {

@@ -31,18 +31,25 @@ public class Strip {
   }
   
   // set the RGBOW state of the strip;  this function is idempotent.
-  public void setRGBOW(boolean state) {
+  public void setRGBOW(boolean state) {   
+    if (state == isRGBOW)
+        return;
+    this.touched = true;
     int length = pixels.length;
     if (isRGBOW) {  // if we're already set to RGBOW mode
-      if (state)    // don't do anything if we're setting
-         return;
       this.pixels = new Pixel[length*3];   // else go back to RGB mode
+      for (int i = 0; i < this.pixels.length; i++) {
+        this.pixels[i] = new Pixel();
+      }
       this.msg = new byte[pixels.length*3];
       return;
     }
     // otherwise, we were in RGB mode.
     if (state) { // if we are going to RGBOW mode
       this.pixels = new Pixel[(int)length/3];  // shorten the pixel array
+      for (int i = 0; i < this.pixels.length; i++) {
+        this.pixels[i] = new Pixel();
+      }
       this.msg = new byte[pixels.length * 9];  // but lengthen the serialization buffer.
       isRGBOW = state;
       return;
@@ -83,7 +90,14 @@ public class Strip {
   }
 
   public synchronized void setPixel(int color, int position) {
-    this.pixels[position].setColor(color);
+    if (position >= this.pixels.length)
+      return;
+    try {
+      this.pixels[position].setColor(color);
+    } catch (NullPointerException nope) {
+      System.err.println("Tried to write to pixel "+position+" but it wasn't there.");
+      nope.printStackTrace();
+    }
     this.touched = true;
   }
   

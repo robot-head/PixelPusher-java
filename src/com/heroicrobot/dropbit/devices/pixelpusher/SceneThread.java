@@ -138,7 +138,7 @@ public class SceneThread extends Thread implements Observer {
     for (CardThread thread : cardThreadMap.values()) {
       thread.start();
     }
-    /*
+    
     while (true) {
       if (frameCallback) {
         boolean frameDirty = false;
@@ -153,7 +153,8 @@ public class SceneThread extends Thread implements Observer {
           }
         }
       }
-    } */
+      Thread.yield();
+    }
   }
 
   public boolean cancel() {

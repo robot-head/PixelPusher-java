@@ -230,7 +230,7 @@ public class DeviceRegistry extends Observable {
 
   public void startPushing() {
     if (!sceneThread.isRunning()) {
-      sceneThread.run();
+      sceneThread.start();
     }
   }
 

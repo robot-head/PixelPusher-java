@@ -100,7 +100,24 @@ public class DeviceRegistry extends Observable {
     }
     return strips;
   }
-
+  
+  public List<PixelPusher> getPushers() {
+    List<PixelPusher> pushers = new ArrayList<PixelPusher>();
+    for (PixelPusher p : this.sortedPushers)
+        pushers.add(p);
+    
+    return pushers;
+  }
+  
+  public List<PixelPusher> getPushers(int groupNumber) {
+    List<PixelPusher> pushers = new ArrayList<PixelPusher>();
+    for (PixelPusher p : this.sortedPushers)
+        if (p.getGroupOrdinal() == groupNumber)
+          pushers.add(p);
+    
+    return pushers;
+  }
+  
   public List<Strip> getStrips(int groupNumber) {
     if (this.groupMap.containsKey(groupNumber)) {
       return this.groupMap.get(groupNumber).getStrips();

@@ -20,11 +20,16 @@ public class PixelPusher extends DeviceImpl
    * sequence numbers
    * int32_t controller_ordinal;  // configured order number for controller
    * int32_t group_ordinal;  // configured group number for this controller
+   * int16_t artnet_universe;
+   * int16_t artnet_channel;
    */
 
   private List<Strip> strips;
   long extraDelayMsec = 0;
   boolean autothrottle = false;
+  
+  int artnet_universe = 0;
+  int artnet_channel = 0;
 
   /**
    * @return the stripsAttached
@@ -37,6 +42,14 @@ public class PixelPusher extends DeviceImpl
     return this.strips;
   }
 
+  public int getArtnetUniverse() {
+    return artnet_universe;
+  }
+  
+  public int getArtnetChannel() {
+    return artnet_channel;
+  }
+  
   public Strip getStrip(int stripNumber) {
     return this.strips.get(stripNumber);
   }
@@ -127,20 +140,20 @@ public class PixelPusher extends DeviceImpl
     if (packet.length < 12) {
       throw new IllegalArgumentException();
     }
-    int stripsAttached = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet,
-        0, 1));
-    int pixelsPerStrip = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(
-        packet, 2, 4));
-    maxStripsPerPacket = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet,
-        1, 2));
+    int stripsAttached = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 0, 1));
+    int pixelsPerStrip = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 2, 4));
+    maxStripsPerPacket = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 1, 2));
 
     updatePeriod = ByteUtils
         .unsignedIntToLong(Arrays.copyOfRange(packet, 4, 8));
     powerTotal = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 8, 12));
-    deltaSequence = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 12,
-        16));
+    deltaSequence = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 12, 16));
     controllerOrdinal = (int) ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 16, 20));
     groupOrdinal = (int) ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 20, 24));
+    
+    artnet_universe = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 24, 26));
+    artnet_channel = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 26, 28));
+    
     this.strips = new ArrayList<Strip>();
     for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
       this.strips.add(new Strip(this, stripNo, pixelsPerStrip));

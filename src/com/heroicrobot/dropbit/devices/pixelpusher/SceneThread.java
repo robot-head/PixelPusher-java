@@ -120,8 +120,13 @@ public class SceneThread extends Thread implements Observer {
       }
       for (String key : deadPusherMap.keySet()) {
         System.out.println("Killing old CardThread " + key);
-        cardThreadMap.get(key).cancel();
+        try {
+          cardThreadMap.get(key).cancel();
+        } catch (NullPointerException npe) {
+          System.err.println("Tried to kill CardThread for MAC "+key+", but it was already gone.");
+        }
         cardThreadMap.remove(key);
+        pusherMap.remove(key);
       }
       listSemaphore.release();
     }

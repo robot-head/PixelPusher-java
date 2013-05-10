@@ -26,6 +26,10 @@ public class Pixel {
     this.white = (byte) 0;
   }
   
+  public Pixel(int color) {
+    this.setColor(color);
+  }
+  
   public void setColor(Pixel pixel) {
     this.red = pixel.red;
     this.blue = pixel.blue;
@@ -35,17 +39,15 @@ public class Pixel {
   }
 
   public Pixel(Pixel pixel) {
-    this.red = pixel.red;
-    this.blue = pixel.blue;
-    this.green = pixel.green;
-    this.orange = pixel.orange;
-    this.white = pixel.white;
+    this.setColor(pixel);
   }
 
   public Pixel(byte red, byte green, byte blue) {
     this.red = red;
     this.green = green;
     this.blue = blue;
+    this.orange = 0;
+    this.white = 0;
   }
 
   public Pixel(byte red, byte green, byte blue, byte orange, byte white) {

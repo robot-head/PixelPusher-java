@@ -190,6 +190,9 @@ public class PixelPusher extends DeviceImpl
       return false;
     PixelPusher other = (PixelPusher) obj;
 
+    if (Math.abs(getUpdatePeriod() - other.getUpdatePeriod()) > 200)
+       return false;
+    
     if (this.hasRGBOW() & !other.hasRGBOW()) {
       if (getPixelsPerStrip() != other.getPixelsPerStrip() / 3)
         return false;

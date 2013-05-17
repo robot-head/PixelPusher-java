@@ -91,7 +91,7 @@ public class CardThread extends Thread {
 
     while (!remainingStrips.isEmpty()) {
       payload = false;
-      if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 100000)
+      if (pusher.getUpdatePeriod() > 100)
         this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
       byte[] packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
       for(int i = 0; i < packetNumberArray.length; i++) {

@@ -88,7 +88,67 @@ public class Strip {
     this.pixels = Arrays.copyOfRange(pixels, 0, this.pixels.length);
     this.touched = true;
   }
+  
+  public synchronized void setPixelRed(byte intensity, int position) {
+    if (position >= this.pixels.length)
+      return;
+    try {
+      this.pixels[position].red = intensity;
+    } catch (NullPointerException nope) {
+      System.err.println("Tried to write to pixel "+position+" but it wasn't there.");
+      nope.printStackTrace();
+    }
+    this.touched = true;
+  }
 
+  public synchronized void setPixelBlue(byte intensity, int position) {
+    if (position >= this.pixels.length)
+      return;
+    try {
+      this.pixels[position].blue = intensity;
+    } catch (NullPointerException nope) {
+      System.err.println("Tried to write to pixel "+position+" but it wasn't there.");
+      nope.printStackTrace();
+    }
+    this.touched = true;
+  }
+  
+  public synchronized void setPixelGreen(byte intensity, int position) {
+    if (position >= this.pixels.length)
+      return;
+    try {
+      this.pixels[position].green = intensity;
+    } catch (NullPointerException nope) {
+      System.err.println("Tried to write to pixel "+position+" but it wasn't there.");
+      nope.printStackTrace();
+    }
+    this.touched = true;
+  }
+  
+  public synchronized void setPixelOrange(byte intensity, int position) {
+    if (position >= this.pixels.length)
+      return;
+    try {
+      this.pixels[position].orange = intensity;
+    } catch (NullPointerException nope) {
+      System.err.println("Tried to write to pixel "+position+" but it wasn't there.");
+      nope.printStackTrace();
+    }
+    this.touched = true;
+  }
+  
+public synchronized void setPixelWhite(byte intensity, int position) {
+    if (position >= this.pixels.length)
+      return;
+    try {
+      this.pixels[position].white = intensity;
+    } catch (NullPointerException nope) {
+      System.err.println("Tried to write to pixel "+position+" but it wasn't there.");
+      nope.printStackTrace();
+    }
+    this.touched = true;
+  }
+  
   public synchronized void setPixel(int color, int position) {
     if (position >= this.pixels.length)
       return;

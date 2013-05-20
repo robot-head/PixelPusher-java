@@ -206,6 +206,11 @@ public class PixelPusher extends DeviceImpl
       return false;
     if (getNumberOfStrips() != other.getNumberOfStrips())
       return false;
+    
+    if (this.artnet_channel != other.artnet_channel ||
+        this.artnet_universe != other.artnet_universe)
+       return false;
+    
     return true;
   }
 

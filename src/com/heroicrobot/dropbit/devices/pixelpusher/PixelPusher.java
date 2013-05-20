@@ -233,7 +233,8 @@ public class PixelPusher extends DeviceImpl
     this.maxStripsPerPacket = device.maxStripsPerPacket;
     this.powerTotal = device.powerTotal;
     this.updatePeriod = device.updatePeriod;
-
+    this.artnet_channel = device.artnet_channel;
+    this.artnet_universe = device.artnet_universe;
   }
 
   @Override

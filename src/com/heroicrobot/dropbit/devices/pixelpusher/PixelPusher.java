@@ -130,6 +130,7 @@ public class PixelPusher extends DeviceImpl
   private long deltaSequence;
   private int controllerOrdinal;
   private int groupOrdinal;
+  private boolean useAntiLog;
 
   public void setStripValues(int stripNumber, Pixel[] pixels) {
     this.strips.get(stripNumber).setPixels(pixels);
@@ -262,4 +263,11 @@ public class PixelPusher extends DeviceImpl
 
     return this.getMacAddress().compareTo(((DeviceImpl) comp).getMacAddress());
   }
+
+  public void setAntiLog(boolean antiLog) {
+    useAntiLog = antiLog;
+    for (Strip strip: this.strips)
+      strip.useAntiLog(useAntiLog);
+  }
+
 }

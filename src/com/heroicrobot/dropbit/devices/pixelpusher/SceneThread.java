@@ -17,6 +17,7 @@ public class SceneThread extends Thread implements Observer {
   int packetLength;
   private int extraDelay = 0;
   private boolean autoThrottle=false;
+  private boolean useAntiLog=false;
   private Object frameCallbackObject;
   private String frameCallbackMethod;
   private boolean frameCallback = false;
@@ -114,6 +115,7 @@ public class SceneThread extends Thread implements Observer {
           newCardThread.start();
           newCardThread.setExtraDelay(extraDelay);
           newPusherMap.get(key).setAutoThrottle(autoThrottle);
+          newPusherMap.get(key).setAntiLog(useAntiLog);
         }
         pusherMap.put(key, newPusherMap.get(key));
         cardThreadMap.put(key, newCardThread);
@@ -179,5 +181,14 @@ public class SceneThread extends Thread implements Observer {
     frameCallbackObject = caller;
     frameCallbackMethod = method;
     frameCallback = true;
+  }
+
+  public void useAntiLog(boolean antiLog) {
+     useAntiLog = antiLog;
+     for (PixelPusher pusher : pusherMap.values()) {
+       //System.err.println("Setting card "+pusher.getControllerOrdinal()+" group "+pusher.getGroupOrdinal()+" to "+
+       //      (autothrottle?"throttle":"not throttle"));
+       pusher.setAntiLog(antiLog);
+     }
   }
 }

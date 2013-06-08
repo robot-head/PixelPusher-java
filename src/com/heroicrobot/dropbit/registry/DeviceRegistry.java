@@ -40,6 +40,7 @@ public class DeviceRegistry extends Observable {
   private static long totalPowerLimit = -1;
   private static double powerScale = 1.0;
   private static boolean autoThrottle = false;
+  private static boolean AntiLog = false;
   
   private Map<String, PixelPusher> pusherMap;
   private Map<String, DateTime> pusherLastSeenMap;
@@ -56,6 +57,11 @@ public class DeviceRegistry extends Observable {
     return pusherMap;
   }
 
+  public void setAntiLog(boolean useAntiLog) {
+    AntiLog = useAntiLog;
+    sceneThread.useAntiLog(AntiLog);
+  }
+  
   public void setExtraDelay(int msec) {
     sceneThread.setExtraDelay(msec);
   }

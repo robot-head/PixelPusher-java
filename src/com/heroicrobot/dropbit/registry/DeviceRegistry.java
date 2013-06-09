@@ -273,6 +273,7 @@ public class DeviceRegistry extends Observable {
       return;
     }
     PixelPusher device = new PixelPusher(header.PacketRemainder, header);
+    device.setAntiLog(AntiLog);
     // Set the timestamp for the last time this device checked in
     pusherLastSeenMap.put(macAddr, DateTime.now());
     if (!pusherMap.containsKey(macAddr)) {

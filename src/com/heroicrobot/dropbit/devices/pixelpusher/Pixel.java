@@ -35,6 +35,7 @@ public class Pixel {
     this.orange = (byte) 0;
     this.white = (byte) 0;
   }
+
   
   public void setColorAntilog(int color) {
     this.blue = sLinearExp[(int)(color & 0xff)];
@@ -63,6 +64,22 @@ public class Pixel {
     this.white = pixel.white;
   }
 
+  public void setColor(Pixel pixel, boolean useAntiLog) {
+    if (useAntiLog) {
+      this.red = sLinearExp[pixel.red];
+      this.blue = sLinearExp[pixel.blue];
+      this.green = sLinearExp[pixel.green];
+      this.orange = sLinearExp[pixel.orange];
+      this.white = sLinearExp[pixel.white];
+    } else {
+      this.red = pixel.red;
+      this.blue = pixel.blue;
+      this.green = pixel.green;
+      this.orange = pixel.orange;
+      this.white = pixel.white;      
+    }
+  }
+  
   public Pixel(Pixel pixel) {
     this.setColor(pixel);
   }

@@ -11,7 +11,6 @@ public class Strip {
   private double powerScale;
   private boolean isRGBOW;
   private byte[] msg;
-  private boolean useAntilog;
   private boolean useAntiLog;
   
   static final byte sLinearExp[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -34,7 +33,7 @@ public class Strip {
     this.touched = false;
     this.powerScale = 1.0;
     this.isRGBOW = false;
-    this.useAntilog = antiLog;
+    this.useAntiLog = antiLog;
     this.msg = new byte[pixels.length * 3];
   }
 
@@ -48,7 +47,7 @@ public class Strip {
     this.touched = false;
     this.powerScale = 1.0;
     this.isRGBOW = false;
-    this.useAntilog = false;
+    this.useAntiLog = false;
     this.msg = new byte[pixels.length * 3];
   }
   
@@ -120,7 +119,7 @@ public class Strip {
     if (position >= this.pixels.length)
       return;
     try {
-      if (useAntilog) {
+      if (useAntiLog) {
         this.pixels[position].red = sLinearExp[(int)intensity];
       } else
         this.pixels[position].red = intensity;
@@ -135,7 +134,7 @@ public class Strip {
     if (position >= this.pixels.length)
       return;
     try {
-      if (useAntilog) {
+      if (useAntiLog) {
         this.pixels[position].blue = sLinearExp[(int)intensity];
       } else
       this.pixels[position].blue = intensity;
@@ -150,7 +149,7 @@ public class Strip {
     if (position >= this.pixels.length)
       return;
     try {
-      if (useAntilog) {
+      if (useAntiLog) {
         this.pixels[position].green = sLinearExp[(int)intensity];
       } else
       this.pixels[position].green = intensity;
@@ -165,7 +164,7 @@ public class Strip {
     if (position >= this.pixels.length)
       return;
     try {
-      if (useAntilog) {
+      if (useAntiLog) {
         this.pixels[position].orange = sLinearExp[(int)intensity];
       } else
       this.pixels[position].orange = intensity;
@@ -180,7 +179,7 @@ public synchronized void setPixelWhite(byte intensity, int position) {
     if (position >= this.pixels.length)
       return;
     try {
-      if (useAntilog) {
+      if (useAntiLog) {
         this.pixels[position].white = sLinearExp[(int)intensity];
       } else
       this.pixels[position].white = intensity;
@@ -207,7 +206,10 @@ public synchronized void setPixelWhite(byte intensity, int position) {
   }
   
   public synchronized void setPixel(Pixel pixel, int position) {
-    this.pixels[position].setColor(pixel);
+    if (useAntiLog)
+      this.pixels[position].setColor(pixel, true);
+    else
+      this.pixels[position].setColor(pixel);
     this.touched = true;
   }
 
@@ -260,7 +262,6 @@ public synchronized void setPixelWhite(byte intensity, int position) {
   }
 
   public void useAntiLog(boolean antiLog) {
-    // TODO Auto-generated method stub
     useAntiLog = antiLog;
   }
 }

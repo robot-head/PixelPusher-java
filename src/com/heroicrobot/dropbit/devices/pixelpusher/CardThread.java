@@ -25,6 +25,7 @@ public class CardThread extends Thread {
   private InetAddress cardAddress;
   private long packetNumber;
   private DeviceRegistry registry;
+  private boolean useAntiLog;
 
   CardThread(PixelPusher pusher, int pusherPort, DeviceRegistry dr) {
     this.pusher = pusher;
@@ -149,5 +150,11 @@ public class CardThread extends Thread {
         if (strip.isTouched())
           return true;
     return false;
+  }
+
+  public void setAntiLog(boolean antiLog) {
+    useAntiLog = antiLog;
+    for (Strip strip: pusher.getStrips())
+       strip.useAntiLog(useAntiLog);
   }
 }

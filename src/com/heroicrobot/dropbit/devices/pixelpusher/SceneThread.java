@@ -114,6 +114,7 @@ public class SceneThread extends Thread implements Observer {
         if (running) {
           newCardThread.start();
           newCardThread.setExtraDelay(extraDelay);
+          newCardThread.setAntiLog(useAntiLog);
           newPusherMap.get(key).setAutoThrottle(autoThrottle);
           newPusherMap.get(key).setAntiLog(useAntiLog);
         }

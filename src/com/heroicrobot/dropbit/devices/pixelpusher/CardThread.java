@@ -27,9 +27,9 @@ public class CardThread extends Thread {
   private DeviceRegistry registry;
   private boolean useAntiLog;
 
-  CardThread(PixelPusher pusher, int pusherPort, DeviceRegistry dr) {
+  CardThread(PixelPusher pusher, DeviceRegistry dr) {
     this.pusher = pusher;
-    this.pusherPort = pusherPort;
+    this.pusherPort = pusher.getPort();
     this.registry = dr;
     try {
       this.udpsocket = new DatagramSocket();

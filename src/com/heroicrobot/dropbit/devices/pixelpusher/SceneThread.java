@@ -9,8 +9,6 @@ import java.util.concurrent.Semaphore;
 
 public class SceneThread extends Thread implements Observer {
 
-  private static int PUSHER_PORT = 9897;
-
   private Map<String, PixelPusher> pusherMap;
   private Map<String, CardThread> cardThreadMap;
   byte[] packet;
@@ -110,7 +108,7 @@ public class SceneThread extends Thread implements Observer {
 
       for (String key : newPusherMap.keySet()) {
         CardThread newCardThread = new CardThread(newPusherMap.get(key),
-            PUSHER_PORT, ((DeviceRegistry) observable));
+            ((DeviceRegistry) observable));
         if (running) {
           newCardThread.start();
           newCardThread.setExtraDelay(extraDelay);

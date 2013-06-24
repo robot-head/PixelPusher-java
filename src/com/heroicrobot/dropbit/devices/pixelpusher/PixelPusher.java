@@ -22,6 +22,7 @@ public class PixelPusher extends DeviceImpl
    * int32_t group_ordinal;  // configured group number for this controller
    * int16_t artnet_universe;
    * int16_t artnet_channel;
+   * int16_t my_port;
    */
 
   private List<Strip> strips;
@@ -30,6 +31,21 @@ public class PixelPusher extends DeviceImpl
   
   int artnet_universe = 0;
   int artnet_channel = 0;
+  int my_port = 9798;
+
+  /**
+   * @return the my_port
+   */
+  public int getPort() {
+    return my_port;
+  }
+
+  /**
+   * @param my_port the my_port to set
+   */
+  public void setPort(int my_port) {
+    this.my_port = my_port;
+  }
 
   /**
    * @return the stripsAttached
@@ -138,7 +154,7 @@ public class PixelPusher extends DeviceImpl
 
   public PixelPusher(byte[] packet, DeviceHeader header) {
     super(header);
-    if (packet.length < 12) {
+    if (packet.length < 28) {
       throw new IllegalArgumentException();
     }
     int stripsAttached = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 0, 1));
@@ -155,6 +171,11 @@ public class PixelPusher extends DeviceImpl
     artnet_universe = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 24, 26));
     artnet_channel = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 26, 28));
     
+    if (packet.length > 28) {
+      my_port = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 28, 30));
+    } else {
+      my_port = 9798;
+    }
     this.strips = new ArrayList<Strip>();
     for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
       this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
@@ -183,18 +204,30 @@ public class PixelPusher extends DeviceImpl
    */
   @Override
   public boolean equals(Object obj) {
+    
+    // quick checks first.
+    
+    // object handle identity
     if (this == obj)
       return true;
+    
+    // if it's null, it's not the same as anything 
+    // (and we can't compare its fields without a null pointer exception)
     if (obj == null)
       return false;
+    
+    // if it's some different class, well then something is bad.
     if (getClass() != obj.getClass())
       return false;
+    
+    // ok so it's the same class. in that case, let's make a reference...
     PixelPusher other = (PixelPusher) obj;
 
     // if it differs by less than half a msec, it has no effect on our timing
     if (Math.abs(getUpdatePeriod() - other.getUpdatePeriod()) > 500)
        return false;
     
+    // some fudging to cope with the fact that pushers don't know they have RGBOW
     if (this.hasRGBOW() & !other.hasRGBOW()) {
       if (getPixelsPerStrip() != other.getPixelsPerStrip() / 3)
         return false;
@@ -209,10 +242,20 @@ public class PixelPusher extends DeviceImpl
     if (getNumberOfStrips() != other.getNumberOfStrips())
       return false;
     
+    // handle the case where someone changed the config during library runtime
     if (this.artnet_channel != other.artnet_channel ||
         this.artnet_universe != other.artnet_universe)
        return false;
     
+    // if the port's been changed, we need to update
+    if (this.my_port != other.my_port)
+      return false;
+    
+    // we should update every time the power total changes
+    if (this.powerTotal != other.powerTotal)
+      return false;
+    
+    // if all those other things are the same, then we call it good.
     return true;
   }
 
@@ -230,7 +273,8 @@ public class PixelPusher extends DeviceImpl
         + ") PixelsPerStrip (" + getPixelsPerStrip() + ") Update Period ("
         + updatePeriod + ") Power Total (" + powerTotal + ") Delta Sequence ( "
         + deltaSequence + ") Group (" +groupOrdinal +") Controller ("
-        + controllerOrdinal + " )";
+        + controllerOrdinal + " ) + Port ("+my_port+") Art-Net Universe ("
+        +artnet_universe+") Art-Net Channel ("+artnet_channel+")";
   }
 
   public void copyHeader(PixelPusher device) {
@@ -242,6 +286,7 @@ public class PixelPusher extends DeviceImpl
     this.updatePeriod = device.updatePeriod;
     this.artnet_channel = device.artnet_channel;
     this.artnet_universe = device.artnet_universe;
+    this.my_port = device.my_port;
   }
 
   @Override

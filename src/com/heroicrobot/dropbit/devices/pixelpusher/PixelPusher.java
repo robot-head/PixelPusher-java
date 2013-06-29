@@ -37,7 +37,10 @@ public class PixelPusher extends DeviceImpl
    * @return the my_port
    */
   public int getPort() {
-    return my_port;
+    if (my_port > 0)
+      return my_port;
+    
+    return 9897;
   }
 
   /**

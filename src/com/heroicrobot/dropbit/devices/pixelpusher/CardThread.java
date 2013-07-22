@@ -30,6 +30,7 @@ public class CardThread extends Thread {
   CardThread(PixelPusher pusher, DeviceRegistry dr) {
     this.pusher = pusher;
     this.pusherPort = pusher.getPort();
+
     this.registry = dr;
     try {
       this.udpsocket = new DatagramSocket();
@@ -62,7 +63,9 @@ public class CardThread extends Thread {
       long startTime = System.nanoTime();
       bytesSent = sendPacketToPusher(pusher);
       long endTime = System.nanoTime();
-      bandwidthEstimate = bytesSent / ((endTime - startTime) / 1000000);
+      long duration = ((endTime - startTime) / 1000000);
+      if (duration > 0)
+        bandwidthEstimate = bytesSent / duration;
     }
   }
 

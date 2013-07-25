@@ -26,12 +26,15 @@ public class PixelPusher extends DeviceImpl
    */
 
   private List<Strip> strips;
+  boolean stripsCreated = false;
   long extraDelayMsec = 0;
   boolean autothrottle = false;
   
   int artnet_universe = 0;
   int artnet_channel = 0;
   int my_port = 9798;
+  int stripsAttached = 0;
+  int pixelsPerStrip = 0;
 
   /**
    * @return the my_port
@@ -49,16 +52,36 @@ public class PixelPusher extends DeviceImpl
   public void setPort(int my_port) {
     this.my_port = my_port;
   }
+  
+  void doDeferredStripCreation() {
+    this.strips = new ArrayList<Strip>();
+    for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
+      this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
+    }
+    for (Strip strip: this.strips)
+      strip.useAntiLog(useAntiLog);
+    stripsCreated = true;
+  }
 
   /**
    * @return the stripsAttached
    */
   public int getNumberOfStrips() {
-    return strips.size();
+    if (stripsCreated)
+      return strips.size();
+    else {
+      doDeferredStripCreation();
+      return strips.size();
+    }
   }
 
   public List<Strip> getStrips() {
-    return this.strips;
+    if (stripsCreated)
+      return this.strips;
+    else {
+      doDeferredStripCreation();
+      return this.strips;
+    }
   }
 
   public int getArtnetUniverse() {
@@ -70,7 +93,12 @@ public class PixelPusher extends DeviceImpl
   }
   
   public Strip getStrip(int stripNumber) {
-    return this.strips.get(stripNumber);
+    if (stripsCreated)
+      return this.strips.get(stripNumber);
+    else {
+      doDeferredStripCreation();
+      return this.strips.get(stripNumber);
+    }
   }
   
   public void setAutoThrottle(boolean state) {
@@ -90,10 +118,7 @@ public class PixelPusher extends DeviceImpl
    * @return the pixelsPerStrip
    */
   public int getPixelsPerStrip() {
-    if (this.strips.isEmpty()) {
-      return 0;
-    }
-    return this.strips.get(0).getLength();
+    return pixelsPerStrip;
   }
 
   /**
@@ -152,7 +177,12 @@ public class PixelPusher extends DeviceImpl
   private boolean useAntiLog;
 
   public void setStripValues(int stripNumber, Pixel[] pixels) {
-    this.strips.get(stripNumber).setPixels(pixels);
+    if (stripsCreated)
+      this.strips.get(stripNumber).setPixels(pixels);
+    else {
+      doDeferredStripCreation();
+      this.strips.get(stripNumber).setPixels(pixels);
+    }
   }
 
   public PixelPusher(byte[] packet, DeviceHeader header) {
@@ -160,8 +190,8 @@ public class PixelPusher extends DeviceImpl
     if (packet.length < 28) {
       throw new IllegalArgumentException();
     }
-    int stripsAttached = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 0, 1));
-    int pixelsPerStrip = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 2, 4));
+    stripsAttached = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 0, 1));
+    pixelsPerStrip = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 2, 4));
     maxStripsPerPacket = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 1, 2));
 
     updatePeriod = ByteUtils
@@ -179,11 +209,7 @@ public class PixelPusher extends DeviceImpl
     } else {
       my_port = 9798;
     }
-    this.strips = new ArrayList<Strip>();
-    for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
-      this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
-    }
-
+    this.stripsCreated = false;
   }
 
   /*
@@ -314,8 +340,10 @@ public class PixelPusher extends DeviceImpl
 
   public void setAntiLog(boolean antiLog) {
     useAntiLog = antiLog;
-    for (Strip strip: this.strips)
-      strip.useAntiLog(useAntiLog);
+    if (stripsCreated) {
+      for (Strip strip: this.strips)
+        strip.useAntiLog(useAntiLog);
+    }
   }
 
 }

@@ -289,9 +289,10 @@ public class PixelPusher extends DeviceImpl
   }
 
   private boolean hasRGBOW() {
-    for (Strip strip: this.strips)
-      if (strip.getRGBOW())
-        return true;
+    if (stripsCreated)
+      for (Strip strip: this.strips)
+        if (strip.getRGBOW())
+          return true;
     
     return false;
   }

@@ -53,6 +53,11 @@ public class DeviceRegistry extends Observable {
 
   private TreeSet<PixelPusher> sortedPushers;
 
+  public void startDatRecording(String filename, int group, int pusher) {
+    List<PixelPusher> pushers = getPushers(group);
+    (pushers.get(pusher)).startRecording(filename);
+  }
+  
   public Map<String, PixelPusher> getPusherMap() {
     return pusherMap;
   }

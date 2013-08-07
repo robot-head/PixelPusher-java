@@ -175,6 +175,8 @@ public class PixelPusher extends DeviceImpl
   private int controllerOrdinal;
   private int groupOrdinal;
   private boolean useAntiLog;
+  private String filename;
+  private boolean amRecording;
 
   public void setStripValues(int stripNumber, Pixel[] pixels) {
     if (stripsCreated)
@@ -203,6 +205,7 @@ public class PixelPusher extends DeviceImpl
     
     artnet_universe = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 24, 26));
     artnet_channel = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 26, 28));
+    amRecording = false;
     
     if (packet.length > 28) {
       my_port = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 28, 30));
@@ -317,6 +320,14 @@ public class PixelPusher extends DeviceImpl
     this.artnet_channel = device.artnet_channel;
     this.artnet_universe = device.artnet_universe;
     this.my_port = device.my_port;
+    this.filename = device.filename;
+    this.amRecording = device.amRecording;
+    if (device.stripsCreated) {
+      this.strips = device.strips;
+      this.stripsCreated = device.stripsCreated;
+    } else {
+      this.stripsCreated = false;
+    }
   }
 
   @Override
@@ -345,6 +356,27 @@ public class PixelPusher extends DeviceImpl
       for (Strip strip: this.strips)
         strip.useAntiLog(useAntiLog);
     }
+  }
+
+  public void startRecording(String filename) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  public String getFilename() {
+    return filename;
+  }
+
+  public void setFilename(String filename) {
+    this.filename = filename;
+  }
+
+  public boolean isAmRecording() {
+    return amRecording;
+  }
+
+  public void setAmRecording(boolean amRecording) {
+    this.amRecording = amRecording;
   }
 
 }

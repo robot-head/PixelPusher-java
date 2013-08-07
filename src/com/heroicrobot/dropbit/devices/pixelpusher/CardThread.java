@@ -26,6 +26,8 @@ public class CardThread extends Thread {
   private long packetNumber;
   private DeviceRegistry registry;
   private boolean useAntiLog;
+  private boolean fileIsOpen;
+  FileOutputStream recordFile;
 
   CardThread(PixelPusher pusher, DeviceRegistry dr) {
     this.pusher = pusher;
@@ -41,6 +43,7 @@ public class CardThread extends Thread {
     this.cardAddress = pusher.getIp();
     this.packetNumber = 0;
     this.cancel = false;
+    this.fileIsOpen = false;
     if (pusher.getUpdatePeriod() > 100 && pusher.getUpdatePeriod() < 1000000)
       this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
   }
@@ -61,6 +64,18 @@ public class CardThread extends Thread {
     while (!cancel) {
       int bytesSent;
       long startTime = System.nanoTime();
+      // check to see if we're supposed to be recording.
+      if (pusher.isAmRecording()) {
+        if (!fileIsOpen) {
+          try {
+            recordFile = new FileOutputStream(new File(pusher.getFilename()));
+            fileIsOpen = true;
+          } catch (Exception e) {
+            System.err.println("Failed to open recording file "+pusher.getFilename());
+            pusher.setAmRecording(false);
+          }
+        }
+      }
       bytesSent = sendPacketToPusher(pusher);
       long endTime = System.nanoTime();
       long duration = ((endTime - startTime) / 1000000);
@@ -70,14 +85,22 @@ public class CardThread extends Thread {
   }
 
   public void shutDown() {
-    
+    if (fileIsOpen)
+      try {
+        pusher.setAmRecording(false);
+        fileIsOpen = false;
+        recordFile.close();
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
   }
   
   public boolean cancel() {
     this.cancel = true;
     return true;
   }
-
+  
   private int sendPacketToPusher(PixelPusher pusher) {
     int packetLength = 0;
     int totalLength = 0;
@@ -110,6 +133,16 @@ public class CardThread extends Thread {
           strip.setPowerScale(powerScale);
           byte[] stripPacket = strip.serialize();
           this.packet[packetLength++] = (byte) strip.getStripNumber();
+          if (fileIsOpen) {
+            try {
+              recordFile.write(0);
+              recordFile.write(this.packet, packetLength-1, 1);
+              recordFile.write(stripPacket);
+            } catch (IOException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }
+          }
           for (int j = 0; j < stripPacket.length; j++) {
             this.packet[packetLength + j] = stripPacket[j];
           }

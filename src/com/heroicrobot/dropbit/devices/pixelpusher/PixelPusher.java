@@ -146,6 +146,7 @@ public class PixelPusher extends DeviceImpl
       System.err.println("Group "+groupOrdinal+" card "+controllerOrdinal+" would increase delay, but autothrottle is disabled.");
     }
   }
+  
   public void decreaseExtraDelay(long i) {
     extraDelayMsec -= i;
     if (extraDelayMsec < 0)
@@ -359,8 +360,8 @@ public class PixelPusher extends DeviceImpl
   }
 
   public void startRecording(String filename) {
-    // TODO Auto-generated method stub
-    amRecording = true;
+        amRecording = true;
+        setFilename(filename);
   }
 
   public String getFilename() {

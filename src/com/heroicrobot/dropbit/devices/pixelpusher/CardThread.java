@@ -135,7 +135,7 @@ public class CardThread extends Thread {
           this.packet[packetLength++] = (byte) strip.getStripNumber();
           if (fileIsOpen) {
             try {
-              recordFile.write(0);
+              recordFile.write(ByteUtils.unsignedIntToByteArray(0, true));
               recordFile.write(this.packet, packetLength-1, 1);
               recordFile.write(stripPacket);
             } catch (IOException e) {

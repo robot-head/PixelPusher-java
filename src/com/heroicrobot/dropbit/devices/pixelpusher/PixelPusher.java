@@ -360,7 +360,7 @@ public class PixelPusher extends DeviceImpl
 
   public void startRecording(String filename) {
     // TODO Auto-generated method stub
-    
+    amRecording = true;
   }
 
   public String getFilename() {

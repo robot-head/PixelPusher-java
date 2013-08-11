@@ -14,7 +14,6 @@ public class CardThread extends Thread {
 
   private long threadSleepMsec = 4;
   private long threadExtraDelayMsec = 0;
-  private long threadSendTime = 0;
   private long bandwidthEstimate = 0;
   private PixelPusher pusher;
   private byte[] packet;
@@ -104,6 +103,7 @@ public class CardThread extends Thread {
   private int sendPacketToPusher(PixelPusher pusher) {
     int packetLength = 0;
     int totalLength = 0;
+    long totalDelay = threadSleepMsec + threadExtraDelayMsec + pusher.getExtraDelay();
     boolean payload;
     double powerScale;
     
@@ -135,7 +135,9 @@ public class CardThread extends Thread {
           this.packet[packetLength++] = (byte) strip.getStripNumber();
           if (fileIsOpen) {
             try {
-              recordFile.write(ByteUtils.unsignedIntToByteArray(0, true));
+              // we need to make the pusher wait on playback the same length of time between strips as we wait between packets
+              // this number is in microseconds, whereas we work with milliseconds.
+              recordFile.write(ByteUtils.unsignedIntToByteArray((int)(1000 * ((threadExtraDelayMsec + pusher.getExtraDelay()) / stripPerPacket)), true));
               recordFile.write(this.packet, packetLength-1, 1);
               recordFile.write(stripPacket);
             } catch (IOException e) {
@@ -159,11 +161,7 @@ public class CardThread extends Thread {
         udppacket = new DatagramPacket(packet, packetLength, cardAddress,
             pusherPort);
         try {
-          long startTime = System.nanoTime();
-          udpsocket.send(udppacket);
-          long endTime = System.nanoTime();
-          threadSendTime = (endTime - startTime) / 1000000;
-        
+          udpsocket.send(udppacket);    
         } catch (IOException ioe) {
           System.err.println("IOException: " + ioe.getMessage());
         }
@@ -171,7 +169,7 @@ public class CardThread extends Thread {
         totalLength += packetLength;
       }
       try {
-        Thread.sleep(threadSleepMsec + threadExtraDelayMsec + threadSendTime + pusher.getExtraDelay() );
+        Thread.sleep(totalDelay);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

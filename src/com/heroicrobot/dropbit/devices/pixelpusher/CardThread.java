@@ -129,9 +129,6 @@ public class CardThread extends Thread {
         if (remainingStrips.isEmpty()) {
           break;
         }
-        if (packetLength >= 1460){
-          break;
-        }
         Strip strip = remainingStrips.remove(0);
         if (strip.isTouched() ) {
           strip.setPowerScale(powerScale);

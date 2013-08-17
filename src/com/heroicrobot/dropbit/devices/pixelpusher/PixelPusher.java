@@ -317,6 +317,20 @@ public class PixelPusher extends DeviceImpl
     this.deltaSequence = device.deltaSequence;
     this.groupOrdinal = device.groupOrdinal;
     this.maxStripsPerPacket = device.maxStripsPerPacket;
+    
+    // if the number of strips we have doesn't match,
+    // we'll need to make a fresh set.
+    if (this.stripsAttached != device.stripsAttached) {
+      this.stripsCreated = false;
+      this.stripsAttached = device.stripsAttached;
+    }
+    // likewise, if the length of each strip differs,
+    // we will need to make a new set.
+    if (this.pixelsPerStrip != device.pixelsPerStrip) {
+      this.pixelsPerStrip = device.pixelsPerStrip;
+      this.stripsCreated = false;
+    }
+    
     this.powerTotal = device.powerTotal;
     this.updatePeriod = device.updatePeriod;
     this.artnet_channel = device.artnet_channel;
@@ -324,11 +338,13 @@ public class PixelPusher extends DeviceImpl
     this.my_port = device.my_port;
     this.filename = device.filename;
     this.amRecording = device.amRecording;
+    
+    // if it already has strips, just use those
     if (device.stripsCreated) {
+      this.makeBusy();
       this.strips = device.strips;
       this.stripsCreated = device.stripsCreated;
-    } else {
-      this.stripsCreated = false;
+      this.clearBusy();
     }
   }
 
@@ -390,7 +406,6 @@ public class PixelPusher extends DeviceImpl
   }
   
   public synchronized boolean isBusy() {
-    // TODO Auto-generated method stub
     return isBusy;
   }
 

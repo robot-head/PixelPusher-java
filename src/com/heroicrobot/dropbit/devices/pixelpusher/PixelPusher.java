@@ -178,6 +178,7 @@ public class PixelPusher extends DeviceImpl
   private boolean useAntiLog;
   private String filename;
   private boolean amRecording;
+  private boolean isBusy;
 
   public void setStripValues(int stripNumber, Pixel[] pixels) {
     if (stripsCreated)
@@ -378,6 +379,19 @@ public class PixelPusher extends DeviceImpl
 
   public void setAmRecording(boolean amRecording) {
     this.amRecording = amRecording;
+  }
+
+  public synchronized void makeBusy() {
+    isBusy = true;
+  }
+  
+  public synchronized void clearBusy() {
+    isBusy = false;
+  }
+  
+  public synchronized boolean isBusy() {
+    // TODO Auto-generated method stub
+    return isBusy;
   }
 
 }

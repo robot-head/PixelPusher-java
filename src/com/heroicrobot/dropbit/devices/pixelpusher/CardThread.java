@@ -109,6 +109,7 @@ public class CardThread extends Thread {
     
     powerScale = registry.getPowerScale();
     
+    pusher.makeBusy();
     List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     final int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
     final int supportedStripsPerPacket
@@ -178,6 +179,7 @@ public class CardThread extends Thread {
       }
       packetLength = 0;
     }
+    pusher.clearBusy();
     return totalLength;
   }
 

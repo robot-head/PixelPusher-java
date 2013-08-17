@@ -113,8 +113,8 @@ public class CardThread extends Thread {
     final int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
     final int supportedStripsPerPacket
         = (this.packet.length - 4) / (1 + 3 * pusher.getPixelsPerStrip());
-    final int stripPerPacket = Math.min(requestedStripsPerPacket,
-                                        supportedStripsPerPacket);
+    final int stripPerPacket = Math.min(Math.min(requestedStripsPerPacket,
+                                        supportedStripsPerPacket), pusher.stripsAttached);
 
     while (!remainingStrips.isEmpty()) {
       payload = false;
@@ -126,6 +126,9 @@ public class CardThread extends Thread {
       }
       for (int i = 0; i < stripPerPacket; i++) {
         if (remainingStrips.isEmpty()) {
+          break;
+        }
+        if (packetLength >= 1460){
           break;
         }
         Strip strip = remainingStrips.remove(0);

@@ -8,7 +8,7 @@ import com.heroicrobot.dropbit.common.ByteUtils;
 import com.heroicrobot.dropbit.devices.DeviceImpl;
 import com.heroicrobot.dropbit.discovery.DeviceHeader;
 
-public class PixelPusher extends DeviceImpl 
+public class PixelPusher extends DeviceImpl
   implements java.lang.Comparable<PixelPusher> {
   /**
    * uint8_t strips_attached;
@@ -29,7 +29,7 @@ public class PixelPusher extends DeviceImpl
   boolean stripsCreated = false;
   long extraDelayMsec = 0;
   boolean autothrottle = false;
-  
+
   int artnet_universe = 0;
   int artnet_channel = 0;
   int my_port = 9798;
@@ -42,7 +42,7 @@ public class PixelPusher extends DeviceImpl
   public int getPort() {
     if (my_port > 0)
       return my_port;
-    
+
     return 9897;
   }
 
@@ -52,7 +52,7 @@ public class PixelPusher extends DeviceImpl
   public void setPort(int my_port) {
     this.my_port = my_port;
   }
-  
+
   void doDeferredStripCreation() {
     this.strips = new ArrayList<Strip>();
     for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
@@ -87,11 +87,11 @@ public class PixelPusher extends DeviceImpl
   public int getArtnetUniverse() {
     return artnet_universe;
   }
-  
+
   public int getArtnetChannel() {
     return artnet_channel;
   }
-  
+
   public Strip getStrip(int stripNumber) {
     if (stripsCreated)
       return this.strips.get(stripNumber);
@@ -100,7 +100,7 @@ public class PixelPusher extends DeviceImpl
       return this.strips.get(stripNumber);
     }
   }
-  
+
   public void setAutoThrottle(boolean state) {
     autothrottle = state;
    // System.err.println("Setting autothrottle on card "+controllerOrdinal+" in group "+groupOrdinal+" to "+
@@ -146,7 +146,7 @@ public class PixelPusher extends DeviceImpl
       System.err.println("Group "+groupOrdinal+" card "+controllerOrdinal+" would increase delay, but autothrottle is disabled.");
     }
   }
-  
+
   public void decreaseExtraDelay(long i) {
     extraDelayMsec -= i;
     if (extraDelayMsec < 0)
@@ -204,11 +204,11 @@ public class PixelPusher extends DeviceImpl
     deltaSequence = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 12, 16));
     controllerOrdinal = (int) ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 16, 20));
     groupOrdinal = (int) ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 20, 24));
-    
+
     artnet_universe = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 24, 26));
     artnet_channel = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 26, 28));
     amRecording = false;
-    
+
     if (packet.length > 28) {
       my_port = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 28, 30));
     } else {
@@ -238,29 +238,29 @@ public class PixelPusher extends DeviceImpl
    */
   @Override
   public boolean equals(Object obj) {
-    
+
     // quick checks first.
-    
+
     // object handle identity
     if (this == obj)
       return true;
-    
-    // if it's null, it's not the same as anything 
+
+    // if it's null, it's not the same as anything
     // (and we can't compare its fields without a null pointer exception)
     if (obj == null)
       return false;
-    
+
     // if it's some different class, well then something is bad.
     if (getClass() != obj.getClass())
       return false;
-    
+
     // ok so it's the same class. in that case, let's make a reference...
     PixelPusher other = (PixelPusher) obj;
 
     // if it differs by less than half a msec, it has no effect on our timing
     if (Math.abs(getUpdatePeriod() - other.getUpdatePeriod()) > 500)
        return false;
-    
+
     // some fudging to cope with the fact that pushers don't know they have RGBOW
     if (this.hasRGBOW() & !other.hasRGBOW()) {
       if (getPixelsPerStrip() != other.getPixelsPerStrip() / 3)
@@ -275,20 +275,20 @@ public class PixelPusher extends DeviceImpl
       return false;
     if (getNumberOfStrips() != other.getNumberOfStrips())
       return false;
-    
+
     // handle the case where someone changed the config during library runtime
     if (this.artnet_channel != other.artnet_channel ||
         this.artnet_universe != other.artnet_universe)
        return false;
-    
+
     // if the port's been changed, we need to update
     if (this.my_port != other.my_port)
       return false;
-    
+
     // we should update every time the power total changes
-    if (this.powerTotal != other.powerTotal)
-      return false;
-    
+    //if (this.powerTotal != other.powerTotal)
+    //  return false;
+
     // if all those other things are the same, then we call it good.
     return true;
   }
@@ -298,7 +298,7 @@ public class PixelPusher extends DeviceImpl
       for (Strip strip: this.strips)
         if (strip.getRGBOW())
           return true;
-    
+
     return false;
   }
 
@@ -317,7 +317,7 @@ public class PixelPusher extends DeviceImpl
     this.deltaSequence = device.deltaSequence;
     this.groupOrdinal = device.groupOrdinal;
     this.maxStripsPerPacket = device.maxStripsPerPacket;
-    
+
     // if the number of strips we have doesn't match,
     // we'll need to make a fresh set.
     if (this.stripsAttached != device.stripsAttached) {
@@ -330,7 +330,7 @@ public class PixelPusher extends DeviceImpl
       this.pixelsPerStrip = device.pixelsPerStrip;
       this.stripsCreated = false;
     }
-    
+
     this.powerTotal = device.powerTotal;
     this.updatePeriod = device.updatePeriod;
     this.artnet_channel = device.artnet_channel;
@@ -338,7 +338,7 @@ public class PixelPusher extends DeviceImpl
     this.my_port = device.my_port;
     this.filename = device.filename;
     this.amRecording = device.amRecording;
-    
+
     // if it already has strips, just use those
     if (device.stripsCreated) {
       this.makeBusy();
@@ -400,13 +400,25 @@ public class PixelPusher extends DeviceImpl
   public synchronized void makeBusy() {
     isBusy = true;
   }
-  
+
   public synchronized void clearBusy() {
     isBusy = false;
   }
-  
+
   public synchronized boolean isBusy() {
     return isBusy;
+  }
+
+  public List<Strip> getTouchedStrips() {
+    if (!stripsCreated)
+      doDeferredStripCreation();
+
+    List<Strip>touchedStrips = new ArrayList<Strip>();
+    for (Strip strip: strips)
+      if (strip.isTouched())
+        touchedStrips.add(strip);
+
+    return touchedStrips;
   }
 
 }

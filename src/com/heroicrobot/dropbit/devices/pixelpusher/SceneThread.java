@@ -32,7 +32,7 @@ public class SceneThread extends Thread implements Observer {
     this.running = false;
     this.listSemaphore = new Semaphore(1);
   }
-  
+
   public void setAutoThrottle(boolean autothrottle) {
     autoThrottle = autothrottle;
     //System.err.println("Setting autothrottle in SceneThread.");
@@ -50,14 +50,14 @@ public class SceneThread extends Thread implements Observer {
     }
     return totalBandwidth;
   }
-  
+
   public void setExtraDelay(int msec) {
     extraDelay = msec;
     for (CardThread thread : cardThreadMap.values()) {
       thread.setExtraDelay(msec);
     }
   }
-  
+
   public void removePusherThread(PixelPusher card) {
     for (CardThread th : cardThreadMap.values()) {
         if (th.controls(card)) {
@@ -67,12 +67,12 @@ public class SceneThread extends Thread implements Observer {
      }
     cardThreadMap.remove(card.getMacAddress());
    }
-  
+
   @Override
   public void update(Observable observable, Object update) {
     if (!drain) {
       listSemaphore.acquireUninterruptibly();
-      
+
       Map<String, PixelPusher> incomingPusherMap = ((DeviceRegistry) observable)
           .getPusherMap(); // all observed pushers
       Map<String, PixelPusher> newPusherMap = new HashMap<String, PixelPusher>(
@@ -81,7 +81,7 @@ public class SceneThread extends Thread implements Observer {
           pusherMap);
       Map<String, PixelPusher> currentPusherMap = new HashMap<String, PixelPusher>(
           pusherMap);
-      
+
       try {
         for (String key : incomingPusherMap.keySet()) {
           if (currentPusherMap.containsKey(key)) { // if we already know about it
@@ -144,7 +144,7 @@ public class SceneThread extends Thread implements Observer {
     for (CardThread thread : cardThreadMap.values()) {
       thread.start();
     }
-    
+
     while (true) {
       if (frameCallback) {
         boolean frameDirty = false;

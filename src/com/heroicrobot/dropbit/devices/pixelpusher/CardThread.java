@@ -15,6 +15,7 @@ public class CardThread extends Thread {
   private long threadSleepMsec = 4;
   private long threadExtraDelayMsec = 0;
   private long bandwidthEstimate = 0;
+  private final int maxPacketSize = 1460;
   private PixelPusher pusher;
   private byte[] packet;
   private DatagramPacket udppacket;
@@ -38,7 +39,7 @@ public class CardThread extends Thread {
     } catch (SocketException se) {
       System.err.println("SocketException: " + se.getMessage());
     }
-    this.packet = new byte[1460];
+    this.packet = new byte[maxPacketSize];
     this.cardAddress = pusher.getIp();
     this.packetNumber = 0;
     this.cancel = false;
@@ -76,6 +77,8 @@ public class CardThread extends Thread {
         }
       }
       bytesSent = sendPacketToPusher(pusher);
+      if (bytesSent == 0)
+        Thread.yield();
       long endTime = System.nanoTime();
       long duration = ((endTime - startTime) / 1000000);
       if (duration > 0)
@@ -94,79 +97,89 @@ public class CardThread extends Thread {
         e.printStackTrace();
       }
   }
-  
+
   public boolean cancel() {
     this.cancel = true;
     return true;
   }
-  
+
   private int sendPacketToPusher(PixelPusher pusher) {
-    int packetLength = 0;
+    int packetLength;
     int totalLength = 0;
     long totalDelay = threadSleepMsec + threadExtraDelayMsec + pusher.getExtraDelay();
     boolean payload;
     double powerScale;
-    
+
     powerScale = registry.getPowerScale();
-    
+
     pusher.makeBusy();
-    List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getStrips());
-    final int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
-    final int supportedStripsPerPacket
-        = (this.packet.length - 4) / (1 + 3 * pusher.getPixelsPerStrip());
-    final int stripPerPacket = Math.min(Math.min(requestedStripsPerPacket,
+    List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getTouchedStrips());
+
+    int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
+    int supportedStripsPerPacket
+        = (maxPacketSize - 4) / (1 + 3 * pusher.getPixelsPerStrip());
+    int stripPerPacket = Math.min(Math.min(requestedStripsPerPacket,
                                         supportedStripsPerPacket), pusher.stripsAttached);
+    //if (supportedStripsPerPacket > 2)
+    //  stripPerPacket = 7;
 
     while (!remainingStrips.isEmpty()) {
+      packetLength = 0;
       payload = false;
-      if (pusher.getUpdatePeriod() > 100)
+      if (pusher.getUpdatePeriod() > 1000) {
         this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
+      }
       byte[] packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
       for(int i = 0; i < packetNumberArray.length; i++) {
         this.packet[packetLength++] = packetNumberArray[i];
       }
-      for (int i = 0; i < stripPerPacket; i++) {
+
+      int i;
+      // Now loop over remaining strips.
+      for (i = 0; i < stripPerPacket; i++) {
         if (remainingStrips.isEmpty()) {
           break;
         }
         Strip strip = remainingStrips.remove(0);
-        if (strip.isTouched() ) {
-          strip.setPowerScale(powerScale);
-          byte[] stripPacket = strip.serialize();
-          this.packet[packetLength++] = (byte) strip.getStripNumber();
-          if (fileIsOpen) {
-            try {
-              // we need to make the pusher wait on playback the same length of time between strips as we wait between packets
-              // this number is in microseconds, whereas we work with milliseconds.
-              recordFile.write(ByteUtils.unsignedIntToByteArray((int)(1000 * ((threadExtraDelayMsec + pusher.getExtraDelay()) / stripPerPacket)), true));
-              recordFile.write(this.packet, packetLength-1, 1);
-              recordFile.write(stripPacket);
-            } catch (IOException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-            }
+        if (!strip.isTouched())
+          continue;
+
+        strip.setPowerScale(powerScale);
+        byte[] stripPacket = strip.serialize();
+        strip.markClean();
+        this.packet[packetLength++] = (byte) strip.getStripNumber();
+        if (fileIsOpen) {
+          try {
+            // we need to make the pusher wait on playback the same length of time between strips as we wait between packets
+            // this number is in microseconds, whereas we work with milliseconds.
+            recordFile.write(ByteUtils.unsignedIntToByteArray((int)(1000 * ((threadExtraDelayMsec + pusher.getExtraDelay()) / stripPerPacket)), true));
+            recordFile.write(this.packet, packetLength-1, 1);
+            recordFile.write(stripPacket);
+          } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
           }
-          for (int j = 0; j < stripPacket.length; j++) {
-            this.packet[packetLength + j] = stripPacket[j];
-          }
-          packetLength += stripPacket.length;
-          payload = true;
         }
+        for (int j = 0; j < stripPacket.length; j++) {
+          this.packet[packetLength + j] = stripPacket[j];
+        }
+        packetLength += stripPacket.length;
+        payload = true;
       }
       if (payload) {
         packetNumber++;
-        /* System.err.println(" Packet number array = length "+ packetLength + 
-         *      " seq "+ packetNumber +" data " + String.format("%02x, %02x, %02x, %02x", 
+        /* System.err.println(" Packet number array = length "+ packetLength +
+         *      " seq "+ packetNumber +" data " + String.format("%02x, %02x, %02x, %02x",
          *          packetNumberArray[0], packetNumberArray[1], packetNumberArray[2], packetNumberArray[3]));
          */
         udppacket = new DatagramPacket(packet, packetLength, cardAddress,
             pusherPort);
         try {
-          udpsocket.send(udppacket);    
+          udpsocket.send(udppacket);
         } catch (IOException ioe) {
           System.err.println("IOException: " + ioe.getMessage());
         }
-       
+
         totalLength += packetLength;
       }
       try {

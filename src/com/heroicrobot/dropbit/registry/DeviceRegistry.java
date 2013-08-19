@@ -286,14 +286,15 @@ public class DeviceRegistry extends Observable {
       // We haven't seen this device before
       addNewPusher(macAddr, device);
     } else {
-      if (!pusherMap.get(macAddr).equals(device)) { // we already saw it
+      if (!pusherMap.get(macAddr).equals(device)) { // we already saw it but it's changed.
         while (pusherMap.get(macAddr).isBusy()) {
             Thread.yield();
         }
         updatePusher(macAddr, device);
       } else {
-        // The device is identical, nothing has changed
+        // The device is identical, nothing important has changed
         LOGGER.fine("Device still present: " + macAddr);
+        pusherMap.get(macAddr).updateVariables(device);
         // if we dropped more than occasional packets, slow down a little
         if (device.getDeltaSequence() > 3)
             pusherMap.get(macAddr).increaseExtraDelay(5);

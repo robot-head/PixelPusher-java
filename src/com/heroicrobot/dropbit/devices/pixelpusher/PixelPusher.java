@@ -312,6 +312,13 @@ public class PixelPusher extends DeviceImpl
         +artnet_universe+") Art-Net Channel ("+artnet_channel+")";
   }
 
+  public void updateVariables(PixelPusher device) {
+    this.deltaSequence = device.deltaSequence;
+    this.maxStripsPerPacket = device.maxStripsPerPacket;
+    this.powerTotal = device.powerTotal;
+    this.updatePeriod = device.updatePeriod;
+  }
+  
   public void copyHeader(PixelPusher device) {
     this.controllerOrdinal = device.controllerOrdinal;
     this.deltaSequence = device.deltaSequence;

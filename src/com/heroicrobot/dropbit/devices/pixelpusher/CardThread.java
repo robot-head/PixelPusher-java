@@ -128,6 +128,9 @@ public class CardThread extends Thread {
       payload = false;
       if (pusher.getUpdatePeriod() > 1000) {
         this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
+      } else {
+        // Shoot for 60 Hz.
+        this.threadSleepMsec = (16 / (pusher.stripsAttached / stripPerPacket));
       }
       totalDelay = threadSleepMsec + threadExtraDelayMsec + pusher.getExtraDelay();
       

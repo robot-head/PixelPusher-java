@@ -294,6 +294,7 @@ public class DeviceRegistry extends Observable {
       } else {
         // The device is identical, nothing important has changed
         LOGGER.fine("Device still present: " + macAddr);
+        System.out.println("Updating pusher from bcast.");
         pusherMap.get(macAddr).updateVariables(device);
         // if we dropped more than occasional packets, slow down a little
         if (device.getDeltaSequence() > 3)

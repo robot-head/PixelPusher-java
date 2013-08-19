@@ -134,8 +134,6 @@ public class CardThread extends Thread {
       }
       totalDelay = threadSleepMsec + threadExtraDelayMsec + pusher.getExtraDelay();
       
-      System.err.println("Total delay = "+totalDelay);
-      
       byte[] packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
       for(int i = 0; i < packetNumberArray.length; i++) {
         this.packet[packetLength++] = packetNumberArray[i];

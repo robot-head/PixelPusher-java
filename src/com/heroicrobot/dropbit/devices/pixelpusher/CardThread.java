@@ -28,10 +28,12 @@ public class CardThread extends Thread {
   private boolean useAntiLog;
   private boolean fileIsOpen;
   FileOutputStream recordFile;
+  private long lastSendTime;
 
   CardThread(PixelPusher pusher, DeviceRegistry dr) {
     this.pusher = pusher;
     this.pusherPort = pusher.getPort();
+    this.lastSendTime = 0;
 
     this.registry = dr;
     try {
@@ -156,8 +158,12 @@ public class CardThread extends Thread {
         if (fileIsOpen) {
           try {
             // we need to make the pusher wait on playback the same length of time between strips as we wait between packets
-            // this number is in microseconds, whereas we work with milliseconds.
-            recordFile.write(ByteUtils.unsignedIntToByteArray((int)(1000 * ((threadExtraDelayMsec + pusher.getExtraDelay()) / stripPerPacket)), true));
+            // this number is in microseconds.
+            if (i > 0 || lastSendTime == 0 )  // only write the delay in the first strip in a datagram.
+              recordFile.write(ByteUtils.unsignedIntToByteArray((int)0, true));
+            else
+              recordFile.write(ByteUtils.unsignedIntToByteArray((int)((System.nanoTime() - lastSendTime) / 1000), true));
+            
             recordFile.write(this.packet, packetLength-1, 1);
             recordFile.write(stripPacket);
           } catch (IOException e) {
@@ -181,6 +187,7 @@ public class CardThread extends Thread {
             pusherPort);
         try {
           udpsocket.send(udppacket);
+          lastSendTime = System.nanoTime();
         } catch (IOException ioe) {
           System.err.println("IOException: " + ioe.getMessage());
         }

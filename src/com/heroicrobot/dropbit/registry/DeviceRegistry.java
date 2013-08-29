@@ -201,11 +201,23 @@ public class DeviceRegistry extends Observable {
    
     DiscoveryListenerThread(int discovery_port, DeviceRegistry dr) {
      try {
-       this.discovery_socket = new DatagramSocket(discovery_port);
+
+       
+       this.discovery_socket = new DatagramSocket(null);
+       
+       this.discovery_socket.setReuseAddress(true);
        this.discovery_socket.setBroadcast(true);
+       
+       this.discovery_socket.bind(new InetSocketAddress(InetAddress.getByName("0.0.0.0"), discovery_port));
+       System.out.println("Listening for PixelPusher announcements on " + this.discovery_socket.getLocalAddress() + " port "
+           + this.discovery_socket.getLocalPort() + ", broadcast=" + this.discovery_socket.getBroadcast());
+       
      } catch (SocketException e) {
        e.printStackTrace();
-     }
+     } catch (UnknownHostException e) {
+      System.err.println("For some reason, could not resolve 0.0.0.0.");
+      e.printStackTrace();
+    }
       byte[] buf = new byte[1536];
       this.discovery_buffer = new DatagramPacket(buf, buf.length);
       this._dr = dr;

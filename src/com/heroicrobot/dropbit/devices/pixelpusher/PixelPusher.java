@@ -29,6 +29,8 @@ public class PixelPusher extends DeviceImpl
   boolean stripsCreated = false;
   long extraDelayMsec = 0;
   boolean autothrottle = false;
+  
+  final int SFLAG_RGBOW = 1;
 
   int artnet_universe = 0;
   int artnet_channel = 0;
@@ -58,8 +60,10 @@ public class PixelPusher extends DeviceImpl
     for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
       this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
     }
-    for (Strip strip: this.strips)
+    for (Strip strip: this.strips) {
       strip.useAntiLog(useAntiLog);
+      strip.setRGBOW((stripFlags[strip.getStripNumber()] & SFLAG_RGBOW) == 1);
+    }
     stripsCreated = true;
   }
 
@@ -179,6 +183,7 @@ public class PixelPusher extends DeviceImpl
   private String filename;
   private boolean amRecording;
   private boolean isBusy;
+  private byte[] stripFlags;
 
   public void setStripValues(int stripNumber, Pixel[] pixels) {
     if (stripsCreated)
@@ -191,6 +196,7 @@ public class PixelPusher extends DeviceImpl
 
   public PixelPusher(byte[] packet, DeviceHeader header) {
     super(header);
+ 
     if (packet.length < 28) {
       throw new IllegalArgumentException();
     }
@@ -213,6 +219,13 @@ public class PixelPusher extends DeviceImpl
       my_port = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 28, 30));
     } else {
       my_port = 9798;
+    }
+    if (packet.length > 30) {
+      stripFlags = Arrays.copyOfRange(packet, 30, 38);
+    } else {
+      stripFlags = new byte[8];
+      for (int i=0; i<8; i++)
+        stripFlags[i]=0;
     }
     this.stripsCreated = false;
   }
@@ -302,6 +315,11 @@ public class PixelPusher extends DeviceImpl
     return false;
   }
 
+  private String formattedStripFlags() {
+    return "["+stripFlags[0]+"]["+stripFlags[1]+"]["+stripFlags[2]+"]["+stripFlags[3]+"]["
+        +stripFlags[4]+"]["+stripFlags[5]+"]["+stripFlags[6]+"]["+stripFlags[7]+"]";
+  }
+  
   public String toString() {
     return super.toString() + " # Strips(" + getNumberOfStrips()
         + ") Max Strips Per Packet(" + maxStripsPerPacket
@@ -309,7 +327,8 @@ public class PixelPusher extends DeviceImpl
         + updatePeriod + ") Power Total (" + powerTotal + ") Delta Sequence ( "
         + deltaSequence + ") Group (" +groupOrdinal +") Controller ("
         + controllerOrdinal + " ) + Port ("+my_port+") Art-Net Universe ("
-        +artnet_universe+") Art-Net Channel ("+artnet_channel+")";
+        +artnet_universe+") Art-Net Channel ("+artnet_channel+")" 
+        + "Strip flags "+formattedStripFlags();
   }
 
   public void updateVariables(PixelPusher device) {

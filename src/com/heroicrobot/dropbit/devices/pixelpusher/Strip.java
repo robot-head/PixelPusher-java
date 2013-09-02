@@ -61,6 +61,7 @@ public class Strip {
     if (state == isRGBOW)
         return;
     this.touched = true;
+    pusher.markTouched();
     int length = pixels.length;
     if (isRGBOW) {  // if we're already set to RGBOW mode
       this.pixels = new Pixel[length*3];   // else go back to RGB mode
@@ -103,6 +104,7 @@ public class Strip {
 
   public synchronized void markClean() {
     this.touched = false;
+    pusher.markUntouched();
   }
 
   public int getStripNumber() {
@@ -117,6 +119,7 @@ public class Strip {
   public synchronized void setPixels(Pixel[] pixels) {
     this.pixels = Arrays.copyOfRange(pixels, 0, this.pixels.length);
     this.touched = true;
+    pusher.markTouched();
   }
 
   public synchronized void setPixelRed(byte intensity, int position) {
@@ -132,6 +135,7 @@ public class Strip {
       nope.printStackTrace();
     }
     this.touched = true;
+    pusher.markTouched();
   }
 
   public synchronized void setPixelBlue(byte intensity, int position) {
@@ -147,6 +151,7 @@ public class Strip {
       nope.printStackTrace();
     }
     this.touched = true;
+    pusher.markTouched();
   }
 
   public synchronized void setPixelGreen(byte intensity, int position) {
@@ -162,6 +167,7 @@ public class Strip {
       nope.printStackTrace();
     }
     this.touched = true;
+    pusher.markTouched();
   }
 
   public synchronized void setPixelOrange(byte intensity, int position) {
@@ -177,6 +183,7 @@ public class Strip {
       nope.printStackTrace();
     }
     this.touched = true;
+    pusher.markTouched();
   }
 
 public synchronized void setPixelWhite(byte intensity, int position) {
@@ -192,6 +199,7 @@ public synchronized void setPixelWhite(byte intensity, int position) {
       nope.printStackTrace();
     }
     this.touched = true;
+    pusher.markTouched();
   }
 
   public synchronized void setPixel(int color, int position) {
@@ -207,6 +215,7 @@ public synchronized void setPixelWhite(byte intensity, int position) {
       nope.printStackTrace();
     }
     this.touched = true;
+    pusher.markTouched();
   }
 
   public synchronized void setPixel(Pixel pixel, int position) {
@@ -215,6 +224,7 @@ public synchronized void setPixelWhite(byte intensity, int position) {
     else
       this.pixels[position].setColor(pixel);
     this.touched = true;
+    pusher.markTouched();
   }
 
   public byte[] serialize() {

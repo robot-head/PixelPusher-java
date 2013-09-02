@@ -70,6 +70,7 @@ public class PixelPusher extends DeviceImpl
     }
     stripLock.release();
     stripsCreated = true;
+    touchedStrips = false;
   }
 
   /**
@@ -178,6 +179,7 @@ public class PixelPusher extends DeviceImpl
     return groupOrdinal;
   }
 
+  private boolean touchedStrips;
   private int maxStripsPerPacket;
   private long updatePeriod;
   private long powerTotal;
@@ -443,11 +445,22 @@ public class PixelPusher extends DeviceImpl
   }
 
   public boolean hasTouchedStrips() {
+    if (touchedStrips)
+      return true;
     for (Strip strip: strips)
       if (strip.isTouched())
         return true;
     
+    touchedStrips = false;
     return false;
+  }
+  
+  public void markUntouched() {
+    touchedStrips = false;
+  }
+  
+  public void markTouched() {
+    touchedStrips = true;
   }
   
   public List<Strip> getTouchedStrips() {

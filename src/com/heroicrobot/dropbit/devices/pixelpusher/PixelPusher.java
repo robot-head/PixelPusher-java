@@ -446,10 +446,10 @@ public class PixelPusher extends DeviceImpl
     if (!stripsCreated)
       doDeferredStripCreation();
 
-    List<Strip>touchedStrips = new ArrayList<Strip>();
+    List<Strip>touchedStrips = new ArrayList<Strip>(strips);
     for (Strip strip: strips)
-      if (strip.isTouched())
-        touchedStrips.add(strip);
+      if (!strip.isTouched())
+        touchedStrips.remove(strip);
 
     return touchedStrips;
   }

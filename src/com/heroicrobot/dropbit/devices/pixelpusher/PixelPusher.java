@@ -1,6 +1,7 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.util.ArrayList;
+import java.util.concurrent.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,6 +30,8 @@ public class PixelPusher extends DeviceImpl
   boolean stripsCreated = false;
   long extraDelayMsec = 0;
   boolean autothrottle = false;
+  Semaphore stripLock;
+  
   
   final int SFLAG_RGBOW = 1;
 
@@ -56,6 +59,7 @@ public class PixelPusher extends DeviceImpl
   }
 
   synchronized void doDeferredStripCreation() {
+    stripLock.acquireUninterruptibly();
     this.strips = new ArrayList<Strip>();
     for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
       this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
@@ -64,6 +68,7 @@ public class PixelPusher extends DeviceImpl
       strip.useAntiLog(useAntiLog);
       strip.setRGBOW((stripFlags[strip.getStripNumber()] & SFLAG_RGBOW) == 1);
     }
+    stripLock.release();
     stripsCreated = true;
   }
 
@@ -200,6 +205,8 @@ public class PixelPusher extends DeviceImpl
     if (packet.length < 28) {
       throw new IllegalArgumentException();
     }
+    stripLock = new Semaphore(1);
+    
     stripsAttached = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 0, 1));
     pixelsPerStrip = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 2, 4));
     maxStripsPerPacket = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 1, 2));

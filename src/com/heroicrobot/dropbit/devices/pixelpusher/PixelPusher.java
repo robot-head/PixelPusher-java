@@ -442,6 +442,14 @@ public class PixelPusher extends DeviceImpl
     return isBusy;
   }
 
+  public boolean hasTouchedStrips() {
+    for (Strip strip: strips)
+      if (strip.isTouched())
+        return true;
+    
+    return false;
+  }
+  
   public List<Strip> getTouchedStrips() {
     if (!stripsCreated)
       doDeferredStripCreation();

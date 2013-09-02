@@ -115,8 +115,13 @@ public class CardThread extends Thread {
     powerScale = registry.getPowerScale();
     
     pusher.makeBusy();
-    List<Strip> remainingStrips = new ArrayList<Strip>(pusher.getTouchedStrips());
-
+    List<Strip> remainingStrips;
+    
+    while (!pusher.hasTouchedStrips())
+      Thread.yield();
+    
+    remainingStrips = new ArrayList<Strip>(pusher.getStrips());
+    
     int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
     int supportedStripsPerPacket
         = (maxPacketSize - 4) / (1 + 3 * pusher.getPixelsPerStrip());

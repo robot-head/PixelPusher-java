@@ -41,6 +41,7 @@ public class DeviceRegistry extends Observable {
   private static double powerScale = 1.0;
   private static boolean autoThrottle = false;
   private static boolean AntiLog = false;
+  private static boolean logEnabled = true;
   
   private Map<String, PixelPusher> pusherMap;
   private Map<String, DateTime> pusherLastSeenMap;
@@ -53,6 +54,14 @@ public class DeviceRegistry extends Observable {
 
   private TreeSet<PixelPusher> sortedPushers;
 
+  public void setLogging(boolean b) {
+    logEnabled = b;
+  }
+  
+  public boolean getLogging() {
+    return logEnabled;
+  }
+  
   public void startDatRecording(String filename, int group, int pusher) {
     List<PixelPusher> pushers = getPushers(group);
     (pushers.get(pusher)).startRecording(filename);
@@ -148,7 +157,8 @@ public class DeviceRegistry extends Observable {
 
     @Override
     public void run() {
-      LOGGER.fine("Expiry and preening task running");
+      if (logEnabled) 
+        LOGGER.fine("Expiry and preening task running");
       
       // A little sleight of hand here.  We can't call registry.expireDevice()
       // directly from inside the loop, for the loop is an implicit iterator and
@@ -209,7 +219,8 @@ public class DeviceRegistry extends Observable {
        this.discovery_socket.setBroadcast(true);
        
        this.discovery_socket.bind(new InetSocketAddress(InetAddress.getByName("0.0.0.0"), discovery_port));
-       System.out.println("Listening for PixelPusher announcements on " + this.discovery_socket.getLocalAddress() + " port "
+       if (logEnabled)
+         System.out.println("Listening for PixelPusher announcements on " + this.discovery_socket.getLocalAddress() + " port "
            + this.discovery_socket.getLocalPort() + ", broadcast=" + this.discovery_socket.getBroadcast());
        
      } catch (SocketException e) {
@@ -252,7 +263,8 @@ public class DeviceRegistry extends Observable {
   }
 
   public void expireDevice(String macAddr) {
-    LOGGER.info("Device gone: " + macAddr);
+    if (logEnabled)
+      LOGGER.info("Device gone: " + macAddr);
     PixelPusher pusher = pusherMap.remove(macAddr);
     pusherLastSeenMap.remove(macAddr);
     sortedPushers.remove(pusher);
@@ -265,7 +277,6 @@ public class DeviceRegistry extends Observable {
 
   public void setStripValues(String macAddress, int stripNumber, Pixel[] pixels) {
     this.pusherMap.get(macAddress).setStripValues(stripNumber, pixels);
-
   }
 
   public void startPushing() {
@@ -285,7 +296,8 @@ public class DeviceRegistry extends Observable {
     DeviceHeader header = new DeviceHeader(data);
     String macAddr = header.GetMacAddressString();
     if (header.DeviceType != DeviceType.PIXELPUSHER) {
-      LOGGER.fine("Ignoring non-PixelPusher discovery packet from "
+      if (logEnabled)
+        LOGGER.fine("Ignoring non-PixelPusher discovery packet from "
           + header.toString());
       return;
     }
@@ -305,15 +317,18 @@ public class DeviceRegistry extends Observable {
         updatePusher(macAddr, device);
       } else {
         // The device is identical, nothing important has changed
-        LOGGER.fine("Device still present: " + macAddr);
-        System.out.println("Updating pusher from bcast.");
+        if (logEnabled) {
+          LOGGER.fine("Device still present: " + macAddr);
+          System.out.println("Updating pusher from bcast.");
+        }
         pusherMap.get(macAddr).updateVariables(device);
         // if we dropped more than occasional packets, slow down a little
         if (device.getDeltaSequence() > 3)
             pusherMap.get(macAddr).increaseExtraDelay(5);
         if (device.getDeltaSequence() < 1)
             pusherMap.get(macAddr).decreaseExtraDelay(1);
-        System.out.println(device.toString());
+        if (logEnabled)
+          System.out.println(device.toString());
       }
     }
     
@@ -336,7 +351,8 @@ public class DeviceRegistry extends Observable {
   private void updatePusher(String macAddr, PixelPusher device) {
     // We already knew about this device at the given MAC, but its details
     // have changed
-    LOGGER.info("Device changed: " + macAddr);
+    if (logEnabled)
+      LOGGER.info("Device changed: " + macAddr);
     pusherMap.get(macAddr).copyHeader(device);
     
     this.setChanged();
@@ -344,25 +360,30 @@ public class DeviceRegistry extends Observable {
   }
 
   private void addNewPusher(String macAddr, PixelPusher pusher) {
-    LOGGER.info("New device: " + macAddr +" has group ordinal "+ pusher.getGroupOrdinal());
+    if (logEnabled)
+      LOGGER.info("New device: " + macAddr +" has group ordinal "+ pusher.getGroupOrdinal());
     pusherMap.put(macAddr, pusher);
-    LOGGER.info("Adding to sorted list");
+    if (logEnabled)
+      LOGGER.info("Adding to sorted list");
     sortedPushers.add(pusher);
-    LOGGER.info("Adding to group map");
+    if (logEnabled)
+      LOGGER.info("Adding to group map");
     if (groupMap.get(pusher.getGroupOrdinal()) != null) {
-      LOGGER.info("Adding pusher to group "+pusher.getGroupOrdinal());
+      if (logEnabled)
+        LOGGER.info("Adding pusher to group "+pusher.getGroupOrdinal());
       groupMap.get(pusher.getGroupOrdinal()).addPusher(pusher);
     } else {
       // we need to create a PusherGroup since it doesn't exist yet.
       PusherGroup pg = new PusherGroup();
-      LOGGER.info("Creating group and adding pusher to group "+pusher.getGroupOrdinal());
+      if (logEnabled)
+        LOGGER.info("Creating group and adding pusher to group "+pusher.getGroupOrdinal());
       pg.addPusher(pusher);
       groupMap.put(pusher.getGroupOrdinal(), pg); 
     }
     pusher.setAutoThrottle(autoThrottle);
-    LOGGER.info("Notifying observers");
+    if (logEnabled)
+      LOGGER.info("Notifying observers");
     this.setChanged();
     this.notifyObservers(pusher);
   }
-
 }

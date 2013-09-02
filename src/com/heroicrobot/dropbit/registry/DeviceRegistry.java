@@ -1,6 +1,8 @@
 package com.heroicrobot.dropbit.registry;
 
 import java.io.IOException;
+import java.util.concurrent.*;
+
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -30,7 +32,9 @@ public class DeviceRegistry extends Observable {
 
   private final static Logger LOGGER = Logger.getLogger(DeviceRegistry.class
       .getName());
- 
+
+  
+  private static Semaphore updateLock;
   private static int DISCOVERY_PORT = 7331;
   private static int MAX_DISCONNECT_SECONDS = 10;
   private static long EXPIRY_TIMER_MSEC = 1000L;
@@ -115,9 +119,11 @@ public class DeviceRegistry extends Observable {
   
   public List<Strip> getStrips() {
     List<Strip> strips = new ArrayList<Strip>();
+    updateLock.acquireUninterruptibly();
     for (PixelPusher p : this.sortedPushers) {
       strips.addAll(p.getStrips());
     }
+    updateLock.release();
     return strips;
   }
   
@@ -130,11 +136,12 @@ public class DeviceRegistry extends Observable {
   }
   
   public List<PixelPusher> getPushers(int groupNumber) {
+    updateLock.acquireUninterruptibly();
     List<PixelPusher> pushers = new ArrayList<PixelPusher>();
     for (PixelPusher p : this.sortedPushers)
         if (p.getGroupOrdinal() == groupNumber)
           pushers.add(p);
-    
+    updateLock.release();
     return pushers;
   }
   
@@ -157,6 +164,7 @@ public class DeviceRegistry extends Observable {
 
     @Override
     public void run() {
+      updateLock.acquireUninterruptibly();
       if (logEnabled) 
         LOGGER.fine("Expiry and preening task running");
       
@@ -176,6 +184,7 @@ public class DeviceRegistry extends Observable {
       for (String doomedIndividual : toKill) {
         registry.expireDevice(doomedIndividual);
       }
+      updateLock.release();
     }
   }
 
@@ -247,7 +256,7 @@ public class DeviceRegistry extends Observable {
   }
 
   public DeviceRegistry() {
-      
+    updateLock = new Semaphore(1);
     pusherMap = new TreeMap<String, PixelPusher>();
     groupMap = new TreeMap<Integer, PusherGroup>();
     sortedPushers = new TreeSet<PixelPusher>(new DefaultPusherComparator());
@@ -291,8 +300,9 @@ public class DeviceRegistry extends Observable {
     }
   }
 
-  public void receive(byte[] data) {
+  synchronized public void receive(byte[] data) {
     // This is for the UDP callback, this should not be called directly
+    updateLock.acquireUninterruptibly();
     DeviceHeader header = new DeviceHeader(data);
     String macAddr = header.GetMacAddressString();
     if (header.DeviceType != DeviceType.PIXELPUSHER) {
@@ -346,6 +356,7 @@ public class DeviceRegistry extends Observable {
         powerScale = 1.0;
       }
     }
+    updateLock.release();
   }
 
   private void updatePusher(String macAddr, PixelPusher device) {

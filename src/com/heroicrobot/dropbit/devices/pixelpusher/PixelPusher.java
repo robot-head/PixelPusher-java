@@ -55,7 +55,7 @@ public class PixelPusher extends DeviceImpl
     this.my_port = my_port;
   }
 
-  void doDeferredStripCreation() {
+  synchronized void doDeferredStripCreation() {
     this.strips = new ArrayList<Strip>();
     for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
       this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
@@ -328,7 +328,7 @@ public class PixelPusher extends DeviceImpl
         + deltaSequence + ") Group (" +groupOrdinal +") Controller ("
         + controllerOrdinal + " ) + Port ("+my_port+") Art-Net Universe ("
         +artnet_universe+") Art-Net Channel ("+artnet_channel+")" 
-        + "Strip flags "+formattedStripFlags();
+        + " Strip flags "+formattedStripFlags();
   }
 
   public void updateVariables(PixelPusher device) {

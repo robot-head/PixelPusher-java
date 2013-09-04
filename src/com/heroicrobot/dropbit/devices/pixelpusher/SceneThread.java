@@ -26,6 +26,7 @@ public class SceneThread extends Thread implements Observer {
   private Semaphore listSemaphore;
 
   public SceneThread() {
+    super("PixelPusher SceneThread");
     this.pusherMap = new HashMap<String, PixelPusher>();
     this.cardThreadMap = new HashMap<String, CardThread>();
     this.drain = false;
@@ -159,7 +160,14 @@ public class SceneThread extends Thread implements Observer {
           }
         }
       }
-      Thread.yield();
+      if (frameCallback)
+        Thread.yield();
+      else
+        try {
+          Thread.sleep(32); // two frames should be safe
+        } catch (InterruptedException ie) {
+          // lol whatever, doesn't matter, had sleep
+        }
     }
   }
 

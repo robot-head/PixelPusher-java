@@ -31,6 +31,7 @@ public class CardThread extends Thread {
   private long lastSendTime;
 
   CardThread(PixelPusher pusher, DeviceRegistry dr) {
+    super("CardThread for PixelPusher "+pusher.getMacAddress());
     this.pusher = pusher;
     this.pusherPort = pusher.getPort();
     this.lastSendTime = 0;

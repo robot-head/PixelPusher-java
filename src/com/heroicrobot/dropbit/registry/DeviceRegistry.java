@@ -219,6 +219,7 @@ public class DeviceRegistry extends Observable {
     private DeviceRegistry _dr;
    
     DiscoveryListenerThread(int discovery_port, DeviceRegistry dr) {
+     super("PixelPusher Discovery Listener");
      try {
 
        

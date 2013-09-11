@@ -15,7 +15,7 @@ public class CardThread extends Thread {
   private long threadSleepMsec = 4;
   private long threadExtraDelayMsec = 0;
   private long bandwidthEstimate = 0;
-  private final int maxPacketSize = 1460;
+  private int maxPacketSize = 1460;
   private PixelPusher pusher;
   private byte[] packet;
   private DatagramPacket udppacket;
@@ -42,6 +42,7 @@ public class CardThread extends Thread {
     } catch (SocketException se) {
       System.err.println("SocketException: " + se.getMessage());
     }
+    maxPacketSize = 4 +  ((1 + 3 * pusher.getPixelsPerStrip()) * pusher.getMaxStripsPerPacket());
     this.packet = new byte[maxPacketSize];
     this.cardAddress = pusher.getIp();
     this.packetNumber = 0;
@@ -124,12 +125,7 @@ public class CardThread extends Thread {
     remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     
     int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
-    int supportedStripsPerPacket
-        = (maxPacketSize - 4) / (1 + 3 * pusher.getPixelsPerStrip());
-    int stripPerPacket = Math.min(Math.min(requestedStripsPerPacket,
-                                        supportedStripsPerPacket), pusher.stripsAttached);
-    //if (supportedStripsPerPacket > 2)
-    //  stripPerPacket = 7;
+    int stripPerPacket = Math.min(requestedStripsPerPacket, pusher.stripsAttached);
 
     while (!remainingStrips.isEmpty()) {
       packetLength = 0;
@@ -140,6 +136,11 @@ public class CardThread extends Thread {
         // Shoot for 60 Hz.
         this.threadSleepMsec = (16 / (pusher.stripsAttached / stripPerPacket));
       }
+      
+      // Handle errant delay calculation in the firmware.
+      if (pusher.getUpdatePeriod() > 100000)
+        this.threadSleepMsec = (16 / (pusher.stripsAttached / stripPerPacket));
+      
       totalDelay = threadSleepMsec + threadExtraDelayMsec + pusher.getExtraDelay();
       
       byte[] packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);

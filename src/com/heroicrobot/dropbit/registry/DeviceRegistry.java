@@ -46,6 +46,7 @@ public class DeviceRegistry extends Observable {
   private static boolean autoThrottle = false;
   private static boolean AntiLog = false;
   private static boolean logEnabled = true;
+  private static int frameLimit = 85;
   
   private Map<String, PixelPusher> pusherMap;
   private Map<String, DateTime> pusherLastSeenMap;
@@ -60,6 +61,14 @@ public class DeviceRegistry extends Observable {
 
   public void setLogging(boolean b) {
     logEnabled = b;
+  }
+  
+  public void setFrameLimit(int fl) {
+    frameLimit = fl;
+  }
+  
+  public int getFrameLimit() {
+    return frameLimit;
   }
   
   public boolean getLogging() {

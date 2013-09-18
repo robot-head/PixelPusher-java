@@ -133,8 +133,8 @@ public class CardThread extends Thread {
       if (pusher.getUpdatePeriod() > 1000) {
         this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
       } else {
-        // Shoot for 60 Hz.
-        this.threadSleepMsec = (16 / (pusher.stripsAttached / stripPerPacket));
+        // Shoot for the framelimit.
+        this.threadSleepMsec = ((1000/registry.getFrameLimit()) / (pusher.stripsAttached / stripPerPacket));
       }
       
       // Handle errant delay calculation in the firmware.

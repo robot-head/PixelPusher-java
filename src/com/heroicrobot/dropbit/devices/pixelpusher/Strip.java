@@ -229,13 +229,10 @@ public synchronized void setPixelWhite(byte intensity, int position) {
 
   public byte[] serialize() {
     int i = 0;
-    boolean phase = true;
     if (isRGBOW) {
       for (Pixel pixel : pixels) {
         if (pixel == null)
           pixel = new Pixel();
-
-        if (phase) {
           msg[i++] = (byte) (((double)pixel.red)   * powerScale);    // C
           msg[i++] = (byte) (((double)pixel.green) * powerScale);
           msg[i++] = (byte) (((double)pixel.blue)  * powerScale);
@@ -247,20 +244,6 @@ public synchronized void setPixelWhite(byte intensity, int position) {
           msg[i++] = (byte) (((double)pixel.white) * powerScale);    // W
           msg[i++] = (byte) (((double)pixel.white) * powerScale);
           msg[i++] = (byte) (((double)pixel.white) * powerScale);
-        } else {
-          msg[i++] = (byte) (((double)pixel.red)   * powerScale);    // C
-          msg[i++] = (byte) (((double)pixel.green) * powerScale);
-          msg[i++] = (byte) (((double)pixel.blue)  * powerScale);
-
-          msg[i++] = (byte) (((double)pixel.white) * powerScale);    // W
-          msg[i++] = (byte) (((double)pixel.white) * powerScale);
-          msg[i++] = (byte) (((double)pixel.white) * powerScale);
-
-          msg[i++] = (byte) (((double)pixel.orange) * powerScale);   // O
-          msg[i++] = (byte) (((double)pixel.orange) * powerScale);
-          msg[i++] = (byte) (((double)pixel.orange) * powerScale);
-        }
-        phase = !phase;
       }
     } else {
       for (Pixel pixel : pixels) {

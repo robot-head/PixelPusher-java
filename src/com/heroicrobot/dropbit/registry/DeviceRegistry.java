@@ -332,7 +332,9 @@ public class DeviceRegistry extends Observable {
     } else {
       if (!pusherMap.get(macAddr).equals(device)) { // we already saw it but it's changed.
         while (pusherMap.get(macAddr).isBusy()) {
+            updateLock.release();
             Thread.yield();
+            updateLock.acquireUninterruptibly();
         }
         updatePusher(macAddr, device);
       } else {

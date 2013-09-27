@@ -120,7 +120,7 @@ public abstract class DeviceImpl implements Device {
   @Override
   public String toString() {
     return "Mac: " + header.GetMacAddressString() + ", IP: "
-        + header.IpAddress.getHostAddress();
+        + header.IpAddress.getHostAddress() + " Firmware revision: "+getSoftwareRevision();
   }
 
 }

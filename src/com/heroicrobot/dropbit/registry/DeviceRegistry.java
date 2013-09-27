@@ -242,12 +242,12 @@ public class DeviceRegistry extends Observable {
          System.out.println("Listening for PixelPusher announcements on " + this.discovery_socket.getLocalAddress() + " port "
            + this.discovery_socket.getLocalPort() + ", broadcast=" + this.discovery_socket.getBroadcast());
        
-     } catch (SocketException e) {
-       e.printStackTrace();
-     } catch (UnknownHostException e) {
-      System.err.println("For some reason, could not resolve 0.0.0.0.");
-      e.printStackTrace();
-    }
+       } catch (SocketException e) {
+         e.printStackTrace();
+       } catch (UnknownHostException e) {
+         System.err.println("For some reason, could not resolve 0.0.0.0.");
+         e.printStackTrace();
+      }
       byte[] buf = new byte[1536];
       this.discovery_buffer = new DatagramPacket(buf, buf.length);
       this._dr = dr;

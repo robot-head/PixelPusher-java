@@ -11,6 +11,7 @@ import com.heroicrobot.dropbit.discovery.DeviceHeader;
 
 public class PixelPusher extends DeviceImpl
   implements java.lang.Comparable<PixelPusher> {
+  private static final int ACCEPTABLE_LOWEST_SW_REV = 112;
   /**
    * uint8_t strips_attached;
    * uint8_t max_strips_per_packet;
@@ -31,7 +32,6 @@ public class PixelPusher extends DeviceImpl
   long extraDelayMsec = 0;
   boolean autothrottle = false;
   Semaphore stripLock;
-  
   
   final int SFLAG_RGBOW = 1;
 
@@ -203,7 +203,11 @@ public class PixelPusher extends DeviceImpl
 
   public PixelPusher(byte[] packet, DeviceHeader header) {
     super(header);
- 
+    if (super.getSoftwareRevision() < ACCEPTABLE_LOWEST_SW_REV) {
+       System.err.println("WARNING!  This PixelPusher Library requires firmware revision "+ACCEPTABLE_LOWEST_SW_REV);
+       System.err.println("WARNING!  This PixelPusher is using "+super.getSoftwareRevision());
+       System.err.println("WARNING!  This is not expected to work.  Please update your PixelPusher.");
+    }
     if (packet.length < 28) {
       throw new IllegalArgumentException();
     }
@@ -332,7 +336,7 @@ public class PixelPusher extends DeviceImpl
   public String toString() {
     return super.toString() + " # Strips(" + getNumberOfStrips()
         + ") Max Strips Per Packet(" + maxStripsPerPacket
-        + ") PixelsPerStrip (" + getPixelsPerStrip() + ") Update Period ("
+        + ") PixelsPerStrip (" + getPixelsPerStrip() +") Update Period ("
         + updatePeriod + ") Power Total (" + powerTotal + ") Delta Sequence ( "
         + deltaSequence + ") Group (" +groupOrdinal +") Controller ("
         + controllerOrdinal + " ) + Port ("+my_port+") Art-Net Universe ("

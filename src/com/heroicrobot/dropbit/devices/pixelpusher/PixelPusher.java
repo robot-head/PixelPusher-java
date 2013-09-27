@@ -204,8 +204,8 @@ public class PixelPusher extends DeviceImpl
   public PixelPusher(byte[] packet, DeviceHeader header) {
     super(header);
     if (super.getSoftwareRevision() < ACCEPTABLE_LOWEST_SW_REV) {
-       System.err.println("WARNING!  This PixelPusher Library requires firmware revision "+ACCEPTABLE_LOWEST_SW_REV);
-       System.err.println("WARNING!  This PixelPusher is using "+super.getSoftwareRevision());
+       System.err.println("WARNING!  This PixelPusher Library requires firmware revision "+ACCEPTABLE_LOWEST_SW_REV/100.0);
+       System.err.println("WARNING!  This PixelPusher is using "+super.getSoftwareRevision()/100.0);
        System.err.println("WARNING!  This is not expected to work.  Please update your PixelPusher.");
     }
     if (packet.length < 28) {

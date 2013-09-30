@@ -331,9 +331,6 @@ public class DeviceRegistry extends Observable {
       addNewPusher(macAddr, device);
     } else {
       if (!pusherMap.get(macAddr).equals(device)) { // we already saw it but it's changed.
-        while (pusherMap.get(macAddr).isBusy()) {
-            Thread.yield();
-        }
         updatePusher(macAddr, device);
       } else {
         // The device is identical, nothing important has changed

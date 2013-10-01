@@ -66,11 +66,11 @@ public class Pixel {
 
   public void setColor(Pixel pixel, boolean useAntiLog) {
     if (useAntiLog) {
-      this.red = sLinearExp[pixel.red];
-      this.blue = sLinearExp[pixel.blue];
-      this.green = sLinearExp[pixel.green];
-      this.orange = sLinearExp[pixel.orange];
-      this.white = sLinearExp[pixel.white];
+      this.red = sLinearExp[pixel.red & 0xff];
+      this.blue = sLinearExp[pixel.blue  & 0xff];
+      this.green = sLinearExp[pixel.green & 0xff];
+      this.orange = sLinearExp[pixel.orange & 0xff];
+      this.white = sLinearExp[pixel.white & 0xff];
     } else {
       this.red = pixel.red;
       this.blue = pixel.blue;

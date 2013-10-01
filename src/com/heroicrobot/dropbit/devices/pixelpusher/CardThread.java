@@ -116,11 +116,15 @@ public class CardThread extends Thread {
 
     powerScale = registry.getPowerScale();
     
-    pusher.makeBusy();
     List<Strip> remainingStrips;
     
     while (!pusher.hasTouchedStrips())
       Thread.yield();
+    
+    while (pusher.isBusy())
+      Thread.yield();
+    
+    pusher.makeBusy();
     
     remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     

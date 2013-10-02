@@ -103,6 +103,8 @@ public class PixelPusher extends DeviceImpl
   }
 
   public Strip getStrip(int stripNumber) {
+    if (stripNumber > stripsAttached)
+       return null;
     if (stripsCreated)
       return this.strips.get(stripNumber);
     else {
@@ -451,10 +453,7 @@ public class PixelPusher extends DeviceImpl
   public boolean hasTouchedStrips() {
     if (touchedStrips)
       return true;
-    for (Strip strip: strips)
-      if (strip.isTouched())
-        return true;
-    
+
     touchedStrips = false;
     return false;
   }

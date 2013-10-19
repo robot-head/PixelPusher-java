@@ -118,13 +118,18 @@ public class CardThread extends Thread {
     
     List<Strip> remainingStrips;
     
-    while (!pusher.hasTouchedStrips())
+    while (!pusher.hasTouchedStrips()) {
+      //System.out.println("Yielding because no touched strips.");
       Thread.yield();
+    }
     
-    while (pusher.isBusy())
+    while (pusher.isBusy()) {
+      //System.out.println("Yielding because pusher is busy.");
       Thread.yield();
+    }
     
     pusher.makeBusy();
+    //System.out.println("Making pusher busy.");
     
     remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     
@@ -189,6 +194,7 @@ public class CardThread extends Thread {
         payload = true;
       }
       if (payload) {
+        //System.out.println("Got a payload to send to "+cardAddress);
         packetNumber++;
         /* System.err.println(" Packet number array = length "+ packetLength +
          *      " seq "+ packetNumber +" data " + String.format("%02x, %02x, %02x, %02x",
@@ -198,6 +204,7 @@ public class CardThread extends Thread {
             pusherPort);
         try {
           udpsocket.send(udppacket);
+          //System.out.println("Sent it.");
           lastSendTime = System.nanoTime();
         } catch (IOException ioe) {
           System.err.println("IOException: " + ioe.getMessage());
@@ -212,6 +219,7 @@ public class CardThread extends Thread {
       }
       packetLength = 0;
     }
+    //System.out.println("Clearing busy.");
     pusher.clearBusy();
     return totalLength;
   }

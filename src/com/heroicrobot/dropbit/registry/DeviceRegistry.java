@@ -47,6 +47,7 @@ public class DeviceRegistry extends Observable {
   private static boolean AntiLog = false;
   private static boolean logEnabled = true;
   private static int frameLimit = 85;
+  private boolean expiryEnabled = true;
   
   private Map<String, PixelPusher> pusherMap;
   private Map<String, DateTime> pusherLastSeenMap;
@@ -61,6 +62,14 @@ public class DeviceRegistry extends Observable {
 
   public void setLogging(boolean b) {
     logEnabled = b;
+  }
+  
+  public void enableExpiry() {
+    expiryEnabled = true;
+  }
+  
+  public void disableExpiry() {
+   expiryEnabled = false; 
   }
   
   public void setFrameLimit(int fl) {
@@ -187,7 +196,10 @@ public class DeviceRegistry extends Observable {
         Seconds lastSeenSeconds = Seconds.secondsBetween(
             pusherLastSeenMap.get(deviceMac), DateTime.now());
         if (lastSeenSeconds.getSeconds() > MAX_DISCONNECT_SECONDS) {
-          toKill.add(deviceMac);
+          if (expiryEnabled)
+            toKill.add(deviceMac);
+          else
+            System.out.println("Would expire "+deviceMac+" but expiry is disabled.");
         }
       }
       for (String doomedIndividual : toKill) {

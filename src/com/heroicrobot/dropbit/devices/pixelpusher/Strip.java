@@ -260,4 +260,8 @@ public synchronized void setPixelWhite(byte intensity, int position) {
   public void useAntiLog(boolean antiLog) {
     useAntiLog = antiLog;
   }
+
+  public void setPusher(PixelPusher pixelPusher) {
+    this.pusher = pixelPusher;
+  }
 }

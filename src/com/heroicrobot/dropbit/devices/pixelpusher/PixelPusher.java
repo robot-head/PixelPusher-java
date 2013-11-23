@@ -1,8 +1,8 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.util.ArrayList;
-import java.util.concurrent.*;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
@@ -27,11 +27,14 @@ public class PixelPusher extends DeviceImpl
    * int16_t my_port;
    */
 
+  /**
+   * All access (including iteration) and mutation must be performed
+   * while holding stripLock
+   */
   private List<Strip> strips;
-  boolean stripsCreated = false;
+  private final Object stripLock = new Object();
   long extraDelayMsec = 0;
   boolean autothrottle = false;
-  Semaphore stripLock;
   
   final int SFLAG_RGBOW = 1;
 
@@ -59,38 +62,38 @@ public class PixelPusher extends DeviceImpl
   }
 
   synchronized void doDeferredStripCreation() {
-    stripLock.acquireUninterruptibly();
-    this.strips = new ArrayList<Strip>();
-    for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
-      this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
+    synchronized (stripLock) {
+      this.strips = new ArrayList<Strip>();
+      for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
+        this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
+      }
+      for (Strip strip: this.strips) {
+        strip.useAntiLog(useAntiLog);
+        strip.setRGBOW((stripFlags[strip.getStripNumber()] & SFLAG_RGBOW) == 1);
+      }
+      touchedStrips = false;
     }
-    for (Strip strip: this.strips) {
-      strip.useAntiLog(useAntiLog);
-      strip.setRGBOW((stripFlags[strip.getStripNumber()] & SFLAG_RGBOW) == 1);
-    }
-    stripLock.release();
-    stripsCreated = true;
-    touchedStrips = false;
   }
 
   /**
    * @return the stripsAttached
    */
   public int getNumberOfStrips() {
-    if (stripsCreated)
-      return strips.size();
-    else {
-      doDeferredStripCreation();
+    synchronized (stripLock) {
+      if (strips == null) {
+        doDeferredStripCreation();
+      }
       return strips.size();
     }
   }
 
   public List<Strip> getStrips() {
-    if (stripsCreated)
-      return this.strips;
-    else {
-      doDeferredStripCreation();
-      return this.strips;
+    synchronized (stripLock) {
+      if (strips == null) {
+        doDeferredStripCreation();
+      }
+      // Ensure callers can't modify the returned list
+      return Collections.unmodifiableList(strips);
     }
   }
 
@@ -105,10 +108,10 @@ public class PixelPusher extends DeviceImpl
   public Strip getStrip(int stripNumber) {
     if (stripNumber > stripsAttached)
        return null;
-    if (stripsCreated)
-      return this.strips.get(stripNumber);
-    else {
-      doDeferredStripCreation();
+    synchronized (stripLock) {
+      if (strips == null) {
+        doDeferredStripCreation();
+      }
       return this.strips.get(stripNumber);
     }
   }
@@ -195,10 +198,10 @@ public class PixelPusher extends DeviceImpl
   private byte[] stripFlags;
 
   public void setStripValues(int stripNumber, Pixel[] pixels) {
-    if (stripsCreated)
-      this.strips.get(stripNumber).setPixels(pixels);
-    else {
-      doDeferredStripCreation();
+    synchronized (stripLock) {
+      if (strips == null) {
+        doDeferredStripCreation();
+      }
       this.strips.get(stripNumber).setPixels(pixels);
     }
   }
@@ -213,7 +216,6 @@ public class PixelPusher extends DeviceImpl
     if (packet.length < 28) {
       throw new IllegalArgumentException();
     }
-    stripLock = new Semaphore(1);
     
     stripsAttached = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 0, 1));
     pixelsPerStrip = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 2, 4));
@@ -242,7 +244,6 @@ public class PixelPusher extends DeviceImpl
       for (int i=0; i<8; i++)
         stripFlags[i]=0;
     }
-    this.stripsCreated = false;
   }
 
   /*
@@ -322,11 +323,13 @@ public class PixelPusher extends DeviceImpl
   }
 
   private boolean hasRGBOW() {
-    if (stripsCreated)
-      for (Strip strip: this.strips)
-        if (strip.getRGBOW())
-          return true;
-
+    synchronized (stripLock) {
+      if (strips != null) {
+        for (Strip strip: this.strips)
+          if (strip.getRGBOW())
+            return true;        
+      }
+    }
     return false;
   }
 
@@ -359,19 +362,6 @@ public class PixelPusher extends DeviceImpl
     this.groupOrdinal = device.groupOrdinal;
     this.maxStripsPerPacket = device.maxStripsPerPacket;
 
-    // if the number of strips we have doesn't match,
-    // we'll need to make a fresh set.
-    if (this.stripsAttached != device.stripsAttached) {
-      this.stripsCreated = false;
-      this.stripsAttached = device.stripsAttached;
-    }
-    // likewise, if the length of each strip differs,
-    // we will need to make a new set.
-    if (this.pixelsPerStrip != device.pixelsPerStrip) {
-      this.pixelsPerStrip = device.pixelsPerStrip;
-      this.stripsCreated = false;
-    }
-
     this.powerTotal = device.powerTotal;
     this.updatePeriod = device.updatePeriod;
     this.artnet_channel = device.artnet_channel;
@@ -380,13 +370,24 @@ public class PixelPusher extends DeviceImpl
     this.filename = device.filename;
     this.amRecording = device.amRecording;
 
-    // if it already has strips, just use those
-    if (device.stripsCreated) {
-      this.makeBusy();
-      this.strips = device.strips;
-      this.stripsCreated = device.stripsCreated;
-      this.clearBusy();
-    }
+    synchronized (stripLock) {
+      // if the number of strips we have doesn't match,
+      // we'll need to make a fresh set.
+      if (this.stripsAttached != device.stripsAttached) {
+        this.strips = null;
+        this.stripsAttached = device.stripsAttached;
+      }
+      // likewise, if the length of each strip differs,
+      // we will need to make a new set.
+      if (this.pixelsPerStrip != device.pixelsPerStrip) {
+        this.pixelsPerStrip = device.pixelsPerStrip;
+        this.strips = null;
+      }
+      
+      // Removed the copy of the device's strips as
+      // it looks like the Strip instances will be
+      // referencing device and not this.      
+    }    
   }
 
   @Override
@@ -411,9 +412,12 @@ public class PixelPusher extends DeviceImpl
 
   public void setAntiLog(boolean antiLog) {
     useAntiLog = antiLog;
-    if (stripsCreated) {
-      for (Strip strip: this.strips)
-        strip.useAntiLog(useAntiLog);
+    synchronized (stripLock) {
+      if (strips == null) {
+        doDeferredStripCreation();
+        for (Strip strip: this.strips)
+          strip.useAntiLog(useAntiLog);
+      }
     }
   }
 
@@ -467,15 +471,17 @@ public class PixelPusher extends DeviceImpl
   }
   
   public List<Strip> getTouchedStrips() {
-    if (!stripsCreated)
-      doDeferredStripCreation();
+    synchronized (stripLock) {
+      if (strips == null) {
+        doDeferredStripCreation();
+      }
+      List<Strip>touchedStrips = new ArrayList<Strip>(strips);
+      for (Strip strip: strips)
+        if (!strip.isTouched())
+          touchedStrips.remove(strip);
 
-    List<Strip>touchedStrips = new ArrayList<Strip>(strips);
-    for (Strip strip: strips)
-      if (!strip.isTouched())
-        touchedStrips.remove(strip);
-
-    return touchedStrips;
+      return touchedStrips;
+    }
   }
 
 }

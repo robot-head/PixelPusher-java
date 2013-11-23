@@ -374,8 +374,6 @@ public class PixelPusher extends DeviceImpl
       // if it already has strips, just use those
       if (device.strips != null) {
             this.strips = device.strips;
-            for (Strip s: this.strips)
-              s.setPusher(this);
       }
       // if the number of strips we have doesn't match,
       // we'll need to make a fresh set.
@@ -390,9 +388,8 @@ public class PixelPusher extends DeviceImpl
         this.strips = null;
       }
       
-      // Removed the copy of the device's strips as
-      // it looks like the Strip instances will be
-      // referencing device and not this.      
+      for (Strip s: this.strips)
+         s.setPusher(this);   
     }    
   }
 

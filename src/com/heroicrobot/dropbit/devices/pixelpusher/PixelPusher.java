@@ -1,9 +1,12 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.util.ArrayList;
-import java.util.concurrent.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
 import com.heroicrobot.dropbit.devices.DeviceImpl;
@@ -27,26 +30,28 @@ public class PixelPusher extends DeviceImpl
    * int16_t my_port;
    */
 
+  /** Guarded by stripLock, all access must synchronize on {@link #stripLock}. */
   private List<Strip> strips;
-  boolean stripsCreated = false;
-  long extraDelayMsec = 0;
-  boolean autothrottle = false;
-  Semaphore stripLock;
+  private final Object stripLock = new Object();
   
-  final int SFLAG_RGBOW = 1;
+  private final AtomicLong extraDelayMsec = new AtomicLong(0);
+  private final AtomicBoolean autothrottle = new AtomicBoolean(false);
+  
+  private static final int SFLAG_RGBOW = 1;
 
-  int artnet_universe = 0;
-  int artnet_channel = 0;
-  int my_port = 9798;
-  int stripsAttached = 0;
-  int pixelsPerStrip = 0;
+  private final AtomicInteger artnet_universe = new AtomicInteger(0);
+  private final AtomicInteger artnet_channel = new AtomicInteger(0);
+  private final AtomicInteger my_port = new AtomicInteger(9798);
+  final AtomicInteger stripsAttached = new AtomicInteger(0);
+  private final AtomicInteger pixelsPerStrip = new AtomicInteger(0);
 
   /**
    * @return the my_port
    */
   public int getPort() {
-    if (my_port > 0)
-      return my_port;
+    int port = my_port.get();
+    if (port > 0)
+      return port;
 
     return 9897;
   }
@@ -55,66 +60,68 @@ public class PixelPusher extends DeviceImpl
    * @param my_port the my_port to set
    */
   public void setPort(int my_port) {
-    this.my_port = my_port;
+    this.my_port.set(my_port);
   }
 
-  synchronized void doDeferredStripCreation() {
-    stripLock.acquireUninterruptibly();
-    this.strips = new ArrayList<Strip>();
-    for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
-      this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
+  void doDeferredStripCreation() {
+    synchronized (stripLock) {
+      this.strips = new ArrayList<Strip>();
+      synchronized(stripFlags) {
+        for (int stripNo = 0, n = stripsAttached.get(); stripNo < n; stripNo++) {
+          Strip strip = new Strip(this, stripNo, pixelsPerStrip.get());
+          strip.useAntiLog(useAntiLog.get());
+          strip.setRGBOW((stripFlags[strip.getStripNumber()] & SFLAG_RGBOW) == 1);
+          this.strips.add(strip);
+        }
+      }
     }
-    for (Strip strip: this.strips) {
-      strip.useAntiLog(useAntiLog);
-      strip.setRGBOW((stripFlags[strip.getStripNumber()] & SFLAG_RGBOW) == 1);
-    }
-    stripLock.release();
-    stripsCreated = true;
-    touchedStrips = false;
+    touchedStrips.set(false);
   }
 
   /**
    * @return the stripsAttached
    */
   public int getNumberOfStrips() {
-    if (stripsCreated)
-      return strips.size();
-    else {
-      doDeferredStripCreation();
+    synchronized (stripLock) {
+      if (strips == null) {
+        doDeferredStripCreation();
+      }
       return strips.size();
     }
   }
 
   public List<Strip> getStrips() {
-    if (stripsCreated)
-      return this.strips;
-    else {
-      doDeferredStripCreation();
-      return this.strips;
+    synchronized (stripLock) {
+      if (strips == null) {
+        doDeferredStripCreation();
+      }
+      // Return a defensive copy so external code can't mutate the list
+      // and doesn't need to iterate whilst locking.
+      return new ArrayList<Strip>(strips);
     }
   }
 
   public int getArtnetUniverse() {
-    return artnet_universe;
+    return artnet_universe.get();
   }
 
   public int getArtnetChannel() {
-    return artnet_channel;
+    return artnet_channel.get();
   }
 
   public Strip getStrip(int stripNumber) {
-    if (stripNumber > stripsAttached)
+    if (stripNumber > stripsAttached.get())
        return null;
-    if (stripsCreated)
-      return this.strips.get(stripNumber);
-    else {
-      doDeferredStripCreation();
+    synchronized (stripLock) {
+      if (strips == null) {
+        doDeferredStripCreation();
+      }
       return this.strips.get(stripNumber);
     }
   }
 
   public void setAutoThrottle(boolean state) {
-    autothrottle = state;
+    autothrottle.set(state);
    // System.err.println("Setting autothrottle on card "+controllerOrdinal+" in group "+groupOrdinal+" to "+
    //     (autothrottle?"ON":"OFF"));
   }
@@ -123,36 +130,36 @@ public class PixelPusher extends DeviceImpl
    * @return the maxStripsPerPacket
    */
   public int getMaxStripsPerPacket() {
-    return maxStripsPerPacket;
+    return maxStripsPerPacket.get();
   }
 
   /**
    * @return the pixelsPerStrip
    */
   public int getPixelsPerStrip() {
-    return pixelsPerStrip;
+    return pixelsPerStrip.get();
   }
 
   /**
    * @return the updatePeriod
    */
   public long getUpdatePeriod() {
-    return updatePeriod;
+    return updatePeriod.get();
   }
 
   /**
    * @return the powerTotal
    */
   public long getPowerTotal() {
-    return powerTotal;
+    return powerTotal.get();
   }
 
   public long getDeltaSequence() {
-    return deltaSequence;
+    return deltaSequence.get();
   }
   public void increaseExtraDelay(long i) {
-    if (autothrottle) {
-      extraDelayMsec += i;
+    if (autothrottle.get()) {
+      extraDelayMsec.incrementAndGet();
       System.err.println("Group "+groupOrdinal+" card "+controllerOrdinal+" extra delay now "+extraDelayMsec);
     } else {
       System.err.println("Group "+groupOrdinal+" card "+controllerOrdinal+" would increase delay, but autothrottle is disabled.");
@@ -160,45 +167,54 @@ public class PixelPusher extends DeviceImpl
   }
 
   public void decreaseExtraDelay(long i) {
-    extraDelayMsec -= i;
-    if (extraDelayMsec < 0)
-       extraDelayMsec = 0;
+    // TODO this is unsafe in the face of concurrency. This is a
+    // compare then act which means the value could have changed
+    // between the read and the set. We really need a critical
+    // section around the entire get and set, but AtomicLong 
+    // only allows equal rather than general inequality
+    if (extraDelayMsec.decrementAndGet() < 0)
+      extraDelayMsec.set(0);
   }
+
   public long getExtraDelay() {
-    if (autothrottle)
-      return extraDelayMsec;
+    if (autothrottle.get())
+      return extraDelayMsec.get();
     else
       return 0;
   }
+  
   public void setExtraDelay(long i) {
-    extraDelayMsec = i;
+    extraDelayMsec.set(i);
   }
+  
   public int getControllerOrdinal() {
-      return controllerOrdinal;
+      return controllerOrdinal.get();
   }
 
   public int getGroupOrdinal() {
-    return groupOrdinal;
+    return groupOrdinal.get();
   }
 
-  private boolean touchedStrips;
-  private int maxStripsPerPacket;
-  private long updatePeriod;
-  private long powerTotal;
-  private long deltaSequence;
-  private int controllerOrdinal;
-  private int groupOrdinal;
-  private boolean useAntiLog;
-  private String filename;
-  private boolean amRecording;
-  private boolean isBusy;
-  private byte[] stripFlags;
+  private final AtomicBoolean touchedStrips = new AtomicBoolean(false);
+  private final AtomicInteger maxStripsPerPacket = new AtomicInteger(0);
+  private final AtomicLong updatePeriod = new AtomicLong(0);
+  private final AtomicLong powerTotal = new AtomicLong(0);
+  private final AtomicLong deltaSequence = new AtomicLong(0);
+  private final AtomicInteger controllerOrdinal = new AtomicInteger(0);
+  private final AtomicInteger groupOrdinal = new AtomicInteger(0);
+  private final AtomicBoolean useAntiLog = new AtomicBoolean(false);
+  private final AtomicReference<String> filename = new AtomicReference<String>();
+  private final AtomicBoolean amRecording = new AtomicBoolean(false);
+  private final AtomicBoolean isBusy = new AtomicBoolean(false);
+  
+  /** Synchronize on stripFlags when iterating or mutating */
+  private final byte[] stripFlags;
 
   public void setStripValues(int stripNumber, Pixel[] pixels) {
-    if (stripsCreated)
-      this.strips.get(stripNumber).setPixels(pixels);
-    else {
-      doDeferredStripCreation();
+    synchronized (stripLock) {
+      if (strips == null) {
+        doDeferredStripCreation();
+      }
       this.strips.get(stripNumber).setPixels(pixels);
     }
   }
@@ -213,28 +229,29 @@ public class PixelPusher extends DeviceImpl
     if (packet.length < 28) {
       throw new IllegalArgumentException();
     }
-    stripLock = new Semaphore(1);
     
-    stripsAttached = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 0, 1));
-    pixelsPerStrip = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 2, 4));
-    maxStripsPerPacket = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 1, 2));
+    stripsAttached.set(ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 0, 1)));
+    pixelsPerStrip.set(ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 2, 4)));
+    maxStripsPerPacket.set(ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 1, 2)));
 
-    updatePeriod = ByteUtils
-        .unsignedIntToLong(Arrays.copyOfRange(packet, 4, 8));
-    powerTotal = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 8, 12));
-    deltaSequence = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 12, 16));
-    controllerOrdinal = (int) ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 16, 20));
-    groupOrdinal = (int) ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 20, 24));
+    updatePeriod.set(ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 4, 8)));
+    powerTotal.set(ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 8, 12)));
+    deltaSequence.set(ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 12, 16)));
+    controllerOrdinal.set((int) ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 16, 20)));
+    groupOrdinal.set((int) ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 20, 24)));
 
-    artnet_universe = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 24, 26));
-    artnet_channel = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 26, 28));
-    amRecording = false;
+    artnet_universe.set((int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 24, 26)));
+    artnet_channel.set((int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 26, 28)));
+    amRecording.set(false);
 
     if (packet.length > 28) {
-      my_port = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 28, 30));
+      my_port.set((int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 28, 30)));
     } else {
-      my_port = 9798;
+      my_port.set(9798);
     }
+    
+    // No need to synchronize as we are in the constructor
+    // No other threads can bea ccess stripFlags right now
     if (packet.length > 30) {
       stripFlags = Arrays.copyOfRange(packet, 30, 38);
     } else {
@@ -242,7 +259,6 @@ public class PixelPusher extends DeviceImpl
       for (int i=0; i<8; i++)
         stripFlags[i]=0;
     }
-    this.stripsCreated = false;
   }
 
   /*
@@ -322,17 +338,24 @@ public class PixelPusher extends DeviceImpl
   }
 
   private boolean hasRGBOW() {
-    if (stripsCreated)
-      for (Strip strip: this.strips)
-        if (strip.getRGBOW())
+    synchronized (stripLock) {
+      if (this.strips == null) {
+        doDeferredStripCreation();
+      }
+      for (Strip strip : this.strips) {
+        if (strip.getRGBOW()) {
           return true;
-
-    return false;
+        }
+      }
+      return false;
+    }
   }
 
   private String formattedStripFlags() {
-    return "["+stripFlags[0]+"]["+stripFlags[1]+"]["+stripFlags[2]+"]["+stripFlags[3]+"]["
-        +stripFlags[4]+"]["+stripFlags[5]+"]["+stripFlags[6]+"]["+stripFlags[7]+"]";
+    synchronized (stripFlags) {
+      return "["+stripFlags[0]+"]["+stripFlags[1]+"]["+stripFlags[2]+"]["+stripFlags[3]+"]["
+          +stripFlags[4]+"]["+stripFlags[5]+"]["+stripFlags[6]+"]["+stripFlags[7]+"]";
+    }
   }
   
   public String toString() {
@@ -347,45 +370,54 @@ public class PixelPusher extends DeviceImpl
   }
 
   public void updateVariables(PixelPusher device) {
-    this.deltaSequence = device.deltaSequence;
-    this.maxStripsPerPacket = device.maxStripsPerPacket;
-    this.powerTotal = device.powerTotal;
-    this.updatePeriod = device.updatePeriod;
+    this.deltaSequence.set(device.deltaSequence.get());
+    this.maxStripsPerPacket.set(device.maxStripsPerPacket.get());
+    this.powerTotal.set(device.powerTotal.get());
+    this.updatePeriod.set(device.updatePeriod.get());
   }
   
-  public void copyHeader(PixelPusher device) {
-    this.controllerOrdinal = device.controllerOrdinal;
-    this.deltaSequence = device.deltaSequence;
-    this.groupOrdinal = device.groupOrdinal;
-    this.maxStripsPerPacket = device.maxStripsPerPacket;
+  public synchronized void copyHeader(PixelPusher device) {
+    this.controllerOrdinal.set(device.controllerOrdinal.get());
+    this.deltaSequence.set(device.deltaSequence.get());
+    this.groupOrdinal.set(device.groupOrdinal.get());
+    this.maxStripsPerPacket.set(device.maxStripsPerPacket.get());
 
-    // if the number of strips we have doesn't match,
-    // we'll need to make a fresh set.
-    if (this.stripsAttached != device.stripsAttached) {
-      this.stripsCreated = false;
-      this.stripsAttached = device.stripsAttached;
-    }
-    // likewise, if the length of each strip differs,
-    // we will need to make a new set.
-    if (this.pixelsPerStrip != device.pixelsPerStrip) {
-      this.pixelsPerStrip = device.pixelsPerStrip;
-      this.stripsCreated = false;
-    }
+    this.powerTotal.set(device.powerTotal.get());
+    this.updatePeriod.set(device.updatePeriod.get());
+    this.artnet_channel.set(device.artnet_channel.get());
+    this.artnet_universe.set(device.artnet_universe.get());
+    this.my_port.set(device.my_port.get());
+    this.filename.set(device.filename.get());
+    this.amRecording.set(device.amRecording.get());
 
-    this.powerTotal = device.powerTotal;
-    this.updatePeriod = device.updatePeriod;
-    this.artnet_channel = device.artnet_channel;
-    this.artnet_universe = device.artnet_universe;
-    this.my_port = device.my_port;
-    this.filename = device.filename;
-    this.amRecording = device.amRecording;
-
-    // if it already has strips, just use those
-    if (device.stripsCreated) {
-      this.makeBusy();
-      this.strips = device.strips;
-      this.stripsCreated = device.stripsCreated;
-      this.clearBusy();
+    synchronized (stripLock) {
+      
+      // if the number of strips we have doesn't match,
+      // we'll need to make a fresh set.
+      if (this.stripsAttached.get() != device.stripsAttached.get()) {
+        this.strips = null;
+        this.stripsAttached.set(device.stripsAttached.get());
+      }
+      // likewise, if the length of each strip differs,
+      // we will need to make a new set.
+      if (this.pixelsPerStrip != device.pixelsPerStrip) {
+        this.pixelsPerStrip.set(device.pixelsPerStrip.get());
+        this.strips = null;
+      }
+  
+  
+      // if it already has strips, just copy those
+      // but we need to synchronize on the other strip's lock
+      synchronized (device.stripLock) {
+        this.makeBusy();
+        try {
+          // Take a copy so the original device instance can't 
+          // modify this instance's list
+          this.strips = new ArrayList<Strip>(device.strips);
+        } finally {
+          this.clearBusy();
+        }
+      }  
     }
   }
 
@@ -410,72 +442,75 @@ public class PixelPusher extends DeviceImpl
   }
 
   public void setAntiLog(boolean antiLog) {
-    useAntiLog = antiLog;
-    if (stripsCreated) {
-      for (Strip strip: this.strips)
-        strip.useAntiLog(useAntiLog);
+    synchronized (this.stripLock) {
+      useAntiLog.set(antiLog);
+      if (this.strips == null) {
+        doDeferredStripCreation();
+      }
+      for (Strip strip : this.strips) {
+        strip.useAntiLog(antiLog);
+      }
     }
   }
 
   public void startRecording(String filename) {
-        amRecording = true;
+        amRecording.set(true);
         setFilename(filename);
   }
 
   public String getFilename() {
-    return filename;
+    return filename.get();
   }
 
   public void setFilename(String filename) {
-    this.filename = filename;
+    this.filename.set(filename);
   }
 
   public boolean isAmRecording() {
-    return amRecording;
+    return amRecording.get();
   }
 
   public void setAmRecording(boolean amRecording) {
-    this.amRecording = amRecording;
+    this.amRecording.set(amRecording);
   }
 
   public synchronized void makeBusy() {
-    isBusy = true;
+    isBusy.set(true);
   }
 
   public synchronized void clearBusy() {
-    isBusy = false;
+    isBusy.set(false);
   }
 
   public synchronized boolean isBusy() {
-    return isBusy;
+    return isBusy.get();
   }
 
   public boolean hasTouchedStrips() {
-    if (touchedStrips)
-      return true;
-
-    touchedStrips = false;
-    return false;
+    return touchedStrips.get();
   }
   
   public void markUntouched() {
-    touchedStrips = false;
+    touchedStrips.set(false);
   }
   
   public void markTouched() {
-    touchedStrips = true;
+    touchedStrips.set(true);
   }
   
   public List<Strip> getTouchedStrips() {
-    if (!stripsCreated)
-      doDeferredStripCreation();
-
-    List<Strip>touchedStrips = new ArrayList<Strip>(strips);
-    for (Strip strip: strips)
-      if (!strip.isTouched())
-        touchedStrips.remove(strip);
-
-    return touchedStrips;
+    synchronized (stripLock) {
+      if (this.strips == null) {
+        doDeferredStripCreation();
+      }
+      List<Strip> touchedStrips = new ArrayList<Strip>(strips.size());
+      for (Strip strip : strips) {
+        if (strip.isTouched()) {
+          touchedStrips.add(strip);
+        }
+      }
+      return touchedStrips;
+    }
   }
 
 }

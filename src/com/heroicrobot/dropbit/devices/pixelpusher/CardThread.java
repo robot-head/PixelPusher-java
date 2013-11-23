@@ -134,7 +134,7 @@ public class CardThread extends Thread {
     remainingStrips = new ArrayList<Strip>(pusher.getStrips());
     
     int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
-    int stripPerPacket = Math.min(requestedStripsPerPacket, pusher.stripsAttached);
+    int stripPerPacket = Math.min(requestedStripsPerPacket, pusher.stripsAttached.get());
 
     while (!remainingStrips.isEmpty()) {
       packetLength = 0;
@@ -143,12 +143,12 @@ public class CardThread extends Thread {
         this.threadSleepMsec = (pusher.getUpdatePeriod() / 1000) + 1;
       } else {
         // Shoot for the framelimit.
-        this.threadSleepMsec = ((1000/registry.getFrameLimit()) / (pusher.stripsAttached / stripPerPacket));
+        this.threadSleepMsec = ((1000/registry.getFrameLimit()) / (pusher.stripsAttached.get() / stripPerPacket));
       }
       
       // Handle errant delay calculation in the firmware.
       if (pusher.getUpdatePeriod() > 100000)
-        this.threadSleepMsec = (16 / (pusher.stripsAttached / stripPerPacket));
+        this.threadSleepMsec = (16 / (pusher.stripsAttached.get() / stripPerPacket));
       
       totalDelay = threadSleepMsec + threadExtraDelayMsec + pusher.getExtraDelay();
       

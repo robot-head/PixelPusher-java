@@ -1,5 +1,7 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
+import java.util.Objects;
+
 public class Pixel {
 
   static final byte sLinearExp[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -99,5 +101,30 @@ public class Pixel {
     this.orange = orange;
     this.white = white;
   }
+
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(red, green, blue, orange, white);
+  }
+
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    
+    if (!(obj instanceof Pixel))
+      return false;
+    
+    Pixel that = (Pixel) obj;
+    return this.red == that.red
+        && this.green == that.green
+        && this.blue == that.blue
+        && this.orange == that.orange
+        && this.white == that.white;
+  }
+  
+  
 
 }

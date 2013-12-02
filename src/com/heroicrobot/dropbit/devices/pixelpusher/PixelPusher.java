@@ -371,10 +371,6 @@ public class PixelPusher extends DeviceImpl
     this.amRecording = device.amRecording;
 
     synchronized (stripLock) {
-      // if it already has strips, just use those
-      if (device.strips != null) {
-            this.strips = device.strips;
-      }
       // if the number of strips we have doesn't match,
       // we'll need to make a fresh set.
       if (this.stripsAttached != device.stripsAttached) {

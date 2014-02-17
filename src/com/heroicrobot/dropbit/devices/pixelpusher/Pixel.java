@@ -1,6 +1,6 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
-import java.util.Objects;
+//import java.util.Objects;
 
 public class Pixel {
 
@@ -105,7 +105,7 @@ public class Pixel {
 
   @Override
   public int hashCode() {
-    return Objects.hash(red, green, blue, orange, white);
+    return (red ^ green ^ blue ^ orange ^ white);
   }
 
 

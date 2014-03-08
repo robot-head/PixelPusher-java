@@ -238,10 +238,10 @@ public class PixelPusher extends DeviceImpl
       my_port = 9798;
     }
     if (packet.length > 30) {
-      stripFlags = Arrays.copyOfRange(packet, 30, 38);
+      stripFlags = Arrays.copyOfRange(packet, 30, 30+stripsAttached);
     } else {
-      stripFlags = new byte[8];
-      for (int i=0; i<8; i++)
+      stripFlags = new byte[stripsAttached];
+      for (int i=0; i<stripsAttached; i++)
         stripFlags[i]=0;
     }
   }
@@ -334,8 +334,11 @@ public class PixelPusher extends DeviceImpl
   }
 
   private String formattedStripFlags() {
-    return "["+stripFlags[0]+"]["+stripFlags[1]+"]["+stripFlags[2]+"]["+stripFlags[3]+"]["
-        +stripFlags[4]+"]["+stripFlags[5]+"]["+stripFlags[6]+"]["+stripFlags[7]+"]";
+    StringBuffer s = new StringBuffer();
+    
+    for (int i = 0; i<stripsAttached; i++)
+      s.append("["+stripFlags[i]+"]");
+    return new String(s);
   }
   
   public String toString() {

@@ -196,6 +196,10 @@ public class PixelPusher extends DeviceImpl
   private boolean amRecording;
   private boolean isBusy;
   private byte[] stripFlags;
+  private long pusherFlags;
+  private long segments;
+  private long powerDomain;
+  
 
   public void setStripValues(int stripNumber, Pixel[] pixels) {
     synchronized (stripLock) {
@@ -232,17 +236,38 @@ public class PixelPusher extends DeviceImpl
     artnet_channel = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 26, 28));
     amRecording = false;
 
-    if (packet.length > 28) {
+    if (packet.length > 28 && super.getSoftwareRevision() > 100) {
       my_port = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 28, 30));
     } else {
       my_port = 9798;
     }
-    if (packet.length > 30) {
-      stripFlags = Arrays.copyOfRange(packet, 30, 30+stripsAttached);
+    // A minor complication here.  The PixelPusher firmware generates announce packets from
+    // a static structure, so the size of stripFlags is always 8;  even if there are fewer
+    // strips configured.  So we have a wart. - jls.
+    
+    int stripFlagSize = stripsAttached<8?8:stripsAttached;
+    
+    if (packet.length > 30 && super.getSoftwareRevision() > 108) {
+      stripFlags = Arrays.copyOfRange(packet, 30, 30+stripFlagSize);
     } else {
-      stripFlags = new byte[stripsAttached];
-      for (int i=0; i<stripsAttached; i++)
+      stripFlags = new byte[stripFlagSize];
+      for (int i=0; i<stripFlagSize; i++)
         stripFlags[i]=0;
+    }
+    /*
+     * We have some entries that come after the per-strip flag array.
+     * We represent these as longs so that the entire range of a uint may be preserved;
+     * why on earth Java doesn't have unsigned ints I have no idea. - jls
+     * 
+     * uint32_t pusher_flags;      // flags for the whole pusher
+     * uint32_t segments;          // number of segments in each strip
+     * uint32_t power_domain;      // power domain of this pusher
+     */
+    
+    if (packet.length > 30+stripFlagSize && super.getSoftwareRevision() > 116) {
+      pusherFlags = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 30+stripFlagSize, 34+stripFlagSize));
+      segments = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 34+stripFlagSize, 38+stripFlagSize));
+      powerDomain = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 38+stripFlagSize, 42+stripFlagSize));
     }
   }
 

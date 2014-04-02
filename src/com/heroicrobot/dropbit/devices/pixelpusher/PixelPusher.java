@@ -220,6 +220,9 @@ public class PixelPusher extends DeviceImpl
     if (packet.length < 28) {
       throw new IllegalArgumentException();
     }
+    pusherFlags=0;
+    segments=0;
+    powerDomain=0;
     
     stripsAttached = ByteUtils.unsignedCharToInt(Arrays.copyOfRange(packet, 0, 1));
     pixelsPerStrip = ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 2, 4));
@@ -339,10 +342,21 @@ public class PixelPusher extends DeviceImpl
     if (this.my_port != other.my_port)
       return false;
 
-    // we should update every time the power total changes
-    //if (this.powerTotal != other.powerTotal)
-    //  return false;
+    // we should update every time the power total changes significantly
+    if (Math.abs(this.powerTotal - other.powerTotal) > 10000)
+      return false;
 
+    // handle the case where our power domain changed
+    if (this.powerDomain != other.powerDomain)
+      return false;
+    
+    // ditto for number of segments and pusherFlags
+    if (this.segments != other.segments)
+      return false;   
+    
+    if (this.pusherFlags != other.pusherFlags)
+      return false;
+    
     // if all those other things are the same, then we call it good.
     return true;
   }
@@ -374,7 +388,8 @@ public class PixelPusher extends DeviceImpl
         + deltaSequence + ") Group (" +groupOrdinal +") Controller ("
         + controllerOrdinal + " ) + Port ("+my_port+") Art-Net Universe ("
         +artnet_universe+") Art-Net Channel ("+artnet_channel+")" 
-        + " Strip flags "+formattedStripFlags();
+        + " Strip flags "+formattedStripFlags()+" Pusher Flags ("+ pusherFlags
+        +") Segments (" + segments +") Power Domain ("+ powerDomain + ")";
   }
 
   public void updateVariables(PixelPusher device) {

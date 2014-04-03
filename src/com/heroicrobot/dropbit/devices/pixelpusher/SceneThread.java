@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
+
 import com.heroicrobot.dropbit.registry.DeviceRegistry;
 import java.util.concurrent.Semaphore;
 
@@ -97,6 +99,10 @@ public class SceneThread extends Thread implements Observer {
       
       return(powerDomainMap.get(new Long(domain))).longValue();
     }
+  }
+  
+  public Set<Long> getPowerDomains() {
+    return powerDomainMap.keySet();
   }
   
   @Override

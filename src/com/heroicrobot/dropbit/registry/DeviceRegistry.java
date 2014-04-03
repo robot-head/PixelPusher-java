@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
@@ -62,6 +63,10 @@ public class DeviceRegistry extends Observable {
 
   public void setLogging(boolean b) {
     logEnabled = b;
+  }
+  
+  public Set<Long> getPowerDomains() {
+    return sceneThread.getPowerDomains();
   }
   
   public void enableExpiry() {

@@ -83,10 +83,14 @@ public class CardThread extends Thread {
         }
       }
       bytesSent = sendPacketToPusher(pusher);
+      int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
+      int stripPerPacket = Math.min(requestedStripsPerPacket, pusher.stripsAttached);
+      
       if (bytesSent == 0) {
         try {
           long estimatedSleep = (System.nanoTime() - lastWorkTime)/1000000;
-          estimatedSleep = Math.min(estimatedSleep, 16);
+          estimatedSleep = Math.min(estimatedSleep, ((1000/registry.getFrameLimit()) 
+                                      / (pusher.stripsAttached / stripPerPacket)));
           
           Thread.sleep(estimatedSleep);
         } catch (InterruptedException e) {

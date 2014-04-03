@@ -29,12 +29,14 @@ public class CardThread extends Thread {
   private boolean fileIsOpen;
   FileOutputStream recordFile;
   private long lastSendTime;
+  private long lastWorkTime;
 
   CardThread(PixelPusher pusher, DeviceRegistry dr) {
     super("CardThread for PixelPusher "+pusher.getMacAddress());
     this.pusher = pusher;
     this.pusherPort = pusher.getPort();
     this.lastSendTime = 0;
+    this.lastWorkTime = System.nanoTime();
 
     this.registry = dr;
     try {
@@ -81,8 +83,14 @@ public class CardThread extends Thread {
         }
       }
       bytesSent = sendPacketToPusher(pusher);
-      if (bytesSent == 0)
-        Thread.yield();
+      if (bytesSent == 0) {
+        try {
+          Thread.sleep((System.nanoTime() - lastWorkTime)/1000000);
+        } catch (InterruptedException e) {
+          // Don't care if we get interrupted.
+        }
+        lastWorkTime = System.nanoTime();
+      }
       long endTime = System.nanoTime();
       long duration = ((endTime - startTime) / 1000000);
       if (duration > 0)
@@ -97,7 +105,6 @@ public class CardThread extends Thread {
         fileIsOpen = false;
         recordFile.close();
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
   }

@@ -38,6 +38,7 @@ public class SceneThread extends Thread implements Observer {
     this.drain = false;
     this.running = false;
     this.listSemaphore = new Semaphore(1);
+    this.powerDomainMap = new HashMap<Long, Long>();
   }
 
   public void setAutoThrottle(boolean autothrottle) {

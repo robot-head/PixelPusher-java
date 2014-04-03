@@ -526,4 +526,8 @@ public class PixelPusher extends DeviceImpl
     }
   }
 
+  public long getPowerDomain() {
+    return powerDomain;
+  }
+
 }

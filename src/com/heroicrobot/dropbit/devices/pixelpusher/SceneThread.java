@@ -11,6 +11,10 @@ public class SceneThread extends Thread implements Observer {
 
   private Map<String, PixelPusher> pusherMap;
   private Map<String, CardThread> cardThreadMap;
+  private Map<Long, Long> powerDomainMap;
+  
+  public int powerMap;
+  
   byte[] packet;
   int packetLength;
   private int extraDelay = 0;
@@ -69,6 +73,32 @@ public class SceneThread extends Thread implements Observer {
     cardThreadMap.remove(card.getMacAddress());
    }
 
+  private void computePowerDomains() {
+    synchronized(powerDomainMap) {
+      this.powerDomainMap = new HashMap<Long, Long>();
+      for (String key: pusherMap.keySet()) {  // for each pusher
+        PixelPusher p = pusherMap.get(key);   // get the pusher
+        Long k = new Long(p.getPowerDomain());
+        if (powerDomainMap.containsKey(k)) {  // is it in a power domain we already know about?
+          long power = powerDomainMap.get(k).longValue(); // get the power for this domain from the map
+          power += p.getPowerTotal();         // get the powerTotal from the pusher
+          powerDomainMap.put(k, new Long(power));       // store it back
+        } else {                              // make a fresh one
+          powerDomainMap.put(k, new Long(p.getPowerTotal()));
+        }
+      }
+    }
+  }
+  
+  public long getPowerForDomain(long domain) {
+    synchronized(powerDomainMap) {
+      if (!powerDomainMap.containsKey(new Long(domain)))
+        return (long)0;
+      
+      return(powerDomainMap.get(new Long(domain))).longValue();
+    }
+  }
+  
   @Override
   public void update(Observable observable, Object update) {
     if (!drain) {
@@ -160,6 +190,7 @@ public class SceneThread extends Thread implements Observer {
           }
         }
       }
+      computePowerDomains();
       if (frameCallback)
         Thread.yield();
       else

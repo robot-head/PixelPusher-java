@@ -128,14 +128,14 @@ public class CardThread extends Thread {
     
     List<Strip> remainingStrips;
     
-    while (!pusher.hasTouchedStrips()) {
+    if (!pusher.hasTouchedStrips()) {
       //System.out.println("Yielding because no touched strips.");
-      Thread.yield();
+      return 0;
     }
     
-    while (pusher.isBusy()) {
+    if (pusher.isBusy()) {
       //System.out.println("Yielding because pusher is busy.");
-      Thread.yield();
+      return 0;
     }
     
     pusher.makeBusy();

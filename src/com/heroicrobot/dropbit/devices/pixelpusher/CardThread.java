@@ -85,7 +85,10 @@ public class CardThread extends Thread {
       bytesSent = sendPacketToPusher(pusher);
       if (bytesSent == 0) {
         try {
-          Thread.sleep((System.nanoTime() - lastWorkTime)/1000000);
+          long estimatedSleep = (System.nanoTime() - lastWorkTime)/1000000;
+          estimatedSleep = Math.min(estimatedSleep, 16);
+          
+          Thread.sleep(estimatedSleep);
         } catch (InterruptedException e) {
           // Don't care if we get interrupted.
         }

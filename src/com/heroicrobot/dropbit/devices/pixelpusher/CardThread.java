@@ -83,6 +83,7 @@ public class CardThread extends Thread {
         }
       }
       bytesSent = sendPacketToPusher(pusher);
+      
       int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
       int stripPerPacket = Math.min(requestedStripsPerPacket, pusher.stripsAttached);
       
@@ -96,6 +97,8 @@ public class CardThread extends Thread {
         } catch (InterruptedException e) {
           // Don't care if we get interrupted.
         }
+      }
+      else {
         lastWorkTime = System.nanoTime();
       }
       long endTime = System.nanoTime();

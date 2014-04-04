@@ -231,8 +231,6 @@ public class SceneThread extends Thread implements Observer {
   public void useAntiLog(boolean antiLog) {
      useAntiLog = antiLog;
      for (PixelPusher pusher : pusherMap.values()) {
-       //System.err.println("Setting card "+pusher.getControllerOrdinal()+" group "+pusher.getGroupOrdinal()+" to "+
-       //      (autothrottle?"throttle":"not throttle"));
        pusher.setAntiLog(antiLog);
      }
   }

@@ -412,6 +412,9 @@ public class PixelPusher extends DeviceImpl
     this.my_port = device.my_port;
     this.filename = device.filename;
     this.amRecording = device.amRecording;
+    
+    this.pusherFlags = device.pusherFlags;
+    this.powerDomain = device.powerDomain;
 
     synchronized (stripLock) {
       // if the number of strips we have doesn't match,
@@ -426,9 +429,14 @@ public class PixelPusher extends DeviceImpl
         this.pixelsPerStrip = device.pixelsPerStrip;
         this.strips = null;
       }
-      
-      for (Strip s: this.strips)
-         s.setPusher(this);   
+      // and it's the same for segments
+      if (this.segments != device.segments) {
+        this.segments = device.segments;
+        this.strips = null;
+      }
+      if (this.strips != null)
+        for (Strip s: this.strips)
+          s.setPusher(this);   
     }    
   }
 

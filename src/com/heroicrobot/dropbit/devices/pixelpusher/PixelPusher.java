@@ -538,4 +538,10 @@ public class PixelPusher extends DeviceImpl
     return powerDomain;
   }
 
+  public void shutDown() {
+    synchronized (stripLock) {
+      clearBusy();
+    }
+  }
+
 }

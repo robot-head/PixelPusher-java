@@ -109,6 +109,7 @@ public class CardThread extends Thread {
   }
 
   public void shutDown() {
+    pusher.shutDown();
     if (fileIsOpen)
       try {
         pusher.setAmRecording(false);
@@ -117,6 +118,7 @@ public class CardThread extends Thread {
       } catch (IOException e) {
         e.printStackTrace();
       }
+    this.cancel = true;
   }
 
   public boolean cancel() {

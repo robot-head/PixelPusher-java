@@ -30,6 +30,7 @@ public class CardThread extends Thread {
   FileOutputStream recordFile;
   private long lastSendTime;
   private long lastWorkTime;
+  public boolean terminated=false;
 
   CardThread(PixelPusher pusher, DeviceRegistry dr) {
     super("CardThread for PixelPusher "+pusher.getMacAddress());
@@ -106,6 +107,7 @@ public class CardThread extends Thread {
       if (duration > 0)
         bandwidthEstimate = bytesSent / duration;
     }
+    terminated = true;
   }
 
   public void shutDown() {
@@ -119,11 +121,14 @@ public class CardThread extends Thread {
         e.printStackTrace();
       }
     this.cancel = true;
-  }
-
-  public boolean cancel() {
-    this.cancel = true;
-    return true;
+    while (!terminated) {
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        System.err.println("Interrupted terminating CardThread "+pusher.getMacAddress());
+        e.printStackTrace();
+      }
+    }
   }
 
   private int sendPacketToPusher(PixelPusher pusher) {

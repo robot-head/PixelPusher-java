@@ -29,7 +29,7 @@ import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import com.heroicrobot.dropbit.discovery.DeviceHeader;
 import com.heroicrobot.dropbit.discovery.DeviceType;
 
-public class DeviceRegistry extends Observable {
+public final class DeviceRegistry extends Observable {
 
   private final static Logger LOGGER = Logger.getLogger(DeviceRegistry.class
       .getName());
@@ -48,6 +48,8 @@ public class DeviceRegistry extends Observable {
   private static boolean AntiLog = false;
   private static boolean logEnabled = true;
   private static int frameLimit = 85;
+  private static Boolean hasDiscoveryListener = false;
+  private static Boolean alreadyExist = false;
   private boolean expiryEnabled = true;
   
   private Map<String, PixelPusher> pusherMap;
@@ -60,6 +62,9 @@ public class DeviceRegistry extends Observable {
   private TreeMap<Integer, PusherGroup> groupMap;
 
   private TreeSet<PixelPusher> sortedPushers;
+
+
+  public Boolean hasDeviceExpiryTask=false;
 
   public void setLogging(boolean b) {
     logEnabled = b;
@@ -182,35 +187,48 @@ public class DeviceRegistry extends Observable {
     private DeviceRegistry registry;
 
     DeviceExpiryTask(DeviceRegistry registry) {
-      this.registry = registry;
+      if(registry.hasDeviceExpiryTask) {
+        System.err.println("Already have a DeviceExpiryTask;  doppelganger terminating.");
+        this.registry=null;
+      } else {
+        this.registry = registry;
+        hasDeviceExpiryTask = true;
+      }
     }
 
     @Override
     public void run() {
-      updateLock.acquireUninterruptibly();
-      if (logEnabled) 
-        LOGGER.fine("Expiry and preening task running");
+      if (this.registry == null)
+          return;
       
-      // A little sleight of hand here.  We can't call registry.expireDevice()
-      // directly from inside the loop, for the loop is an implicit iterator and
-      // registry.expireDevice modifies the pusherMap.
-      // Instead we create a list of the MAC addresses to kill, then loop over
-      // them outside the iterator.  - jls
-      List<String> toKill = new ArrayList<String>();
-      for (String deviceMac : pusherMap.keySet()) {
-        Seconds lastSeenSeconds = Seconds.secondsBetween(
-            pusherLastSeenMap.get(deviceMac), DateTime.now());
-        if (lastSeenSeconds.getSeconds() > MAX_DISCONNECT_SECONDS) {
-          if (expiryEnabled)
-            toKill.add(deviceMac);
-          else
-            System.out.println("Would expire "+deviceMac+" but expiry is disabled.");
+      if (updateLock.tryAcquire()) {
+      synchronized(registry.hasDeviceExpiryTask) {
+          if (logEnabled) 
+            LOGGER.fine("Expiry and preening task running");
+          
+          // A little sleight of hand here.  We can't call registry.expireDevice()
+          // directly from inside the loop, for the loop is an implicit iterator and
+          // registry.expireDevice modifies the pusherMap.
+          // Instead we create a list of the MAC addresses to kill, then loop over
+          // them outside the iterator.  - jls
+          List<String> toKill = new ArrayList<String>();
+          for (String deviceMac : pusherMap.keySet()) {
+            Seconds lastSeenSeconds = Seconds.secondsBetween(
+                pusherLastSeenMap.get(deviceMac), DateTime.now());
+            if (lastSeenSeconds.getSeconds() > MAX_DISCONNECT_SECONDS) {
+              if (expiryEnabled)
+                toKill.add(deviceMac);
+              else
+                System.out.println("Would expire "+deviceMac+" but expiry is disabled.");
+            }
+          }
+          for (String doomedIndividual : toKill) {
+            registry.expireDevice(doomedIndividual);
+          }
+          updateLock.release();
+          hasDeviceExpiryTask = false;
         }
       }
-      for (String doomedIndividual : toKill) {
-        registry.expireDevice(doomedIndividual);
-      }
-      updateLock.release();
     }
   }
 
@@ -239,35 +257,47 @@ public class DeviceRegistry extends Observable {
 
   }
   
-  private class DiscoveryListenerThread extends Thread {
+  static private class DiscoveryListenerThread extends Thread {
     private DatagramSocket discovery_socket;
     private DatagramPacket discovery_buffer;
     private DeviceRegistry _dr;
    
+    @SuppressWarnings("deprecation")
     DiscoveryListenerThread(int discovery_port, DeviceRegistry dr) {
      super("PixelPusher Discovery Listener");
-     try {
-
+     synchronized(DeviceRegistry.hasDiscoveryListener) {
+       if (DeviceRegistry.hasDiscoveryListener) {
+         System.err.println("Already have a DiscoveryListener!  Not creating a fresh one.");
+         this.stop();
+       }
+       DeviceRegistry.hasDiscoveryListener = true;
+       System.err.println("Starting a new instance of the discovery listener.");
+       for(StackTraceElement ste: this.getStackTrace())
+         System.err.println(ste.toString());
        
-       this.discovery_socket = new DatagramSocket(null);
-       
-       this.discovery_socket.setReuseAddress(true);
-       this.discovery_socket.setBroadcast(true);
-       
-       this.discovery_socket.bind(new InetSocketAddress(InetAddress.getByName("0.0.0.0"), discovery_port));
-       if (logEnabled)
-         System.out.println("Listening for PixelPusher announcements on " + this.discovery_socket.getLocalAddress() + " port "
-           + this.discovery_socket.getLocalPort() + ", broadcast=" + this.discovery_socket.getBroadcast());
-       
-       } catch (SocketException e) {
-         e.printStackTrace();
-       } catch (UnknownHostException e) {
-         System.err.println("For some reason, could not resolve 0.0.0.0.");
-         e.printStackTrace();
+       try {
+  
+         
+         this.discovery_socket = new DatagramSocket(null);
+         
+         this.discovery_socket.setReuseAddress(true);
+         this.discovery_socket.setBroadcast(true);
+         
+         this.discovery_socket.bind(new InetSocketAddress(InetAddress.getByName("0.0.0.0"), discovery_port));
+         if (logEnabled)
+           System.out.println("Listening for PixelPusher announcements on " + this.discovery_socket.getLocalAddress() + " port "
+             + this.discovery_socket.getLocalPort() + ", broadcast=" + this.discovery_socket.getBroadcast());
+         
+         } catch (SocketException e) {
+           e.printStackTrace();
+         } catch (UnknownHostException e) {
+           System.err.println("For some reason, could not resolve 0.0.0.0.");
+           e.printStackTrace();
+        }
+        byte[] buf = new byte[1536];
+        this.discovery_buffer = new DatagramPacket(buf, buf.length);
+        this._dr = dr;
       }
-      byte[] buf = new byte[1536];
-      this.discovery_buffer = new DatagramPacket(buf, buf.length);
-      this._dr = dr;
     }
     
     public void run() {
@@ -283,19 +313,28 @@ public class DeviceRegistry extends Observable {
   }
 
   public DeviceRegistry() {
-    updateLock = new Semaphore(1);
-    pusherMap = new TreeMap<String, PixelPusher>();
-    groupMap = new TreeMap<Integer, PusherGroup>();
-    sortedPushers = new TreeSet<PixelPusher>(new DefaultPusherComparator());
-    pusherLastSeenMap = new HashMap<String, DateTime>();
-
-    this._dlt = new DiscoveryListenerThread(DISCOVERY_PORT, this);
-    this.expiryTimer = new Timer();
-    this.expiryTimer.scheduleAtFixedRate(new DeviceExpiryTask(this), 0L,
-        EXPIRY_TIMER_MSEC);
-    this.sceneThread = new SceneThread();
-    this.addObserver(this.sceneThread);
-    this._dlt.start();
+    synchronized(alreadyExist) {
+      if (alreadyExist) {
+        System.err.println("DeviceRegistry being instantiated for a second time.");
+        return;
+      }
+      alreadyExist = true;
+      
+      updateLock = new Semaphore(1);
+      pusherMap = new TreeMap<String, PixelPusher>();
+      groupMap = new TreeMap<Integer, PusherGroup>();
+      sortedPushers = new TreeSet<PixelPusher>(new DefaultPusherComparator());
+      pusherLastSeenMap = new HashMap<String, DateTime>();
+      System.err.println("Building a new DeviceRegistry.");
+      
+      this._dlt = new DiscoveryListenerThread(DISCOVERY_PORT, this);
+      this.expiryTimer = new Timer();
+      this.expiryTimer.scheduleAtFixedRate(new DeviceExpiryTask(this), 0L,
+          EXPIRY_TIMER_MSEC);
+      this.sceneThread = new SceneThread();
+      this.addObserver(this.sceneThread);
+      this._dlt.start();
+    }
   }
 
   public void expireDevice(String macAddr) {

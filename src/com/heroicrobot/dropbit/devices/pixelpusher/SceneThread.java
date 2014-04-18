@@ -70,7 +70,11 @@ public class SceneThread extends Thread implements Observer {
     for (CardThread th : cardThreadMap.values()) {
         if (th.controls(card)) {
           th.shutDown();
-          th.cancel();
+          try {
+            Thread.sleep(200);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
        }
      }
     cardThreadMap.remove(card.getMacAddress());
@@ -123,8 +127,13 @@ public class SceneThread extends Thread implements Observer {
       try {
         for (String key : incomingPusherMap.keySet()) {
           if (currentPusherMap.containsKey(key)) { // if we already know about it
-            newPusherMap.remove(key); // remove it from the new pusher map (is
-                                      // old)
+            
+            //check and see if its cardThread is still running
+            if (cardThreadMap.containsKey(key))
+              if (cardThreadMap.get(key).isAlive()) {
+                newPusherMap.remove(key); // if so, remove it from the new pusher map (is
+                                        // old)
+              }
           }
         }
       } catch (java.util.ConcurrentModificationException cme) {
@@ -160,7 +169,7 @@ public class SceneThread extends Thread implements Observer {
       for (String key : deadPusherMap.keySet()) {
         System.out.println("Killing old CardThread " + key);
         try {
-          cardThreadMap.get(key).cancel();
+          cardThreadMap.get(key).shutDown();
         } catch (NullPointerException npe) {
           System.err.println("Tried to kill CardThread for MAC "+key+", but it was already gone.");
         }
@@ -212,7 +221,7 @@ public class SceneThread extends Thread implements Observer {
   public boolean cancel() {
     this.drain = true;
     for (String key : cardThreadMap.keySet()) {
-      cardThreadMap.get(key).cancel();
+      cardThreadMap.get(key).shutDown();
       cardThreadMap.remove(key);
     }
     return true;

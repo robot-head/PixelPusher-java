@@ -128,11 +128,11 @@ public class SceneThread extends Thread implements Observer {
         for (String key : incomingPusherMap.keySet()) {
           if (currentPusherMap.containsKey(key)) { // if we already know about it
             
-            //check and see if its cardThread is still running
+            //check and see if its CardThread is still running
             if (cardThreadMap.containsKey(key))
               if (cardThreadMap.get(key).isAlive()) {
                 newPusherMap.remove(key); // if so, remove it from the new pusher map (is
-                                        // old)
+                                          // old)
               }
           }
         }
@@ -157,6 +157,7 @@ public class SceneThread extends Thread implements Observer {
         CardThread newCardThread = new CardThread(newPusherMap.get(key),
             ((DeviceRegistry) observable));
         if (running) {
+          System.out.println("Making a new CardThread for "+key);
           newCardThread.start();
           newCardThread.setExtraDelay(extraDelay);
           newCardThread.setAntiLog(useAntiLog);

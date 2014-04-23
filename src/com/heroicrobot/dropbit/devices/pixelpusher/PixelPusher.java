@@ -248,7 +248,10 @@ public class PixelPusher extends DeviceImpl
     // a static structure, so the size of stripFlags is always 8;  even if there are fewer
     // strips configured.  So we have a wart. - jls.
     
-    int stripFlagSize = stripsAttached<8?8:stripsAttached;
+    
+    int stripFlagSize = 8;
+    if (stripsAttached>8)
+        stripFlagSize = stripsAttached;
     
     if (packet.length > 30 && super.getSoftwareRevision() > 108) {
       stripFlags = Arrays.copyOfRange(packet, 30, 30+stripFlagSize);
@@ -268,9 +271,9 @@ public class PixelPusher extends DeviceImpl
      */
     
     if (packet.length > 30+stripFlagSize && super.getSoftwareRevision() > 116) {
-      pusherFlags = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 30+stripFlagSize, 34+stripFlagSize));
-      segments = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 34+stripFlagSize, 38+stripFlagSize));
-      powerDomain = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 38+stripFlagSize, 42+stripFlagSize));
+      pusherFlags = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 32+stripFlagSize, 36+stripFlagSize));
+      segments = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 36+stripFlagSize, 40+stripFlagSize));
+      powerDomain = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 40+stripFlagSize, 44+stripFlagSize));
     }
   }
 

@@ -37,6 +37,10 @@ public class PixelPusher extends DeviceImpl
   boolean autothrottle = false;
   
   final int SFLAG_RGBOW = 1;
+  final int SFLAG_WIDEPIXELS = 1;
+  
+  final int PFLAG_PROTECTED = (1<<0);
+  final int PFLAG_FIXEDSIZE = (1<<1);
 
   int artnet_universe = 0;
   int artnet_channel = 0;
@@ -136,6 +140,14 @@ public class PixelPusher extends DeviceImpl
     return pixelsPerStrip;
   }
 
+  public long getPusherFlags() {
+    return pusherFlags;
+  }
+
+  public void setPusherFlags(long pusherFlags) {
+    this.pusherFlags = pusherFlags;
+  }
+
   /**
    * @return the updatePeriod
    */
@@ -220,7 +232,7 @@ public class PixelPusher extends DeviceImpl
     if (packet.length < 28) {
       throw new IllegalArgumentException();
     }
-    pusherFlags=0;
+    setPusherFlags(0);
     segments=0;
     powerDomain=0;
     
@@ -238,6 +250,7 @@ public class PixelPusher extends DeviceImpl
     artnet_universe = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 24, 26));
     artnet_channel = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 26, 28));
     amRecording = false;
+    setPusherFlags(0);
 
     if (packet.length > 28 && super.getSoftwareRevision() > 100) {
       my_port = (int) ByteUtils.unsignedShortToInt(Arrays.copyOfRange(packet, 28, 30));
@@ -271,7 +284,7 @@ public class PixelPusher extends DeviceImpl
      */
     
     if (packet.length > 30+stripFlagSize && super.getSoftwareRevision() > 116) {
-      pusherFlags = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 32+stripFlagSize, 36+stripFlagSize));
+      setPusherFlags(ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 32+stripFlagSize, 36+stripFlagSize)));
       segments = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 36+stripFlagSize, 40+stripFlagSize));
       powerDomain = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 40+stripFlagSize, 44+stripFlagSize));
     }
@@ -357,7 +370,7 @@ public class PixelPusher extends DeviceImpl
     if (this.segments != other.segments)
       return false;   
     
-    if (this.pusherFlags != other.pusherFlags)
+    if (this.getPusherFlags() != other.getPusherFlags())
       return false;
     
     // if all those other things are the same, then we call it good.
@@ -391,7 +404,7 @@ public class PixelPusher extends DeviceImpl
         + deltaSequence + ") Group (" +groupOrdinal +") Controller ("
         + controllerOrdinal + " ) + Port ("+my_port+") Art-Net Universe ("
         +artnet_universe+") Art-Net Channel ("+artnet_channel+")" 
-        + " Strip flags "+formattedStripFlags()+" Pusher Flags ("+ pusherFlags
+        + " Strip flags "+formattedStripFlags()+" Pusher Flags ("+ getPusherFlags()
         +") Segments (" + segments +") Power Domain ("+ powerDomain + ")";
   }
 
@@ -416,7 +429,7 @@ public class PixelPusher extends DeviceImpl
     this.filename = device.filename;
     this.amRecording = device.amRecording;
     
-    this.pusherFlags = device.pusherFlags;
+    this.setPusherFlags(device.getPusherFlags());
     this.powerDomain = device.powerDomain;
 
     synchronized (stripLock) {

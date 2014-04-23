@@ -188,7 +188,7 @@ public class CardThread extends Thread {
           break;
         }
         Strip strip = remainingStrips.remove(0);
-        if (!strip.isTouched())
+        if (!strip.isTouched() && ((pusher.getPusherFlags() & pusher.PFLAG_FIXEDSIZE) == 0))
           continue;
 
         strip.setPowerScale(powerScale);

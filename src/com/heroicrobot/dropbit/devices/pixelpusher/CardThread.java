@@ -236,12 +236,40 @@ public class CardThread extends Thread {
 
         totalLength += packetLength;
       }
-      try {
-        Thread.sleep(totalDelay);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
+      if (!payload) {
+        if (!(pusher.commandQueue.isEmpty())) {
+          PusherCommand pc = pusher.commandQueue.remove();
+          byte[] commandBytes = pc.generateBytes();
+
+          packetLength = 0;
+          packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
+          for(int j = 0; j < packetNumberArray.length; j++) {
+            this.packet[packetLength++] = packetNumberArray[j];
+          }
+          for(int j = 0; j < commandBytes.length; j++) {
+            this.packet[packetLength++] = packetNumberArray[j];
+          }
+         
+          packetNumber++;
+          udppacket = new DatagramPacket(packet, packetLength, cardAddress,
+              pusherPort);
+          try {
+            udpsocket.send(udppacket);
+            System.out.println("Sending command packet.");
+            lastSendTime = System.nanoTime();
+          } catch (IOException ioe) {
+            System.err.println("IOException: " + ioe.getMessage());
+          }
+  
+          totalLength += packetLength;
+        }
+        try {
+          Thread.sleep(totalDelay);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        packetLength = 0;
       }
-      packetLength = 0;
     }
     //System.out.println("Clearing busy.");
     pusher.clearBusy();

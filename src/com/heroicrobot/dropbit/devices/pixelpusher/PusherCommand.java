@@ -2,7 +2,6 @@ package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.util.Arrays;
 
-
 public class PusherCommand {
 
 

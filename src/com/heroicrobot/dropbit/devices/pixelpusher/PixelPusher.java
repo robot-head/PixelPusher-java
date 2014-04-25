@@ -1,9 +1,11 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.SynchronousQueue;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
 import com.heroicrobot.dropbit.devices.DeviceImpl;
@@ -36,6 +38,12 @@ public class PixelPusher extends DeviceImpl
   long extraDelayMsec = 0;
   boolean autothrottle = false;
   
+  /**
+   * Queue for commands using the new majik strip protocol.
+   */
+  
+  SynchronousQueue<PusherCommand> commandQueue;
+  
   final int SFLAG_RGBOW = 1;
   final int SFLAG_WIDEPIXELS = 1;
   
@@ -65,6 +73,10 @@ public class PixelPusher extends DeviceImpl
     this.my_port = my_port;
   }
 
+  void sendCommand(PusherCommand pc) {
+    commandQueue.add(pc);
+  }
+  
   synchronized void doDeferredStripCreation() {
     synchronized (stripLock) {
       this.strips = new ArrayList<Strip>();
@@ -224,6 +236,9 @@ public class PixelPusher extends DeviceImpl
 
   public PixelPusher(byte[] packet, DeviceHeader header) {
     super(header);
+    
+    commandQueue = new SynchronousQueue<PusherCommand>(true);
+    
     if (super.getSoftwareRevision() < ACCEPTABLE_LOWEST_SW_REV) {
        System.err.println("WARNING!  This PixelPusher Library requires firmware revision "+ACCEPTABLE_LOWEST_SW_REV/100.0);
        System.err.println("WARNING!  This PixelPusher is using "+super.getSoftwareRevision()/100.0);

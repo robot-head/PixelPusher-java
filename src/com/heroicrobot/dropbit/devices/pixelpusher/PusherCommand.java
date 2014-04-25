@@ -5,11 +5,7 @@ import java.util.Arrays;
 
 public class PusherCommand {
 
-  /**
-   * 
-   */
-  private static final long serialVersionUID = -7370466950779042786L;
-  
+
  /*  const uint8_t pp_command_magic[16] = 
   *   { 0x40, 0x09, 0x2d, 0xa6, 0x15, 0xa5, 0xdd, 0xe5, 0x6a, 0x9d, 0x4d, 0x5a, 0xcf, 0x09, 0xaf, 0x50  };
   *

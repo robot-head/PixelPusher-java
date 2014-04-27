@@ -34,16 +34,16 @@ public class PusherCommand {
  };
   */
   
-  PusherCommand(byte command) {
+  public PusherCommand(byte command) {
     this.command = command;
   }
   
-  PusherCommand(byte command, short parameter) {
+  public PusherCommand(byte command, short parameter) {
     this.command = command;
     this.parameter = parameter;
   }
   
-  PusherCommand(byte command, String ssid, String key, String security) {
+  public PusherCommand(byte command, String ssid, String key, String security) {
     this.command = command;
     this.ssid = ssid;
     this.key = key;

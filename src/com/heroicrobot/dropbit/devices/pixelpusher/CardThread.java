@@ -139,24 +139,25 @@ public class CardThread extends Thread {
     double powerScale;
 
     powerScale = registry.getPowerScale();
-    
+
     List<Strip> remainingStrips;
-    
+
     if (!pusher.hasTouchedStrips()) {
       //System.out.println("Yielding because no touched strips.");
-      return 0;
+      if (pusher.commandQueue.isEmpty())
+        return 0;
     }
-    
+
     if (pusher.isBusy()) {
       //System.out.println("Yielding because pusher is busy.");
       return 0;
     }
-    
+
     pusher.makeBusy();
     //System.out.println("Making pusher busy.");
-    
+
     remainingStrips = new ArrayList<Strip>(pusher.getStrips());
-    
+
     int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
     int stripPerPacket = Math.min(requestedStripsPerPacket, pusher.stripsAttached);
 
@@ -169,106 +170,115 @@ public class CardThread extends Thread {
         // Shoot for the framelimit.
         this.threadSleepMsec = ((1000/registry.getFrameLimit()) / (pusher.stripsAttached / stripPerPacket));
       }
-      
+
       // Handle errant delay calculation in the firmware.
       if (pusher.getUpdatePeriod() > 100000)
         this.threadSleepMsec = (16 / (pusher.stripsAttached / stripPerPacket));
-      
+
       totalDelay = threadSleepMsec + threadExtraDelayMsec + pusher.getExtraDelay();
-      
+
       byte[] packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
       for(int i = 0; i < packetNumberArray.length; i++) {
         this.packet[packetLength++] = packetNumberArray[i];
       }
 
-      int i;
-      // Now loop over remaining strips.
-      for (i = 0; i < stripPerPacket; i++) {
-        if (remainingStrips.isEmpty()) {
-          break;
-        }
-        Strip strip = remainingStrips.remove(0);
-        if (!strip.isTouched() && ((pusher.getPusherFlags() & pusher.PFLAG_FIXEDSIZE) == 0))
-          continue;
+      // first check to see if we have an outstanding command.
 
-        strip.setPowerScale(powerScale);
-        byte[] stripPacket = strip.serialize();
-        strip.markClean();
-        this.packet[packetLength++] = (byte) strip.getStripNumber();
-        if (fileIsOpen) {
-          try {
-            // we need to make the pusher wait on playback the same length of time between strips as we wait between packets
-            // this number is in microseconds.
-            if (i > 0 || lastSendTime == 0 )  // only write the delay in the first strip in a datagram.
-              recordFile.write(ByteUtils.unsignedIntToByteArray((int)0, true));
-            else
-              recordFile.write(ByteUtils.unsignedIntToByteArray((int)((System.nanoTime() - lastSendTime) / 1000), true));
-            
-            recordFile.write(this.packet, packetLength-1, 1);
-            recordFile.write(stripPacket);
-          } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
+      boolean commandSent;
+
+      if (!(pusher.commandQueue.isEmpty())) {
+        commandSent = true;
+        System.out.println("Pusher "+pusher.getMacAddress()+" has a PusherCommand outstanding.");
+        PusherCommand pc = pusher.commandQueue.remove();
+        byte[] commandBytes= pc.generateBytes();
+
+        packetLength = 0;
+        packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
+        for(int j = 0; j < packetNumberArray.length; j++) {
+          this.packet[packetLength++] = packetNumberArray[j];
         }
-        for (int j = 0; j < stripPacket.length; j++) {
-          this.packet[packetLength + j] = stripPacket[j];
+        for(int j = 0; j < commandBytes.length; j++) {
+          this.packet[packetLength++] = commandBytes[j];
         }
-        packetLength += stripPacket.length;
-        payload = true;
-      }
-      if (payload) {
-        //System.out.println("Got a payload to send to "+cardAddress);
+
         packetNumber++;
-        /* System.err.println(" Packet number array = length "+ packetLength +
-         *      " seq "+ packetNumber +" data " + String.format("%02x, %02x, %02x, %02x",
-         *          packetNumberArray[0], packetNumberArray[1], packetNumberArray[2], packetNumberArray[3]));
-         */
         udppacket = new DatagramPacket(packet, packetLength, cardAddress,
             pusherPort);
         try {
           udpsocket.send(udppacket);
-          //System.out.println("Sent it.");
           lastSendTime = System.nanoTime();
         } catch (IOException ioe) {
           System.err.println("IOException: " + ioe.getMessage());
         }
 
         totalLength += packetLength;
+      } else {
+        commandSent = false;
       }
-      if (!payload) {
-        if (!(pusher.commandQueue.isEmpty())) {
-          PusherCommand pc = pusher.commandQueue.remove();
-          byte[] commandBytes = pc.generateBytes();
 
-          packetLength = 0;
-          packetNumberArray = ByteUtils.unsignedIntToByteArray(packetNumber, true);
-          for(int j = 0; j < packetNumberArray.length; j++) {
-            this.packet[packetLength++] = packetNumberArray[j];
+      if (!commandSent) {
+        int i;
+        // Now loop over remaining strips.
+        for (i = 0; i < stripPerPacket; i++) {
+          if (remainingStrips.isEmpty()) {
+            break;
           }
-          for(int j = 0; j < commandBytes.length; j++) {
-            this.packet[packetLength++] = packetNumberArray[j];
+          Strip strip = remainingStrips.remove(0);
+          if (!strip.isTouched() && ((pusher.getPusherFlags() & pusher.PFLAG_FIXEDSIZE) == 0))
+            continue;
+
+          strip.setPowerScale(powerScale);
+          byte[] stripPacket = strip.serialize();
+          strip.markClean();
+          this.packet[packetLength++] = (byte) strip.getStripNumber();
+          if (fileIsOpen) {
+            try {
+              // we need to make the pusher wait on playback the same length of time between strips as we wait between packets
+              // this number is in microseconds.
+              if (i > 0 || lastSendTime == 0 )  // only write the delay in the first strip in a datagram.
+                recordFile.write(ByteUtils.unsignedIntToByteArray((int)0, true));
+              else
+                recordFile.write(ByteUtils.unsignedIntToByteArray((int)((System.nanoTime() - lastSendTime) / 1000), true));
+
+              recordFile.write(this.packet, packetLength-1, 1);
+              recordFile.write(stripPacket);
+            } catch (IOException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }
           }
-         
+          for (int j = 0; j < stripPacket.length; j++) {
+            this.packet[packetLength + j] = stripPacket[j];
+          }
+          packetLength += stripPacket.length;
+          payload = true;
+        }
+        if (payload) {
+          //System.out.println("Got a payload to send to "+cardAddress);
           packetNumber++;
+          /* System.err.println(" Packet number array = length "+ packetLength +
+           *      " seq "+ packetNumber +" data " + String.format("%02x, %02x, %02x, %02x",
+           *          packetNumberArray[0], packetNumberArray[1], packetNumberArray[2], packetNumberArray[3]));
+           */
           udppacket = new DatagramPacket(packet, packetLength, cardAddress,
               pusherPort);
           try {
             udpsocket.send(udppacket);
-            System.out.println("Sending command packet.");
+            //System.out.println("Sent it.");
             lastSendTime = System.nanoTime();
           } catch (IOException ioe) {
             System.err.println("IOException: " + ioe.getMessage());
           }
-  
-          totalLength += packetLength;
         }
-        try {
-          Thread.sleep(totalDelay);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-        packetLength = 0;
+        totalLength += packetLength;
+      }
+
+      packetLength = 0;
+      payload = false;
+      try {
+        Thread.sleep(totalDelay);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
       }
     }
     //System.out.println("Clearing busy.");

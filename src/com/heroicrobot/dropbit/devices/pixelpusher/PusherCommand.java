@@ -80,10 +80,12 @@ public class PusherCommand {
       returnVal[pp_command_magic.length] = command;
       
       for (int i=0; i<ssidBytes.length; i++ )
-        returnVal[pp_command_magic.length+ 1 + i] = ssidBytes[i];
+        returnVal[pp_command_magic.length+ 1 + i] 
+            = ssidBytes[i];
       
       for (int i=0; i<keyBytes.length; i++ )
-        returnVal[pp_command_magic.length+ 1 + keyBytes.length + 1 + i] = ssidBytes[i];
+        returnVal[pp_command_magic.length+ 1 + ssidBytes.length + 1 + i] 
+            = keyBytes[i];
       
       returnVal[pp_command_magic.length+ 1 + keyBytes.length + 1 + ssidBytes.length + 1] = security;
     }

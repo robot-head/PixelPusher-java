@@ -10,6 +10,8 @@ public class PusherCommand {
   *
   * #define COMMAND_RESET                0x01
   * #define COMMAND_GLOBALBRIGHTNESS_SET 0x02
+  * #define COMMAND_WIFI_CONFIGURE       0x03
+  * #define COMMAND_LED_CONFIGURE        0x04
   */
   
   private static final byte pp_command_magic[] = 
@@ -19,12 +21,20 @@ public class PusherCommand {
   public static final byte RESET = 0x01;
   public static final byte GLOBALBRIGHTNESS_SET = 0x02;
   public static final byte WIFI_CONFIGURE = 0x03;
+  public static final byte LED_CONFIGURE = 0x04;
+  
+  public static final byte STRIP_LPD8806 = 0;
+  public static final byte STRIP_WS2801 = 1;
   
   public byte command;
   private short parameter;
   private String ssid;
   private String key;
   private byte  security;
+  
+  private int num_strips;
+  private int strip_length;
+  private byte[] strip_type;
   
 /*  enum Security {
     NONE = 0,
@@ -55,6 +65,13 @@ public class PusherCommand {
       this.security = 2;
     if (security.toLowerCase().compareTo("wpa2") == 0) 
       this.security = 3;
+  }
+  
+  public PusherCommand(byte command, int numStrips, int stripLength, byte[] stripType) {
+    this.command = command;
+    this.num_strips = numStrips;
+    this.strip_length = stripLength;
+    this.strip_type = Arrays.copyOf(stripType, 8);
   }
   
   public byte [] generateBytes() {
@@ -88,7 +105,24 @@ public class PusherCommand {
             = keyBytes[i];
       
       returnVal[pp_command_magic.length+ 1 + keyBytes.length + 1 + ssidBytes.length + 1] = security;
-    }
+    } else if (command == LED_CONFIGURE) {
+      returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+17); // two ints, eight bytes, plus command
+      returnVal[pp_command_magic.length] = LED_CONFIGURE;
+
+      returnVal[pp_command_magic.length+1+3] = (byte) (num_strips & 0xFF);   
+      returnVal[pp_command_magic.length+1+2] = (byte) ((num_strips >> 8) & 0xFF);   
+      returnVal[pp_command_magic.length+1+1] = (byte) ((num_strips >> 16) & 0xFF);   
+      returnVal[pp_command_magic.length+1+0] = (byte) ((num_strips >> 24) & 0xFF);
+      
+      returnVal[pp_command_magic.length+5+3] = (byte) (strip_length & 0xFF);   
+      returnVal[pp_command_magic.length+5+2] = (byte) ((strip_length >> 8) & 0xFF);   
+      returnVal[pp_command_magic.length+5+1] = (byte) ((strip_length >> 16) & 0xFF);   
+      returnVal[pp_command_magic.length+5+0] = (byte) ((strip_length >> 24) & 0xFF);
+      
+      for (int i = pp_command_magic.length+9; i< pp_command_magic.length+17; i++)
+        returnVal[i] = strip_type[i-(pp_command_magic.length+9)];
+      
+    } // end if(command)
     return returnVal;
   }
 }

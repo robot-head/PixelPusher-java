@@ -25,6 +25,7 @@ public class PusherCommand {
   
   public static final byte STRIP_LPD8806 = 0;
   public static final byte STRIP_WS2801 = 1;
+  public static final byte STRIP_WS2811 = 2;
   
   public byte command;
   private short parameter;
@@ -109,15 +110,15 @@ public class PusherCommand {
       returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+17); // two ints, eight bytes, plus command
       returnVal[pp_command_magic.length] = LED_CONFIGURE;
 
-      returnVal[pp_command_magic.length+1+3] = (byte) (num_strips & 0xFF);   
-      returnVal[pp_command_magic.length+1+2] = (byte) ((num_strips >> 8) & 0xFF);   
-      returnVal[pp_command_magic.length+1+1] = (byte) ((num_strips >> 16) & 0xFF);   
-      returnVal[pp_command_magic.length+1+0] = (byte) ((num_strips >> 24) & 0xFF);
+      returnVal[pp_command_magic.length+1+0] = (byte) (num_strips & 0xFF);   
+      returnVal[pp_command_magic.length+1+1] = (byte) ((num_strips >> 8) & 0xFF);   
+      returnVal[pp_command_magic.length+1+2] = (byte) ((num_strips >> 16) & 0xFF);   
+      returnVal[pp_command_magic.length+1+3] = (byte) ((num_strips >> 24) & 0xFF);
       
-      returnVal[pp_command_magic.length+5+3] = (byte) (strip_length & 0xFF);   
-      returnVal[pp_command_magic.length+5+2] = (byte) ((strip_length >> 8) & 0xFF);   
-      returnVal[pp_command_magic.length+5+1] = (byte) ((strip_length >> 16) & 0xFF);   
-      returnVal[pp_command_magic.length+5+0] = (byte) ((strip_length >> 24) & 0xFF);
+      returnVal[pp_command_magic.length+5+0] = (byte) (strip_length & 0xFF);   
+      returnVal[pp_command_magic.length+5+1] = (byte) ((strip_length >> 8) & 0xFF);   
+      returnVal[pp_command_magic.length+5+2] = (byte) ((strip_length >> 16) & 0xFF);   
+      returnVal[pp_command_magic.length+5+3] = (byte) ((strip_length >> 24) & 0xFF);
       
       for (int i = pp_command_magic.length+9; i< pp_command_magic.length+17; i++)
         returnVal[i] = strip_type[i-(pp_command_magic.length+9)];

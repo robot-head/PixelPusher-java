@@ -36,6 +36,7 @@ public class PusherCommand {
   private int num_strips;
   private int strip_length;
   private byte[] strip_type;
+  private byte[] colour_order;
   
 /*  enum Security {
     NONE = 0,
@@ -43,7 +44,17 @@ public class PusherCommand {
     WPA  = 2,
     WPA2 = 3
  };
+ 
+ typedef enum ColourOrder {RGB=0, RBG=1, GBR=2, GRB=3, BGR=4, BRG=5} ColourOrder;
+ 
   */
+  
+  public static final byte ORDER_RGB = 0;
+  public static final byte ORDER_RBG = 1;
+  public static final byte ORDER_GBR = 2;
+  public static final byte ORDER_GRB = 3;
+  public static final byte ORDER_BGR = 4;
+  public static final byte ORDER_BRG = 5;
   
   public PusherCommand(byte command) {
     this.command = command;
@@ -68,11 +79,12 @@ public class PusherCommand {
       this.security = 3;
   }
   
-  public PusherCommand(byte command, int numStrips, int stripLength, byte[] stripType) {
+  public PusherCommand(byte command, int numStrips, int stripLength, byte[] stripType, byte[] colourOrder) {
     this.command = command;
     this.num_strips = numStrips;
     this.strip_length = stripLength;
     this.strip_type = Arrays.copyOf(stripType, 8);
+    this.colour_order = Arrays.copyOf(colourOrder, 8);
   }
   
   public byte [] generateBytes() {
@@ -93,6 +105,7 @@ public class PusherCommand {
       bufLength += 1; // length of key type
       bufLength += ssidBytes.length + 1; // ssid plus null terminator
       bufLength += keyBytes.length + 1;  // key plus null terminator
+      
       returnVal = Arrays.copyOf(pp_command_magic, bufLength);
       
       returnVal[pp_command_magic.length] = command;
@@ -107,7 +120,7 @@ public class PusherCommand {
       
       returnVal[pp_command_magic.length+ 1 + keyBytes.length + 1 + ssidBytes.length + 1] = security;
     } else if (command == LED_CONFIGURE) {
-      returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+17); // two ints, eight bytes, plus command
+      returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+25); // two ints, eight bytes, eight bytes, plus command
       returnVal[pp_command_magic.length] = LED_CONFIGURE;
 
       returnVal[pp_command_magic.length+1+0] = (byte) (num_strips & 0xFF);   
@@ -122,6 +135,9 @@ public class PusherCommand {
       
       for (int i = pp_command_magic.length+9; i< pp_command_magic.length+17; i++)
         returnVal[i] = strip_type[i-(pp_command_magic.length+9)];
+      for (int i = pp_command_magic.length+17; i< pp_command_magic.length+25; i++)
+        returnVal[i] = colour_order[i-(pp_command_magic.length+17)];
+      
       
     } // end if(command)
     return returnVal;

@@ -37,6 +37,10 @@ public class PusherCommand {
   private int strip_length;
   private byte[] strip_type;
   private byte[] colour_order;
+
+  private short group;
+
+  private short controller;
   
 /*  enum Security {
     NONE = 0,
@@ -85,6 +89,18 @@ public class PusherCommand {
     this.strip_length = stripLength;
     this.strip_type = Arrays.copyOf(stripType, 8);
     this.colour_order = Arrays.copyOf(colourOrder, 8);
+    this.group = 0;
+    this.controller = 0;
+  }
+  
+  public PusherCommand(byte command, int numStrips, int stripLength, byte[] stripType, byte[] colourOrder, short group, short controller) {
+    this.command = command;
+    this.num_strips = numStrips;
+    this.strip_length = stripLength;
+    this.strip_type = Arrays.copyOf(stripType, 8);
+    this.colour_order = Arrays.copyOf(colourOrder, 8);
+    this.group = group;
+    this.controller = controller;
   }
   
   public byte [] generateBytes() {
@@ -120,7 +136,7 @@ public class PusherCommand {
       
       returnVal[pp_command_magic.length+ 1 + keyBytes.length + 1 + ssidBytes.length + 1] = security;
     } else if (command == LED_CONFIGURE) {
-      returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+25); // two ints, eight bytes, eight bytes, plus command
+      returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+28); // two ints, eight bytes, eight bytes, plus command, plus group and controller
       returnVal[pp_command_magic.length] = LED_CONFIGURE;
 
       returnVal[pp_command_magic.length+1+0] = (byte) (num_strips & 0xFF);   
@@ -131,13 +147,19 @@ public class PusherCommand {
       returnVal[pp_command_magic.length+5+0] = (byte) (strip_length & 0xFF);   
       returnVal[pp_command_magic.length+5+1] = (byte) ((strip_length >> 8) & 0xFF);   
       returnVal[pp_command_magic.length+5+2] = (byte) ((strip_length >> 16) & 0xFF);   
-      returnVal[pp_command_magic.length+5+3] = (byte) ((strip_length >> 24) & 0xFF);
+      returnVal[pp_command_magic.length+5+3] = (byte) ((strip_length >> 24) & 0xFF); 
       
       for (int i = pp_command_magic.length+9; i< pp_command_magic.length+17; i++)
         returnVal[i] = strip_type[i-(pp_command_magic.length+9)];
       for (int i = pp_command_magic.length+17; i< pp_command_magic.length+25; i++)
         returnVal[i] = colour_order[i-(pp_command_magic.length+17)];
       
+      returnVal[pp_command_magic.length+25+0] = (byte) (group & 0xFF);   
+      returnVal[pp_command_magic.length+25+1] = (byte) ((group >> 8) & 0xFF);
+      
+      returnVal[pp_command_magic.length+27+0] = (byte) (controller & 0xFF);   
+      returnVal[pp_command_magic.length+27+1] = (byte) ((controller >> 8) & 0xFF);
+    
       
     } // end if(command)
     return returnVal;

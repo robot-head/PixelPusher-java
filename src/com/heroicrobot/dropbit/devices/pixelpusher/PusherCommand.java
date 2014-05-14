@@ -136,7 +136,7 @@ public class PusherCommand {
       
       returnVal[pp_command_magic.length+ 1 + keyBytes.length + 1 + ssidBytes.length + 1] = security;
     } else if (command == LED_CONFIGURE) {
-      returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+28); // two ints, eight bytes, eight bytes, plus command, plus group and controller
+      returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+29); // two ints, eight bytes, eight bytes, plus command, plus group and controller
       returnVal[pp_command_magic.length] = LED_CONFIGURE;
 
       returnVal[pp_command_magic.length+1+0] = (byte) (num_strips & 0xFF);   

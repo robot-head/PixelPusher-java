@@ -18,9 +18,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import org.joda.time.DateTime;
-import org.joda.time.Seconds;
-
 import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
 import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
 import com.heroicrobot.dropbit.devices.pixelpusher.PusherGroup;
@@ -53,7 +50,7 @@ public final class DeviceRegistry extends Observable {
   private boolean expiryEnabled = true;
   
   private Map<String, PixelPusher> pusherMap;
-  private Map<String, DateTime> pusherLastSeenMap;
+  private Map<String, Long> pusherLastSeenMap;
 
   private Timer expiryTimer;
 
@@ -213,9 +210,9 @@ public final class DeviceRegistry extends Observable {
           // them outside the iterator.  - jls
           List<String> toKill = new ArrayList<String>();
           for (String deviceMac : pusherMap.keySet()) {
-            Seconds lastSeenSeconds = Seconds.secondsBetween(
-                pusherLastSeenMap.get(deviceMac), DateTime.now());
-            if (lastSeenSeconds.getSeconds() > MAX_DISCONNECT_SECONDS) {
+            double lastSeenSeconds = 
+                 System.nanoTime() - pusherLastSeenMap.get(deviceMac) / 1000000000.0;
+            if (lastSeenSeconds > MAX_DISCONNECT_SECONDS) {
               if (expiryEnabled)
                 toKill.add(deviceMac);
               else
@@ -324,7 +321,7 @@ public final class DeviceRegistry extends Observable {
       pusherMap = new TreeMap<String, PixelPusher>();
       groupMap = new TreeMap<Integer, PusherGroup>();
       sortedPushers = new TreeSet<PixelPusher>(new DefaultPusherComparator());
-      pusherLastSeenMap = new HashMap<String, DateTime>();
+      pusherLastSeenMap = new HashMap<String, Long>();
       System.err.println("Building a new DeviceRegistry.");
       
       this._dlt = new DiscoveryListenerThread(DISCOVERY_PORT, this);
@@ -381,7 +378,7 @@ public final class DeviceRegistry extends Observable {
     device.setAntiLog(AntiLog);
     
     // Set the timestamp for the last time this device checked in
-    pusherLastSeenMap.put(macAddr, DateTime.now());
+    pusherLastSeenMap.put(macAddr, System.nanoTime());
     if (!pusherMap.containsKey(macAddr)) {
       // We haven't seen this device before
       addNewPusher(macAddr, device);

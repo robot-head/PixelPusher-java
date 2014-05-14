@@ -211,7 +211,7 @@ public final class DeviceRegistry extends Observable {
           List<String> toKill = new ArrayList<String>();
           for (String deviceMac : pusherMap.keySet()) {
             double lastSeenSeconds = 
-                 System.nanoTime() - pusherLastSeenMap.get(deviceMac) / 1000000000.0;
+                 (System.nanoTime() - pusherLastSeenMap.get(deviceMac)) / 1000000000.0;
             if (lastSeenSeconds > MAX_DISCONNECT_SECONDS) {
               if (expiryEnabled)
                 toKill.add(deviceMac);

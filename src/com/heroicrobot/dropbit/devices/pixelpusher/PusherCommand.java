@@ -39,8 +39,10 @@ public class PusherCommand {
   private byte[] colour_order;
 
   private short group;
-
   private short controller;
+  
+  private short artnet_universe;
+  private short artnet_channel;
   
 /*  enum Security {
     NONE = 0,
@@ -91,6 +93,8 @@ public class PusherCommand {
     this.colour_order = Arrays.copyOf(colourOrder, 8);
     this.group = 0;
     this.controller = 0;
+    this.artnet_channel = 0;
+    this.artnet_universe = 0;
   }
   
   public PusherCommand(byte command, int numStrips, int stripLength, byte[] stripType, byte[] colourOrder, short group, short controller) {
@@ -101,6 +105,21 @@ public class PusherCommand {
     this.colour_order = Arrays.copyOf(colourOrder, 8);
     this.group = group;
     this.controller = controller;
+    this.artnet_channel = 0;
+    this.artnet_universe = 0;
+  }
+  
+  public PusherCommand(byte command, int numStrips, int stripLength, byte[] stripType, byte[] colourOrder, short group, short controller, 
+                       short artnet_universe, short artnet_channel) {
+    this.command = command;
+    this.num_strips = numStrips;
+    this.strip_length = stripLength;
+    this.strip_type = Arrays.copyOf(stripType, 8);
+    this.colour_order = Arrays.copyOf(colourOrder, 8);
+    this.group = group;
+    this.controller = controller;
+    this.artnet_channel = artnet_channel;
+    this.artnet_universe = artnet_universe;
   }
   
   public byte [] generateBytes() {
@@ -136,7 +155,8 @@ public class PusherCommand {
       
       returnVal[pp_command_magic.length+ 1 + keyBytes.length + 1 + ssidBytes.length + 1] = security;
     } else if (command == LED_CONFIGURE) {
-      returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+29); // two ints, eight bytes, eight bytes, plus command, plus group and controller
+      returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+33); // two ints, eight bytes, eight bytes, plus command, plus group and controller
+                                                                               // plus artnet universe and channel
       returnVal[pp_command_magic.length] = LED_CONFIGURE;
 
       returnVal[pp_command_magic.length+1+0] = (byte) (num_strips & 0xFF);   
@@ -159,6 +179,12 @@ public class PusherCommand {
       
       returnVal[pp_command_magic.length+27+0] = (byte) (controller & 0xFF);   
       returnVal[pp_command_magic.length+27+1] = (byte) ((controller >> 8) & 0xFF);
+      
+      returnVal[pp_command_magic.length+29+0] = (byte) (artnet_universe & 0xFF);   
+      returnVal[pp_command_magic.length+29+1] = (byte) ((artnet_universe >> 8) & 0xFF);
+      
+      returnVal[pp_command_magic.length+31+0] = (byte) (artnet_channel & 0xFF);   
+      returnVal[pp_command_magic.length+31+1] = (byte) ((artnet_channel >> 8) & 0xFF);
     
       
     } // end if(command)

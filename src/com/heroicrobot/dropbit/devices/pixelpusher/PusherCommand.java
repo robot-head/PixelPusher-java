@@ -26,6 +26,7 @@ public class PusherCommand {
   public static final byte STRIP_LPD8806 = 0;
   public static final byte STRIP_WS2801 = 1;
   public static final byte STRIP_WS2811 = 2;
+  public static final byte STRIP_APA102 = 3;
   
   public byte command;
   private short parameter;

@@ -69,6 +69,17 @@ public class CardThread extends Thread {
   @Override
   public void run() {
     while (!cancel) {
+      if (pusher.isMulticast()) {
+        if (!pusher.isMulticastPrimary()) {
+          try {
+           Thread.sleep(1000);
+          } catch (InterruptedException ie) {
+            // we don't care.
+          }
+          continue; // we just sleep until we're primary
+        }
+      }
+      
       int bytesSent;
       long startTime = System.nanoTime();
       // check to see if we're supposed to be recording.

@@ -170,6 +170,16 @@ public final class DeviceRegistry extends Observable {
     return pushers;
   }
   
+  public List<PixelPusher> getPushers(InetAddress addr) {
+    updateLock.acquireUninterruptibly();
+    List<PixelPusher> pushers = new ArrayList<PixelPusher>();
+    for (PixelPusher p : this.sortedPushers)
+        if (p.getIp().equals(addr))
+          pushers.add(p);
+    updateLock.release();
+    return pushers;
+  }
+  
   public List<Strip> getStrips(int groupNumber) {
     if (this.groupMap.containsKey(groupNumber)) {
       return this.groupMap.get(groupNumber).getStrips();
@@ -213,10 +223,11 @@ public final class DeviceRegistry extends Observable {
             double lastSeenSeconds = 
                  (System.nanoTime() - pusherLastSeenMap.get(deviceMac)) / 1000000000.0;
             if (lastSeenSeconds > MAX_DISCONNECT_SECONDS) {
-              if (expiryEnabled)
+              if (expiryEnabled) {
                 toKill.add(deviceMac);
-              else
+              } else {
                 System.out.println("Would expire "+deviceMac+" but expiry is disabled.");
+              }
             }
           }
           for (String doomedIndividual : toKill) {
@@ -338,6 +349,17 @@ public final class DeviceRegistry extends Observable {
     if (logEnabled)
       LOGGER.info("Device gone: " + macAddr);
     PixelPusher pusher = pusherMap.remove(macAddr);
+    
+    // In the case where it is a multicast pusher,
+    // and is the primary of its mcast group, we must
+    // elect a new primary.
+    if (pusher.isMulticast()) {
+      if (pusher.isMulticastPrimary()) {
+        List<PixelPusher> candidates = getPushers(pusher.getIp());
+        if (candidates.size() > 0)
+           candidates.get(0).setMulticastPrimary(true);
+      }
+    }
     pusherLastSeenMap.remove(macAddr);
     sortedPushers.remove(pusher);
     this.groupMap.get(pusher.getGroupOrdinal()).removePusher(pusher);
@@ -452,6 +474,22 @@ public final class DeviceRegistry extends Observable {
       groupMap.put(pusher.getGroupOrdinal(), pg); 
     }
     pusher.setAutoThrottle(autoThrottle);
+    
+    if (pusher.getIp().isMulticastAddress()) {
+      pusher.setMulticast(true);
+      List<PixelPusher> members = getPushers(pusher.getIp());
+      boolean groupHasPrimary = false;
+      for (PixelPusher p: members) {
+        if (p.isMulticastPrimary())
+          groupHasPrimary = true;
+      }
+      if (!groupHasPrimary) {
+        pusher.setMulticastPrimary(true);
+        if (logEnabled)
+          LOGGER.info("Setting pusher "+macAddr +" to multicast primary.");
+      }
+    }
+    
     if (logEnabled)
       LOGGER.info("Notifying observers");
     this.setChanged();

@@ -38,6 +38,9 @@ public class PixelPusher extends DeviceImpl
   long extraDelayMsec = 0;
   boolean autothrottle = false;
   
+  boolean multicast = false;
+  boolean multicastPrimary = false;
+  
   /**
    * Queue for commands using the new majik strip protocol.
    */
@@ -104,6 +107,14 @@ public class PixelPusher extends DeviceImpl
   }
 
   public List<Strip> getStrips() {
+    // Devices that are members of a multicast group,
+    // but which are not the primary member of that group,
+    // do not return strips.
+    if (multicast) {
+      if (!multicastPrimary) {
+        return new ArrayList<Strip>();
+      }
+    }
     synchronized (stripLock) {
       if (strips == null) {
         doDeferredStripCreation();
@@ -420,7 +431,8 @@ public class PixelPusher extends DeviceImpl
         + controllerOrdinal + " ) + Port ("+my_port+") Art-Net Universe ("
         +artnet_universe+") Art-Net Channel ("+artnet_channel+")" 
         + " Strip flags "+formattedStripFlags()+" Pusher Flags ("+ getPusherFlags()
-        +") Segments (" + segments +") Power Domain ("+ powerDomain + ")";
+        +") Segments (" + segments +") Power Domain ("+ powerDomain + ")" 
+        + (multicast?" Multicast ":" Unicast ") + (multicastPrimary?" Primary":" Stooge");
   }
 
   public void updateVariables(PixelPusher device) {
@@ -573,6 +585,22 @@ public class PixelPusher extends DeviceImpl
     synchronized (stripLock) {
       clearBusy();
     }
+  }
+
+  public boolean isMulticast() {
+    return multicast;
+  }
+
+  public boolean isMulticastPrimary() {
+    return multicastPrimary;
+  }
+
+  public void setMulticastPrimary(boolean b) {
+    multicastPrimary = b;
+  }
+
+  public void setMulticast(boolean b) {
+    multicast = b;
   }
 
 }

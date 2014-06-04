@@ -229,6 +229,7 @@ public class CardThread extends Thread {
 
       if (!commandSent) {
         int i;
+        boolean recordedOne = false;
         // Now loop over remaining strips.
         for (i = 0; i < stripPerPacket; i++) {
           if (remainingStrips.isEmpty()) {
@@ -246,11 +247,12 @@ public class CardThread extends Thread {
             try {
               // we need to make the pusher wait on playback the same length of time between strips as we wait between packets
               // this number is in microseconds.
-              if (i > 0 || lastSendTime == 0 )  // only write the delay in the first strip in a datagram.
+              if (recordedOne || (lastSendTime == 0)) { // only write the delay in the first strip in a datagram.
                 recordFile.write(ByteUtils.unsignedIntToByteArray((int)0, true));
-              else
+              } else {
                 recordFile.write(ByteUtils.unsignedIntToByteArray((int)((System.nanoTime() - lastSendTime) / 1000), true));
-
+                recordedOne = true;
+              }
               recordFile.write(this.packet, packetLength-1, 1);
               recordFile.write(stripPacket);
             } catch (IOException e) {

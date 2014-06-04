@@ -432,7 +432,7 @@ public class PixelPusher extends DeviceImpl
         +artnet_universe+") Art-Net Channel ("+artnet_channel+")" 
         + " Strip flags "+formattedStripFlags()+" Pusher Flags ("+ getPusherFlags()
         +") Segments (" + segments +") Power Domain ("+ powerDomain + ")" 
-        + (multicast?" Multicast ":" Unicast ") + (multicastPrimary?" Primary":" Stooge");
+        + (multicast?" Multicast ":" Unicast ") + (multicastPrimary?"Primary":"Stooge");
   }
 
   public void updateVariables(PixelPusher device) {

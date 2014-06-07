@@ -148,6 +148,7 @@ public class CardThread extends Thread {
     long totalDelay;
     boolean payload;
     double powerScale;
+    int stripsInDatagram;
 
     powerScale = registry.getPowerScale();
 
@@ -168,6 +169,7 @@ public class CardThread extends Thread {
     //System.out.println("Making pusher busy.");
 
     remainingStrips = new ArrayList<Strip>(pusher.getStrips());
+    stripsInDatagram = 0;
 
     int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
     int stripPerPacket = Math.min(requestedStripsPerPacket, pusher.stripsAttached);
@@ -229,7 +231,6 @@ public class CardThread extends Thread {
 
       if (!commandSent) {
         int i;
-        boolean recordedOne = false;
         // Now loop over remaining strips.
         for (i = 0; i < stripPerPacket; i++) {
           if (remainingStrips.isEmpty()) {
@@ -239,6 +240,8 @@ public class CardThread extends Thread {
           if (!strip.isTouched() && ((pusher.getPusherFlags() & pusher.PFLAG_FIXEDSIZE) == 0))
             continue;
 
+          stripsInDatagram++;
+          
           strip.setPowerScale(powerScale);
           byte[] stripPacket = strip.serialize();
           strip.markClean();
@@ -247,13 +250,16 @@ public class CardThread extends Thread {
             try {
               // we need to make the pusher wait on playback the same length of time between strips as we wait between packets
               // this number is in microseconds.
-              if (recordedOne || (lastSendTime == 0)) { // only write the delay in the first strip in a datagram.
+              if (stripsInDatagram > 1) { // only write the delay for the first strip in a datagram.
                 recordFile.write(ByteUtils.unsignedIntToByteArray((int)0, true));
               } else {
-                recordFile.write(ByteUtils.unsignedIntToByteArray((int)((System.nanoTime() - lastSendTime) / 1000), true));
-                recordedOne = true;
+                if (lastSendTime != 0) { // this is not the first send to this pusher, we know how long it's been
+                  recordFile.write(ByteUtils.unsignedIntToByteArray((int)((System.nanoTime() - lastSendTime) / 1000), true));
+                } else { // fall back to the update period.
+                  recordFile.write(ByteUtils.unsignedIntToByteArray((int)pusher.getUpdatePeriod(), true));
+                }
               }
-              recordFile.write(this.packet, packetLength-1, 1);
+              recordFile.write((byte) strip.getStripNumber());
               recordFile.write(stripPacket);
             } catch (IOException e) {
               // TODO Auto-generated catch block

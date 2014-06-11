@@ -30,6 +30,7 @@ public class CardThread extends Thread {
   FileOutputStream recordFile;
   private long lastSendTime;
   private long lastWorkTime;
+  private long firstSendTime;
   public boolean terminated=false;
 
   CardThread(PixelPusher pusher, DeviceRegistry dr) {
@@ -88,6 +89,7 @@ public class CardThread extends Thread {
           try {
             recordFile = new FileOutputStream(new File(pusher.getFilename()));
             fileIsOpen = true;
+            firstSendTime = System.nanoTime();
           } catch (Exception e) {
             System.err.println("Failed to open recording file "+pusher.getFilename());
             pusher.setAmRecording(false);
@@ -237,8 +239,11 @@ public class CardThread extends Thread {
             break;
           }
           Strip strip = remainingStrips.remove(0);
-          if (!strip.isTouched() && ((pusher.getPusherFlags() & pusher.PFLAG_FIXEDSIZE) == 0))
-            continue;
+          // Don't weed untouched strips if we are recording.
+          if (!fileIsOpen) {
+            if (!strip.isTouched() && ((pusher.getPusherFlags() & pusher.PFLAG_FIXEDSIZE) == 0))
+              continue;
+          }
 
           stripsInDatagram++;
           
@@ -251,10 +256,17 @@ public class CardThread extends Thread {
               // we need to make the pusher wait on playback the same length of time between strips as we wait between packets
               // this number is in microseconds.
               if (stripsInDatagram > 1) { // only write the delay for the first strip in a datagram.
-                recordFile.write(ByteUtils.unsignedIntToByteArray((int)0, true));
+                if ((System.nanoTime() - firstSendTime / 1000) < (25 * 60 * 1000000)) {
+                  recordFile.write(ByteUtils.unsignedIntToByteArray((int)0, true));
+                } else {
+                  // write the timer reset magic - we do this into a sentence that would otherwise have no timing info
+                  recordFile.write(ByteUtils.unsignedIntToByteArray((int)0xdeadb33f, true));
+                  // and reset the timer
+                  firstSendTime = System.nanoTime();
+                }
               } else {
-                if (lastSendTime != 0) { // this is not the first send to this pusher, we know how long it's been
-                  recordFile.write(ByteUtils.unsignedIntToByteArray((int)((System.nanoTime() - lastSendTime) / 1000), true));
+                if (firstSendTime != 0) { // this is not the first send to this pusher, we know how long it's been
+                  recordFile.write(ByteUtils.unsignedIntToByteArray((int)((System.nanoTime() - firstSendTime) / 1000), true));
                 } else { // fall back to the update period.
                   recordFile.write(ByteUtils.unsignedIntToByteArray((int)pusher.getUpdatePeriod(), true));
                 }

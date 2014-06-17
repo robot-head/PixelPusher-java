@@ -152,6 +152,10 @@ public final class DeviceRegistry extends Observable {
     return strips;
   }
   
+  public int lastSeen(PixelPusher p) {
+    return (int)(System.nanoTime() - pusherLastSeenMap.get(p.getMacAddress()) ) / 1000000000;
+  }
+  
   public List<PixelPusher> getPushers() {
     List<PixelPusher> pushers = new ArrayList<PixelPusher>();
     for (PixelPusher p : this.sortedPushers)

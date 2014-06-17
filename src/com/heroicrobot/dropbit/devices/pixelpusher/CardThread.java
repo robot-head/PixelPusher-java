@@ -28,7 +28,6 @@ public class CardThread extends Thread {
   private boolean useAntiLog;
   private boolean fileIsOpen;
   FileOutputStream recordFile;
-  private long lastSendTime;
   private long lastWorkTime;
   private long firstSendTime;
   public boolean terminated=false;
@@ -37,7 +36,6 @@ public class CardThread extends Thread {
     super("CardThread for PixelPusher "+pusher.getMacAddress());
     this.pusher = pusher;
     this.pusherPort = pusher.getPort();
-    this.lastSendTime = 0;
     this.lastWorkTime = System.nanoTime();
 
     this.registry = dr;
@@ -221,7 +219,6 @@ public class CardThread extends Thread {
             pusherPort);
         try {
           udpsocket.send(udppacket);
-          lastSendTime = System.nanoTime();
         } catch (IOException ioe) {
           System.err.println("IOException: " + ioe.getMessage());
         }
@@ -296,7 +293,6 @@ public class CardThread extends Thread {
           try {
             udpsocket.send(udppacket);
             //System.out.println("Sent it.");
-            lastSendTime = System.nanoTime();
           } catch (IOException ioe) {
             System.err.println("IOException: " + ioe.getMessage());
           }

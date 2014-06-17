@@ -213,7 +213,10 @@ public class CardThread extends Thread {
         for(int j = 0; j < commandBytes.length; j++) {
           this.packet[packetLength++] = commandBytes[j];
         }
-
+        // We need fixed size datagrams for the Photon, because the cc3000 sucks.
+        if ((pusher.getPusherFlags() & pusher.PFLAG_FIXEDSIZE) != 0) {
+           packetLength = 4 + ((1 + 3 * pusher.getPixelsPerStrip()) * stripPerPacket);
+        }
         packetNumber++;
         udppacket = new DatagramPacket(packet, packetLength, cardAddress,
             pusherPort);
@@ -224,6 +227,7 @@ public class CardThread extends Thread {
         }
 
         totalLength += packetLength;
+        
       } else {
         commandSent = false;
       }

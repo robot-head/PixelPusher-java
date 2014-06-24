@@ -12,7 +12,7 @@ import com.heroicrobot.dropbit.discovery.DeviceHeader;
 
 public class PixelPusher extends DeviceImpl
   implements java.lang.Comparable<PixelPusher> {
-  private static final int ACCEPTABLE_LOWEST_SW_REV = 112;
+  private static final int ACCEPTABLE_LOWEST_SW_REV = 121;
   /**
    * uint8_t strips_attached;
    * uint8_t max_strips_per_packet;

@@ -1,9 +1,12 @@
 package com.heroicrobot.dropbit.registry;
 
 import java.io.IOException;
-import java.util.concurrent.*;
-
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -16,6 +19,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 
 import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
@@ -384,6 +388,9 @@ public final class DeviceRegistry extends Observable {
   }
 
   public void stopPushing() {
+    if (sceneThread == null) {
+      return;
+    }
     if (sceneThread.isRunning()) {
       sceneThread.cancel();
     }

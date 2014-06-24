@@ -1,7 +1,6 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
 import java.util.ArrayList;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

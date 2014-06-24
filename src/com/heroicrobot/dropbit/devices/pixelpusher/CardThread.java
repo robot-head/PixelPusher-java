@@ -1,9 +1,12 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
-import java.io.*;
-
-import java.net.*;
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 

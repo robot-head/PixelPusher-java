@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import com.heroicrobot.dropbit.registry.DeviceRegistry;
-import java.util.concurrent.Semaphore;
 
 public class SceneThread extends Thread implements Observer {
 

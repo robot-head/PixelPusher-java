@@ -6,6 +6,13 @@ public class Strip {
 
   private Pixel[] pixels;
   private PixelPusher pusher;
+  /**
+   * @return the pusher
+   */
+  public PixelPusher getPusher() {
+    return pusher;
+  }
+
   private int stripNumber;
   private boolean touched;
   private double powerScale;

@@ -47,7 +47,8 @@ public class PixelPusher extends DeviceImpl
   ArrayBlockingQueue<PusherCommand> commandQueue;
   
   final int SFLAG_RGBOW = 1;
-  final int SFLAG_WIDEPIXELS = 1;
+  final int SFLAG_WIDEPIXELS = (1<<1);
+  final int SFLAG_LOGARITHMIC = (1<<2);
   
   final int PFLAG_PROTECTED = (1<<0);
   final int PFLAG_FIXEDSIZE = (1<<1);
@@ -86,7 +87,11 @@ public class PixelPusher extends DeviceImpl
         this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
       }
       for (Strip strip: this.strips) {
-        strip.useAntiLog(useAntiLog);
+        if ((stripFlags[strip.getStripNumber()] & SFLAG_LOGARITHMIC) != 0) {
+          strip.useAntiLog(false);
+        } else {
+          strip.useAntiLog(useAntiLog);
+        }
         strip.setRGBOW((stripFlags[strip.getStripNumber()] & SFLAG_RGBOW) == 1);
       }
       touchedStrips = false;
@@ -298,6 +303,8 @@ public class PixelPusher extends DeviceImpl
       for (int i=0; i<stripFlagSize; i++)
         stripFlags[i]=0;
     }
+    
+    
     /*
      * We have some entries that come after the per-strip flag array.
      * We represent these as longs so that the entire range of a uint may be preserved;

@@ -271,4 +271,34 @@ public synchronized void setPixelWhite(byte intensity, int position) {
   public void setPusher(PixelPusher pixelPusher) {
     this.pusher = pixelPusher;
   }
+
+  public byte[] serialize(double overallBrightnessScale) {
+    int i = 0;
+    if (isRGBOW) {
+      for (Pixel pixel : pixels) {
+        if (pixel == null)
+          pixel = new Pixel();
+        msg[i++] = (byte) (((double)pixel.red)   * powerScale * overallBrightnessScale);    // C
+        msg[i++] = (byte) (((double)pixel.green) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) (((double)pixel.blue)  * powerScale * overallBrightnessScale);
+
+        msg[i++] = (byte) (((double)pixel.orange) * powerScale * overallBrightnessScale);   // O
+        msg[i++] = (byte) (((double)pixel.orange) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) (((double)pixel.orange) * powerScale * overallBrightnessScale);
+
+        msg[i++] = (byte) (((double)pixel.white) * powerScale * overallBrightnessScale);    // W
+        msg[i++] = (byte) (((double)pixel.white) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) (((double)pixel.white) * powerScale * overallBrightnessScale);
+      }
+    } else {
+      for (Pixel pixel : pixels) {
+        if (pixel == null)
+          pixel = new Pixel();
+        msg[i++] = (byte) (((double)pixel.red) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) (((double)pixel.green) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) (((double)pixel.blue) * powerScale * overallBrightnessScale);
+      }
+    }
+    return msg;
+  }
 }

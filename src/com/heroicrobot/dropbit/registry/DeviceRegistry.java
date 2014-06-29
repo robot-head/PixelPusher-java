@@ -42,6 +42,9 @@ public final class DeviceRegistry extends Observable {
   private static long EXPIRY_TIMER_MSEC = 1000L;
   private DiscoveryListenerThread _dlt;
   
+  private static double overallBrightnessScale = 1.0;
+  public static boolean useOverallBrightnessScale = false;
+  
   private static long totalPower = 0;
   private static long totalPowerLimit = -1;
   private static double powerScale = 1.0;
@@ -505,5 +508,18 @@ public final class DeviceRegistry extends Observable {
       LOGGER.info("Notifying observers");
     this.setChanged();
     this.notifyObservers(pusher);
+  }
+
+  public static double getOverallBrightnessScale() {
+    return overallBrightnessScale;
+  }
+
+  public static void setOverallBrightnessScale(double overallBrightnessScale) {
+    DeviceRegistry.overallBrightnessScale = overallBrightnessScale;
+    if (overallBrightnessScale == 1.0) {
+      useOverallBrightnessScale = false;
+    } else {
+     useOverallBrightnessScale = true; 
+    }
   }
 }

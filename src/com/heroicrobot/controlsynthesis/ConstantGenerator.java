@@ -65,4 +65,19 @@ public class ConstantGenerator implements SynthesisModule, Transmitter, Paramete
     return "Constant value";
   }
 
+  @Override
+  public boolean hasLimits(int paramNum) {
+    return false;     // this module can generate any float
+  }
+
+  @Override
+  public float getLowerLimit(int paramNum) {
+    return 0;         // meaningless because no limits
+  }
+
+  @Override
+  public float getUpperLimit(int paramNum) {
+    return 0;         // meaningless because no limits
+  }
+
 }

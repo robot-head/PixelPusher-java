@@ -3,7 +3,7 @@ package com.heroicrobot.controlsynthesis;
 public class SineFunction implements Receiver, SynthesisModule,
     Transmitter {
 
-  float myInput=0;
+  float myInput = 0;
   float myOutput = 0;
   int myChainDepth = 0;
   

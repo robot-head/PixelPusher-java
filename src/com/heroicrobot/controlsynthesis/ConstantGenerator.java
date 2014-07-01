@@ -80,4 +80,9 @@ public class ConstantGenerator implements SynthesisModule, Transmitter, Paramete
     return 0;         // meaningless because no limits
   }
 
+  @Override
+  public void setChainDepth(int depth) {
+    // It's always zero for a constant generator
+  }
+
 }

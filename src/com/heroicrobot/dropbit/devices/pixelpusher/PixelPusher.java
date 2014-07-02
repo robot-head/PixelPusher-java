@@ -238,6 +238,7 @@ public class PixelPusher extends DeviceImpl
   private long pusherFlags;
   private long segments;
   private long powerDomain;
+  private int lastUniverse;
   
 
   public void setStripValues(int stripNumber, Pixel[] pixels) {
@@ -609,4 +610,11 @@ public class PixelPusher extends DeviceImpl
     multicast = b;
   }
 
+  public void setLastUniverse(int universe) {
+    this.lastUniverse = universe; 
+  }
+
+  public int getLastUniverse() {
+    return this.lastUniverse;
+  }
 }

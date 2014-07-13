@@ -511,15 +511,11 @@ public final class DeviceRegistry extends Observable {
   }
 
   public static double getOverallBrightnessScale() {
-    return overallBrightnessScale;
+    return DeviceRegistry.overallBrightnessScale;
   }
 
-  public static void setOverallBrightnessScale(double overallBrightnessScale) {
-    DeviceRegistry.overallBrightnessScale = overallBrightnessScale;
-    if (overallBrightnessScale == 1.0) {
-      useOverallBrightnessScale = false;
-    } else {
-     useOverallBrightnessScale = true; 
-    }
+  public static void setOverallBrightnessScale(double bScale) {
+    DeviceRegistry.overallBrightnessScale = bScale;
+    DeviceRegistry.useOverallBrightnessScale = true;
   }
 }

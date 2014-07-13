@@ -254,7 +254,7 @@ public class CardThread extends Thread {
           strip.setPowerScale(powerScale);
           byte[] stripPacket;
           
-          if (DeviceRegistry.useOverallBrightnessScale) {
+          if (!DeviceRegistry.useOverallBrightnessScale) {
             stripPacket = strip.serialize();
           } else {
             stripPacket = strip.serialize(DeviceRegistry.getOverallBrightnessScale());

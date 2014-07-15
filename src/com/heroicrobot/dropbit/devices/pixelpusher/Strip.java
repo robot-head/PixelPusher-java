@@ -240,25 +240,25 @@ public synchronized void setPixelWhite(byte intensity, int position) {
       for (Pixel pixel : pixels) {
         if (pixel == null)
           pixel = new Pixel();
-        msg[i++] = (byte) (((double)pixel.red)   * powerScale);    // C
-        msg[i++] = (byte) (((double)pixel.green) * powerScale);
-        msg[i++] = (byte) (((double)pixel.blue)  * powerScale);
+        msg[i++] = (byte) (((double)(pixel.red & 0xff))   * powerScale);    // C
+        msg[i++] = (byte) (((double)(pixel.green & 0xff)) * powerScale);
+        msg[i++] = (byte) (((double)(pixel.blue & 0xff))  * powerScale);
 
-        msg[i++] = (byte) (((double)pixel.orange) * powerScale);   // O
-        msg[i++] = (byte) (((double)pixel.orange) * powerScale);
-        msg[i++] = (byte) (((double)pixel.orange) * powerScale);
+        msg[i++] = (byte) (((double)(pixel.orange & 0xff)) * powerScale);   // O
+        msg[i++] = (byte) (((double)(pixel.orange & 0xff)) * powerScale);
+        msg[i++] = (byte) (((double)(pixel.orange & 0xff)) * powerScale);
 
-        msg[i++] = (byte) (((double)pixel.white) * powerScale);    // W
-        msg[i++] = (byte) (((double)pixel.white) * powerScale);
-        msg[i++] = (byte) (((double)pixel.white) * powerScale);
+        msg[i++] = (byte) (((double)(pixel.white & 0xff)) * powerScale);    // W
+        msg[i++] = (byte) (((double)(pixel.white & 0xff)) * powerScale);
+        msg[i++] = (byte) (((double)(pixel.white & 0xff)) * powerScale);
       }
     } else {
       for (Pixel pixel : pixels) {
         if (pixel == null)
           pixel = new Pixel();
-        msg[i++] = (byte) (((double)pixel.red) * powerScale);
-        msg[i++] = (byte) (((double)pixel.green) * powerScale);
-        msg[i++] = (byte) (((double)pixel.blue) * powerScale);
+        msg[i++] = (byte) ((double)((pixel.red & 0xff)) * powerScale);
+        msg[i++] = (byte) ((double)((pixel.green & 0xff)) * powerScale);
+        msg[i++] = (byte) ((double)((pixel.blue & 0xff)) * powerScale);
       }
     }
     return msg;
@@ -278,25 +278,25 @@ public synchronized void setPixelWhite(byte intensity, int position) {
       for (Pixel pixel : pixels) {
         if (pixel == null)
           pixel = new Pixel();
-        msg[i++] = (byte) (((double)pixel.red)   * powerScale * overallBrightnessScale);    // C
-        msg[i++] = (byte) (((double)pixel.green) * powerScale * overallBrightnessScale);
-        msg[i++] = (byte) (((double)pixel.blue)  * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) ((double)(pixel.red & 0xff)  * powerScale * overallBrightnessScale);    // C
+        msg[i++] = (byte) ((double)(pixel.green & 0xff) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) ((double)(pixel.blue & 0xff)  * powerScale * overallBrightnessScale);
 
-        msg[i++] = (byte) (((double)pixel.orange) * powerScale * overallBrightnessScale);   // O
-        msg[i++] = (byte) (((double)pixel.orange) * powerScale * overallBrightnessScale);
-        msg[i++] = (byte) (((double)pixel.orange) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) ((double)(pixel.orange & 0xff) * powerScale * overallBrightnessScale);   // O
+        msg[i++] = (byte) ((double)(pixel.orange & 0xff) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) ((double)(pixel.orange & 0xff) * powerScale * overallBrightnessScale);
 
-        msg[i++] = (byte) (((double)pixel.white) * powerScale * overallBrightnessScale);    // W
-        msg[i++] = (byte) (((double)pixel.white) * powerScale * overallBrightnessScale);
-        msg[i++] = (byte) (((double)pixel.white) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) ((double)(pixel.white & 0xff) * powerScale * overallBrightnessScale);    // W
+        msg[i++] = (byte) ((double)(pixel.white & 0xff) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) ((double)(pixel.white & 0xff) * powerScale * overallBrightnessScale);
       }
     } else {
       for (Pixel pixel : pixels) {
         if (pixel == null)
           pixel = new Pixel();
-        msg[i++] = (byte) (((double)pixel.red) * powerScale * overallBrightnessScale);
-        msg[i++] = (byte) (((double)pixel.green) * powerScale * overallBrightnessScale);
-        msg[i++] = (byte) (((double)pixel.blue) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) ((double)(pixel.red & 0xff) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) ((double)(pixel.green & 0xff) * powerScale * overallBrightnessScale);
+        msg[i++] = (byte) ((double)(pixel.blue & 0xff) * powerScale * overallBrightnessScale);
       }
     }
     return msg;

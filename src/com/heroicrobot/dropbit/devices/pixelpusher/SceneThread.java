@@ -13,7 +13,7 @@ public class SceneThread extends Thread implements Observer {
 
   private Map<String, PixelPusher> pusherMap;
   private Map<String, CardThread> cardThreadMap;
-  private Map<Long, Long> powerDomainMap;
+  //private Map<Long, Long> powerDomainMap;
   
   public int powerMap;
   
@@ -38,7 +38,7 @@ public class SceneThread extends Thread implements Observer {
     this.drain = false;
     this.running = false;
     this.listSemaphore = new Semaphore(1);
-    this.powerDomainMap = new HashMap<Long, Long>();
+ //   this.powerDomainMap = new HashMap<Long, Long>();
   }
 
   public void setAutoThrottle(boolean autothrottle) {
@@ -79,8 +79,8 @@ public class SceneThread extends Thread implements Observer {
      }
     cardThreadMap.remove(card.getMacAddress());
    }
-
-  private void computePowerDomains() {
+/*
+  private void computePowerDomains() { 
     synchronized(powerDomainMap) {
       this.powerDomainMap = new HashMap<Long, Long>();
       for (String key: pusherMap.keySet()) {  // for each pusher
@@ -96,19 +96,20 @@ public class SceneThread extends Thread implements Observer {
       }
     }
   }
-  
-  public long getPowerForDomain(long domain) {
+  */
+ /* public long getPowerForDomain(long domain) {
     synchronized(powerDomainMap) {
       if (!powerDomainMap.containsKey(new Long(domain)))
         return (long)0;
       
       return(powerDomainMap.get(new Long(domain))).longValue();
-    }
+    } 
   }
+  */
   
-  public Set<Long> getPowerDomains() {
-    return powerDomainMap.keySet();
-  }
+ // public Set<Long> getPowerDomains() {
+ //   return powerDomainMap.keySet();
+ // }
   
   @Override
   public void update(Observable observable, Object update) {
@@ -207,7 +208,7 @@ public class SceneThread extends Thread implements Observer {
           }
         }
       }
-      computePowerDomains();
+      //computePowerDomains();
       if (frameCallback)
         Thread.yield();
       else

@@ -1,10 +1,10 @@
 package com.heroicrobot.dropbit.devices.pixelpusher;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PusherGroup {
 
@@ -27,7 +27,7 @@ public class PusherGroup {
   }
 
   public List<Strip> getStrips() {
-    List<Strip> strips = new ArrayList<Strip>();
+    List<Strip> strips = new CopyOnWriteArrayList<Strip>();
     for (PixelPusher p : this.pushers) {
       strips.addAll(p.getStrips());
     }

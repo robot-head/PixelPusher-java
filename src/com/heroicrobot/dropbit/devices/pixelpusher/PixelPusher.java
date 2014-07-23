@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
 import com.heroicrobot.dropbit.devices.DeviceImpl;
@@ -82,7 +83,7 @@ public class PixelPusher extends DeviceImpl
   
   synchronized void doDeferredStripCreation() {
     synchronized (stripLock) {
-      this.strips = new ArrayList<Strip>();
+      this.strips = new CopyOnWriteArrayList<Strip>();
       for (int stripNo = 0; stripNo < stripsAttached; stripNo++) {
         this.strips.add(new Strip(this, stripNo, pixelsPerStrip));
       }
@@ -575,7 +576,7 @@ public class PixelPusher extends DeviceImpl
       if (strips == null) {
         doDeferredStripCreation();
       }
-      List<Strip>touchedStrips = new ArrayList<Strip>(strips);
+      List<Strip>touchedStrips = new CopyOnWriteArrayList<Strip>(strips);
       for (Strip strip: strips)
         if (!strip.isTouched())
           touchedStrips.remove(strip);

@@ -7,8 +7,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.heroicrobot.dropbit.common.ByteUtils;
 import com.heroicrobot.dropbit.registry.DeviceRegistry;
@@ -171,7 +171,7 @@ public class CardThread extends Thread {
     pusher.makeBusy();
     //System.out.println("Making pusher busy.");
 
-    remainingStrips = new ArrayList<Strip>(pusher.getStrips());
+    remainingStrips = new CopyOnWriteArrayList<Strip>(pusher.getStrips());
     stripsInDatagram = 0;
 
     int requestedStripsPerPacket = pusher.getMaxStripsPerPacket();
@@ -327,7 +327,7 @@ public class CardThread extends Thread {
   }
 
   public boolean hasTouchedStrips() {
-    List<Strip> allStrips = new ArrayList<Strip>(pusher.getStrips());
+    List<Strip> allStrips = new CopyOnWriteArrayList<Strip>(pusher.getStrips());
     for (Strip strip: allStrips)
         if (strip.isTouched())
           return true;

@@ -19,6 +19,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 
@@ -150,7 +151,7 @@ public final class DeviceRegistry extends Observable {
   }
   
   public List<Strip> getStrips() {
-    List<Strip> strips = new ArrayList<Strip>();
+    List<Strip> strips = new CopyOnWriteArrayList<Strip>();
     updateLock.acquireUninterruptibly();
     for (PixelPusher p : this.sortedPushers) {
       strips.addAll(p.getStrips());
@@ -164,7 +165,7 @@ public final class DeviceRegistry extends Observable {
   }
   
   public List<PixelPusher> getPushers() {
-    List<PixelPusher> pushers = new ArrayList<PixelPusher>();
+    List<PixelPusher> pushers = new CopyOnWriteArrayList<PixelPusher>();
     for (PixelPusher p : this.sortedPushers)
         pushers.add(p);
     
@@ -173,7 +174,7 @@ public final class DeviceRegistry extends Observable {
   
   public List<PixelPusher> getPushers(int groupNumber) {
     updateLock.acquireUninterruptibly();
-    List<PixelPusher> pushers = new ArrayList<PixelPusher>();
+    List<PixelPusher> pushers = new CopyOnWriteArrayList<PixelPusher>();
     for (PixelPusher p : this.sortedPushers)
         if (p.getGroupOrdinal() == groupNumber)
           pushers.add(p);
@@ -183,7 +184,7 @@ public final class DeviceRegistry extends Observable {
   
   public List<PixelPusher> getPushers(InetAddress addr) {
     updateLock.acquireUninterruptibly();
-    List<PixelPusher> pushers = new ArrayList<PixelPusher>();
+    List<PixelPusher> pushers = new CopyOnWriteArrayList<PixelPusher>();
     for (PixelPusher p : this.sortedPushers)
         if (p.getIp().equals(addr))
           pushers.add(p);
@@ -195,7 +196,7 @@ public final class DeviceRegistry extends Observable {
     if (this.groupMap.containsKey(groupNumber)) {
       return this.groupMap.get(groupNumber).getStrips();
     } else {
-      List<Strip> emptyList = new ArrayList<Strip>();
+      List<Strip> emptyList = new CopyOnWriteArrayList<Strip>();
       return emptyList;
     }
   }
@@ -295,8 +296,6 @@ public final class DeviceRegistry extends Observable {
          System.err.println(ste.toString());
        
        try {
-  
-         
          this.discovery_socket = new DatagramSocket(null);
          
          this.discovery_socket.setReuseAddress(true);

@@ -30,10 +30,10 @@ public class RampGenerator implements Transmitter, SynthesisModule,
   @Override
   public void setParameter(int paramNum, float value) {
     switch (paramNum) {
-      case 0: initState = value;
-      case 1: increment = value;
-      case 2: maxValue = value;
-      case 3: resetValue = value;
+      case 0: initState = value; break;
+      case 1: increment = value; break;
+      case 2: maxValue = value; break;
+      case 3: resetValue = value; break;
       default: return;
     }
   }

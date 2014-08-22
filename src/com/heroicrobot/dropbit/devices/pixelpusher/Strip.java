@@ -19,6 +19,8 @@ public class Strip {
   private boolean isRGBOW;
   private byte[] msg;
   private boolean useAntiLog;
+  private boolean isMotion;
+  private boolean isNotIdempotent;
 
   static final byte sLinearExp[] = { (byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 1,(byte) 1,(byte) 1,(byte) 1,
     (byte) 1,(byte) 2,(byte) 2,(byte) 2,(byte) 2,(byte) 2,(byte) 3,(byte) 3,(byte) 3,(byte) 3,(byte) 4,(byte) 4,
@@ -327,5 +329,21 @@ public synchronized void setPixelWhite(byte intensity, int position) {
       }
     }
     return msg;
+  }
+
+  public boolean isMotion() {
+    return isMotion;
+  }
+
+  public void setMotion(boolean isMotion) {
+    this.isMotion = isMotion;
+  }
+
+  public boolean isNotIdempotent() {
+    return isNotIdempotent;
+  }
+
+  public void setNotIdempotent(boolean isNotIdempotent) {
+    this.isNotIdempotent = isNotIdempotent;
   }
 }

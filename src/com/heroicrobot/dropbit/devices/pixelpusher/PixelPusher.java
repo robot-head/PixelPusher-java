@@ -50,6 +50,8 @@ public class PixelPusher extends DeviceImpl
   final int SFLAG_RGBOW = 1;
   final int SFLAG_WIDEPIXELS = (1<<1);
   final int SFLAG_LOGARITHMIC = (1<<2);
+  final int SFLAG_MOTION = (1<<3);
+  final int SFLAG_NOTIDEMPOTENT = (1<<4);
   
   final int PFLAG_PROTECTED = (1<<0);
   final int PFLAG_FIXEDSIZE = (1<<1);
@@ -92,6 +94,16 @@ public class PixelPusher extends DeviceImpl
           strip.useAntiLog(false);
         } else {
           strip.useAntiLog(useAntiLog);
+        }
+        if ((stripFlags[strip.getStripNumber()] & SFLAG_MOTION) != 0) {
+          strip.setMotion(true);
+        } else {
+          strip.setMotion(false);
+        }
+        if ((stripFlags[strip.getStripNumber()] & SFLAG_NOTIDEMPOTENT) != 0) {
+          strip.setNotIdempotent(true);
+        } else {
+          strip.setNotIdempotent(false);
         }
         strip.setRGBOW((stripFlags[strip.getStripNumber()] & SFLAG_RGBOW) == 1);
       }

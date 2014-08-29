@@ -259,6 +259,7 @@ public class CardThread extends Thread {
           } else {
             stripPacket = strip.serialize(DeviceRegistry.getOverallBrightnessScale());
           }
+          strip.setPushedAt(System.nanoTime());
           strip.markClean();
           this.packet[packetLength++] = (byte) strip.getStripNumber();
           if (fileIsOpen) {

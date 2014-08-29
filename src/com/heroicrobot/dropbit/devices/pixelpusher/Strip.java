@@ -13,6 +13,7 @@ public class Strip {
     return pusher;
   }
 
+  private long pushedAt;
   private int stripNumber;
   private boolean touched;
   private double powerScale;
@@ -155,6 +156,7 @@ public class Strip {
   public synchronized void setPixels(Pixel[] pixels) {
     this.pixels = Arrays.copyOfRange(pixels, 0, this.pixels.length);
     this.touched = true;
+    pushedAt = 0;
     pusher.markTouched();
   }
 
@@ -171,6 +173,7 @@ public class Strip {
       nope.printStackTrace();
     }
     this.touched = true;
+    pushedAt = 0;
     pusher.markTouched();
   }
 
@@ -187,6 +190,7 @@ public class Strip {
       nope.printStackTrace();
     }
     this.touched = true;
+    pushedAt = 0;
     pusher.markTouched();
   }
 
@@ -203,6 +207,7 @@ public class Strip {
       nope.printStackTrace();
     }
     this.touched = true;
+    pushedAt = 0;
     pusher.markTouched();
   }
 
@@ -219,6 +224,7 @@ public class Strip {
       nope.printStackTrace();
     }
     this.touched = true;
+    pushedAt = 0;
     pusher.markTouched();
   }
 
@@ -235,6 +241,7 @@ public synchronized void setPixelWhite(byte intensity, int position) {
       nope.printStackTrace();
     }
     this.touched = true;
+    pushedAt = 0;
     pusher.markTouched();
   }
 
@@ -251,6 +258,7 @@ public synchronized void setPixelWhite(byte intensity, int position) {
       nope.printStackTrace();
     }
     this.touched = true;
+    pushedAt = 0;
     pusher.markTouched();
   }
 
@@ -260,6 +268,7 @@ public synchronized void setPixelWhite(byte intensity, int position) {
     else
       this.pixels[position].setColor(pixel);
     this.touched = true;
+    pushedAt = 0;
     pusher.markTouched();
   }
 
@@ -345,5 +354,13 @@ public synchronized void setPixelWhite(byte intensity, int position) {
 
   public void setNotIdempotent(boolean isNotIdempotent) {
     this.isNotIdempotent = isNotIdempotent;
+  }
+
+  public long getPushedAt() {
+    return pushedAt;
+  }
+
+  public void setPushedAt(long pushedAt) {
+    this.pushedAt = pushedAt;
   }
 }

@@ -288,6 +288,7 @@ public final class DeviceRegistry extends Observable {
      synchronized(DeviceRegistry.hasDiscoveryListener) {
        if (DeviceRegistry.hasDiscoveryListener) {
          System.err.println("Already have a DiscoveryListener!  Not creating a fresh one.");
+         System.err.println("This happens if you call size() anywhere other than the first line of your setup() method in Processing.");
          this.stop();
        }
        DeviceRegistry.hasDiscoveryListener = true;

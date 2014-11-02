@@ -132,7 +132,7 @@ public class PusherCommand {
       returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+3);
       returnVal[pp_command_magic.length] = GLOBALBRIGHTNESS_SET;
       returnVal[pp_command_magic.length+1] = (byte) (parameter & 0xff);
-      returnVal[pp_command_magic.length+1] = (byte) ((parameter>>8) & 0xff);
+      returnVal[pp_command_magic.length+2] = (byte) ((parameter>>8) & 0xff);
     } else if (command == WIFI_CONFIGURE) {
       byte[] ssidBytes = ssid.getBytes();
       byte[] keyBytes = key.getBytes();

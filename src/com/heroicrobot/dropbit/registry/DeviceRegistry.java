@@ -71,6 +71,10 @@ public final class DeviceRegistry extends Observable {
 
   public Boolean hasDeviceExpiryTask=false;
 
+  /**
+   * Enable / disable logging
+   * @param b
+   */
   public void setLogging(boolean b) {
     logEnabled = b;
   }
@@ -87,14 +91,26 @@ public final class DeviceRegistry extends Observable {
    expiryEnabled = false; 
   }
   
+  /**
+   * Set the maximal number of frames per second
+   * @param fl
+   */
   public void setFrameLimit(int fl) {
     frameLimit = fl;
   }
   
+  /**
+   * Get the current max FPS
+   * @return
+   */
   public int getFrameLimit() {
     return frameLimit;
   }
   
+  /**
+   * Get the logging status
+   * @return
+   */
   public boolean getLogging() {
     return logEnabled;
   }
@@ -107,11 +123,34 @@ public final class DeviceRegistry extends Observable {
   public Map<String, PixelPusher> getPusherMap() {
     return pusherMap;
   }
+  
+  /**
+   * Set to true to use the luminance anti-log curve. This is useful to improve video color rendering.
+   * @param useAntiLog
+   */
 
   public void setAntiLog(boolean useAntiLog) {
     AntiLog = useAntiLog;
     sceneThread.useAntiLog(AntiLog);
   }
+  
+  /**
+   * Adds an extra delay to every packet that is sent by the registry’s worker threads. 
+   * <p>
+   * Normally, the registry keeps track of how many packets are being lost
+   * (they get dropped if there isn’t enough bandwidth or if you’re using a wireless network and there’s noise) 
+   * and how long each PixelPusher is saying it takes to push out a complete packet to the strips, 
+   * and adjusts the rate at which packets are sent automatically.  
+   * However, if you’re on a very slow network, like a very long wireless link or a cellular modem, 
+   * you might want to add an extra slowdown.  That’s what the registry.setExtraDelay() method is for.
+   * <p>
+   * This adds an extra delay to every packet that is sent by the registry’s worker threads.  
+   * If you set it to zero, only the standard rate limiting applies.  
+   * With full-length Heroic Robotics strips and the default update rate, 
+   * each PixelPusher consumes between 5 and 10 megabits per second of bandwidth. 
+   * In the special turbo mode, a PixelPusher with two strips running at maximum speed will consume about 52 megabits per second of bandwidth.
+   * @param msec
+   */
   
   public void setExtraDelay(int msec) {
     sceneThread.setExtraDelay(msec);
@@ -125,31 +164,79 @@ public final class DeviceRegistry extends Observable {
     sceneThread.setFrameCallback(caller, method);
   }
   
+  /**
+   * Set auto-throttling ON or OFF.
+   * 
+   * If you’re on a network with a high error rate, like some wireless networks, or poorly installed ethernet, 
+   * you might find that you get persistently high error rates and the update frequency drops uncontrollably.  
+   * In this case, you may want to disable the autothrottling entirely.
+   * @param autothrottle
+   */
   public void setAutoThrottle(boolean autothrottle) {
     autoThrottle = autothrottle;
     sceneThread.setAutoThrottle(autothrottle);
   }
 
+  /**
+   * Return the total of bandwidth used
+   * @return Total bandwidth in bytes per millisecond 
+   */
   public long getTotalBandwidth() {
     return sceneThread.getTotalBandwidth();
   }
 
+  /**
+   * Return the total amount of power used.
+   * 
+   * To convert the power in luminance unit to electric power in Watt, you need to know how much power each of your LED consumes.
+   * For example, some RGB strips consumes 0.3W per LED, assuming each colour consumes the same amount of electricity at the same luminance level (which is not true),
+   * we can approximate the electric power with this formula : 
+   * Electric Power = Luminance Power/255 * 0.3W /3 = Luminance Power / 2550
+   * @return Total power in luminance unit
+   */
   public long getTotalPower() {
     return totalPower;
   }
   
+  /**
+   * Set the max power. 
+   * 
+   * The limit is specified in luminance units, which is to say, 255 means one colour of a single pixel turned fully on. 
+   * Since the LEDs on the strips we ship are 20 mA per segment, the units are therefore steps of 1/255th of 20 mA 
+   * which approximately equals 80 microamps.
+   * 
+   * @param powerLimit
+   */
   public void setTotalPowerLimit(long powerLimit) {
     totalPowerLimit = powerLimit;
   }
   
+  /**
+   * Get the max power. 
+   * 
+   * @see setTotalPowerLimit
+   * @return Power limit in luminance unit
+   */
   public long getTotalPowerLimit() {
     return totalPowerLimit;
   }
   
+  /**
+   * Get the actual power scale.
+   * 
+   * The power scale is adjust to avoid total power exceed the power limit set with @see setTotalPowerLimit.
+   * It scale the whole display brightness.
+   * 
+   * @return Power scale
+   */
   public double getPowerScale() {
     return powerScale;
   }
   
+  /**
+   * Get list of all the strips known to the registry.
+   * @return List of all strips
+   */
   public List<Strip> getStrips() {
     List<Strip> strips = new CopyOnWriteArrayList<Strip>();
     updateLock.acquireUninterruptibly();
@@ -160,10 +247,20 @@ public final class DeviceRegistry extends Observable {
     return strips;
   }
   
+  /**
+   * Get the elapsed time since the PixelPusher @param p have been seen for the last time.
+   * 
+   * @param p
+   * @return
+   */
   public int lastSeen(PixelPusher p) {
     return (int)(System.nanoTime() - pusherLastSeenMap.get(p.getMacAddress()) ) / 1000000000;
   }
   
+  /**
+   * Get list of connected PixelPusher boards
+   * @return List of PixelPusher
+   */
   public List<PixelPusher> getPushers() {
     List<PixelPusher> pushers = new CopyOnWriteArrayList<PixelPusher>();
     for (PixelPusher p : this.sortedPushers)
@@ -172,6 +269,11 @@ public final class DeviceRegistry extends Observable {
     return pushers;
   }
   
+  /**
+   * Get list of connected PixelPusher boards that belongs to provided group
+   * @param groupNumber
+   * @return List of PixelPusher
+   */
   public List<PixelPusher> getPushers(int groupNumber) {
     updateLock.acquireUninterruptibly();
     List<PixelPusher> pushers = new CopyOnWriteArrayList<PixelPusher>();
@@ -182,6 +284,11 @@ public final class DeviceRegistry extends Observable {
     return pushers;
   }
   
+  /**
+   * Get all pushers that match the given IP address
+   * @param addr
+   * @return List of PixelPusher that match the given IP address
+   */
   public List<PixelPusher> getPushers(InetAddress addr) {
     updateLock.acquireUninterruptibly();
     List<PixelPusher> pushers = new CopyOnWriteArrayList<PixelPusher>();
@@ -192,6 +299,11 @@ public final class DeviceRegistry extends Observable {
     return pushers;
   }
   
+  /**
+   * Get strips that belong to given group number
+   * @param groupNumber
+   * @return List of PixelPusher
+   */
   public List<Strip> getStrips(int groupNumber) {
     if (this.groupMap.containsKey(groupNumber)) {
       return this.groupMap.get(groupNumber).getStrips();

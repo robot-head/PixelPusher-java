@@ -83,25 +83,37 @@ public final class DeviceRegistry extends Observable {
     return sceneThread.getPowerDomains();
   } */
   
+  /**
+   * Enable expiry.
+   * <p>
+   * The system will automatically forget device that are not seen for a while. 
+   */
   public void enableExpiry() {
     expiryEnabled = true;
   }
   
+  /**
+   * Disable expiry.
+   * <p>
+   * @see enableExpiry
+   * This may help with some unstable network.
+   */
   public void disableExpiry() {
    expiryEnabled = false; 
   }
   
   /**
    * Set the maximal number of frames per second
-   * @param fl
+   * @param fl Framerate limit in fps.
    */
   public void setFrameLimit(int fl) {
     frameLimit = fl;
   }
   
   /**
-   * Get the current max FPS
-   * @return
+   * Get the current max FPS.
+   * @see setFrameLimit
+   * @return Current FPS limit.
    */
   public int getFrameLimit() {
     return frameLimit;
@@ -115,6 +127,26 @@ public final class DeviceRegistry extends Observable {
     return logEnabled;
   }
   
+  /**
+   * Start recording data.
+   * <p>
+   * The first parameter is the group number of the pusher you want to record. 
+   * The second parameter is the pusher's position within that group (they start from zero).
+   * This will put a file named canned.dat somewhere on your computer.
+   * The place it goes will depend upon what machine you're using. 
+   * On mine, it shows up next to the Processing application. 
+   * 
+   * The generated file will be specific to the number of pixels configured on that pusher.
+   * It won't play back properly on pushers with different length strips.
+   * 
+   * If you want to record several different pushers at once, you can add as many calls to startDatRecording() with different filenames as you like.
+   * Note, though, that they may not stay synchronized over a long period of time since they won't talk to each other. 
+   * You need to rename the files to canned.dat when you copy them to the USB stick, of course, otherwise the PixelPusher won't know to look for them.
+   * 
+   * @param filename
+   * @param group
+   * @param pusher
+   */
   public void startDatRecording(String filename, int group, int pusher) {
     List<PixelPusher> pushers = getPushers(group);
     (pushers.get(pusher)).startRecording(filename);
@@ -156,10 +188,20 @@ public final class DeviceRegistry extends Observable {
     sceneThread.setExtraDelay(msec);
   }
   
+  /**
+   * Disable the frame callback set with @see setFrameCallback
+   */
   public void stopFrameCallback() {
     sceneThread.stopFrameCallback();
   }
   
+  /**
+   * Register an object's method to be called each time the strips are clean.
+   * 
+   * This is useful to sync data generation with framerate.
+   * @param caller
+   * @param method
+   */
   public void setFrameCallback(Object caller, String method) {
     sceneThread.setFrameCallback(caller, method);
   }

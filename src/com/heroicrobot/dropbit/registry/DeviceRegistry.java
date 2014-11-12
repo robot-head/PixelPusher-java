@@ -92,7 +92,7 @@ public final class DeviceRegistry extends Observable {
   /**
    * Enable expiry.
    * <p>
-   * The system will automatically forget device that are not seen for a while. 
+   * The system will automatically forget devices that are not seen for a while. 
    */
   public void enableExpiry() {
     expiryEnabled = true;
@@ -102,24 +102,24 @@ public final class DeviceRegistry extends Observable {
    * Disable expiry.
    * <p>
    * @see enableExpiry
-   * This may help with some unstable network.
+   * This may help with some unstable network but this is intended for debugging only.
    */
   public void disableExpiry() {
    expiryEnabled = false; 
   }
   
   /**
-   * Set the maximal number of frames per second
-   * @param fl Framerate limit in fps.
+   * Set the maximal number of frames per second in Hz.
+   * @param fl Framerate limit in Hz.
    */
   public void setFrameLimit(int fl) {
     frameLimit = fl;
   }
   
   /**
-   * Get the current max FPS.
+   * Get the current max frame frequency in Hz.
    * @see setFrameLimit
-   * @return Current FPS limit.
+   * @return Current frame frequency limit in Hz.
    */
   public int getFrameLimit() {
     return frameLimit;
@@ -142,12 +142,14 @@ public final class DeviceRegistry extends Observable {
    * The place it goes will depend upon what machine you're using. 
    * On mine, it shows up next to the Processing application. 
    * 
-   * The generated file will be specific to the number of pixels configured on that pusher.
+   * The generated file will be specific to the number of pixels configured on that pusher and also to the pixel format.
    * It won't play back properly on pushers with different length strips.
    * 
    * If you want to record several different pushers at once, you can add as many calls to startDatRecording() with different filenames as you like.
    * Note, though, that they may not stay synchronized over a long period of time since they won't talk to each other. 
    * You need to rename the files to canned.dat when you copy them to the USB stick, of course, otherwise the PixelPusher won't know to look for them.
+   * 
+   * Add note that this code records Format 2 canned.dat files, and requires a recent PixelPusher firmware.
    * 
    * @param filename
    * @param group

@@ -44,6 +44,12 @@ public final class DeviceRegistry extends Observable {
   private DiscoveryListenerThread _dlt;
   
   private static double overallBrightnessScale = 1.0;
+  
+  /**
+   * Boolean flag to use or not the overall brightness.
+   * @see setOverallBrightnessScale
+   * @see getOverallBrightnessScale
+   */
   public static boolean useOverallBrightnessScale = false;
   
   private static long totalPower = 0;
@@ -152,6 +158,10 @@ public final class DeviceRegistry extends Observable {
     (pushers.get(pusher)).startRecording(filename);
   }
   
+  /**
+   * Get ordered Map of pushers
+   * @return Map<String, PixelPusher> pusheMap
+   */
   public Map<String, PixelPusher> getPusherMap() {
     return pusherMap;
   }
@@ -510,6 +520,10 @@ public final class DeviceRegistry extends Observable {
     }
   }
 
+  /**
+   * Forget a given device.
+   * @param macAddr
+   */
   public void expireDevice(String macAddr) {
     if (logEnabled)
       LOGGER.info("Device gone: " + macAddr);
@@ -534,16 +548,30 @@ public final class DeviceRegistry extends Observable {
     this.notifyObservers(); 
   }
 
+  /**
+   * Set the value the given strip on the pusher with the given IP to the given values
+   * @param macAddress
+   * @param stripNumber
+   * @param pixels : array of pixels values
+   */
   public void setStripValues(String macAddress, int stripNumber, Pixel[] pixels) {
     this.pusherMap.get(macAddress).setStripValues(stripNumber, pixels);
   }
 
+  /**
+   * Start pushing pixel to registered boards
+   * @see stopPushing
+   */
   public void startPushing() {
     if (!sceneThread.isRunning()) {
       sceneThread.start();
     }
   }
 
+  /**
+   * Stop talking to PixelPusher boards
+   * @see startPushing
+   */
   public void stopPushing() {
     if (sceneThread == null) {
       return;
@@ -664,10 +692,26 @@ public final class DeviceRegistry extends Observable {
     this.notifyObservers(pusher);
   }
 
+  /**
+   * Get the current global brightness scale.
+   * @see useOverallBrightnessScale
+   * @see setOverallBrightnessScale
+   * @return double scale
+   */
   public static double getOverallBrightnessScale() {
     return DeviceRegistry.overallBrightnessScale;
   }
 
+  /**
+   * Set the global overall brightness.
+   * 
+   * This is a scale factor. 1. is the default factor, and brightness is full.
+   * 0.5 is half the brightness, 2. is the double.
+   * The brightness scale is applied after the anti-log correction, preserving low end resolution. 
+   * @see useOverallBrightnessScale 
+   * @see getOverallBrightnessScale
+   * @param double bScale
+   */
   public static void setOverallBrightnessScale(double bScale) {
     DeviceRegistry.overallBrightnessScale = bScale;
     DeviceRegistry.useOverallBrightnessScale = true;

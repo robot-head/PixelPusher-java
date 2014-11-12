@@ -531,7 +531,7 @@ public final class DeviceRegistry extends Observable {
     
     // In the case where it is a multicast pusher,
     // and is the primary of its mcast group, we must
-    // elect a new primary.
+    // select a new primary.
     if (pusher.isMulticast()) {
       if (pusher.isMulticastPrimary()) {
         List<PixelPusher> candidates = getPushers(pusher.getIp());

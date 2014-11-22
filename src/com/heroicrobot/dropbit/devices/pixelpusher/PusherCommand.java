@@ -12,6 +12,7 @@ public class PusherCommand {
   * #define COMMAND_GLOBALBRIGHTNESS_SET 0x02
   * #define COMMAND_WIFI_CONFIGURE       0x03
   * #define COMMAND_LED_CONFIGURE        0x04
+  * #define COMMAND_STRIPBRIGHTNESS_SET  0x05
   */
   
   private static final byte pp_command_magic[] = 
@@ -22,6 +23,7 @@ public class PusherCommand {
   public static final byte GLOBALBRIGHTNESS_SET = 0x02;
   public static final byte WIFI_CONFIGURE = 0x03;
   public static final byte LED_CONFIGURE = 0x04;
+  public static final byte STRIPBRIGHTNESS_SET = 0x05;
   
   public static final byte STRIP_LPD8806 = 0;
   public static final byte STRIP_WS2801 = 1;
@@ -29,6 +31,7 @@ public class PusherCommand {
   public static final byte STRIP_APA102 = 3;
   
   public byte command;
+  private byte stripNumber;
   private short parameter;
   private String ssid;
   private String key;
@@ -70,6 +73,12 @@ public class PusherCommand {
   public PusherCommand(byte command, short parameter) {
     this.command = command;
     this.parameter = parameter;
+  }
+  
+  public PusherCommand(byte command, byte stripNumber, short parameter) {
+     this.command = command;
+     this.stripNumber = stripNumber;
+     this.parameter = parameter;
   }
   
   public PusherCommand(byte command, String ssid, String key, String security) {
@@ -133,6 +142,12 @@ public class PusherCommand {
       returnVal[pp_command_magic.length] = GLOBALBRIGHTNESS_SET;
       returnVal[pp_command_magic.length+1] = (byte) (parameter & 0xff);
       returnVal[pp_command_magic.length+2] = (byte) ((parameter>>8) & 0xff);
+    } else if (command == STRIPBRIGHTNESS_SET) {
+      returnVal = Arrays.copyOf(pp_command_magic, pp_command_magic.length+4);
+      returnVal[pp_command_magic.length] = STRIPBRIGHTNESS_SET;
+      returnVal[pp_command_magic.length+1] = (byte) (stripNumber & 0xff);
+      returnVal[pp_command_magic.length+2] = (byte) (parameter & 0xff);
+      returnVal[pp_command_magic.length+3] = (byte) ((parameter>>8) & 0xff);
     } else if (command == WIFI_CONFIGURE) {
       byte[] ssidBytes = ssid.getBytes();
       byte[] keyBytes = key.getBytes();

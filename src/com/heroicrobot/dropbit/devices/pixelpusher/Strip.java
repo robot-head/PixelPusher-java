@@ -22,6 +22,7 @@ public class Strip {
   private boolean useAntiLog;
   private boolean isMotion;
   private boolean isNotIdempotent;
+  private boolean hasBrightness;
 
   static final byte sLinearExp[] = { (byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 1,(byte) 1,(byte) 1,(byte) 1,
     (byte) 1,(byte) 2,(byte) 2,(byte) 2,(byte) 2,(byte) 2,(byte) 3,(byte) 3,(byte) 3,(byte) 3,(byte) 4,(byte) 4,
@@ -362,5 +363,12 @@ public synchronized void setPixelWhite(byte intensity, int position) {
 
   public void setPushedAt(long pushedAt) {
     this.pushedAt = pushedAt;
+  }
+
+  public boolean hasBrightness() {
+    return this.hasBrightness;
+  }
+  public void setHasBrightness(boolean b) {
+    this.hasBrightness = b;
   }
 }

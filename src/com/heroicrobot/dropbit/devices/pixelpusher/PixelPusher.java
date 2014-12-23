@@ -56,6 +56,8 @@ public class PixelPusher extends DeviceImpl
   
   final int PFLAG_PROTECTED = (1<<0);
   final int PFLAG_FIXEDSIZE = (1<<1);
+  final int PFLAG_GLOBALBRIGHTNESS = (1<<2);
+  final int PFLAG_STRIPBRIGHTNESS = (1<<3);
 
   int artnet_universe = 0;
   int artnet_channel = 0;
@@ -105,6 +107,11 @@ public class PixelPusher extends DeviceImpl
           strip.setNotIdempotent(true);
         } else {
           strip.setNotIdempotent(false);
+        }
+        if ((stripFlags[strip.getStripNumber()] & SFLAG_BRIGHTNESS) != 0) {
+          strip.setHasBrightness(true);
+        } else {
+          strip.setHasBrightness(false);
         }
         strip.setRGBOW((stripFlags[strip.getStripNumber()] & SFLAG_RGBOW) == 1);
       }
@@ -305,7 +312,6 @@ public class PixelPusher extends DeviceImpl
     // A minor complication here.  The PixelPusher firmware generates announce packets from
     // a static structure, so the size of stripFlags is always 8;  even if there are fewer
     // strips configured.  So we have a wart. - jls.
-    
     
     int stripFlagSize = 8;
     if (stripsAttached>8)

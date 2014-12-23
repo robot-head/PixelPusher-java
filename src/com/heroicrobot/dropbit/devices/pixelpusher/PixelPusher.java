@@ -52,6 +52,7 @@ public class PixelPusher extends DeviceImpl
   final int SFLAG_LOGARITHMIC = (1<<2);
   final int SFLAG_MOTION = (1<<3);
   final int SFLAG_NOTIDEMPOTENT = (1<<4);
+  final int SFLAG_BRIGHTNESS = (1<<5);
   
   final int PFLAG_PROTECTED = (1<<0);
   final int PFLAG_FIXEDSIZE = (1<<1);
@@ -311,7 +312,7 @@ public class PixelPusher extends DeviceImpl
         stripFlagSize = stripsAttached;
     
     if (packet.length > 30 && super.getSoftwareRevision() > 108) {
-      stripFlags = Arrays.copyOfRange(packet, 30, 30+stripFlagSize);
+      stripFlags = Arrays.copyOfRange(packet, 32, 32+stripFlagSize);
     } else {
       stripFlags = new byte[stripFlagSize];
       for (int i=0; i<stripFlagSize; i++)
@@ -329,10 +330,10 @@ public class PixelPusher extends DeviceImpl
      * uint32_t power_domain;      // power domain of this pusher
      */
     
-    if (packet.length > 30+stripFlagSize && super.getSoftwareRevision() > 116) {
-      setPusherFlags(ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 32+stripFlagSize, 36+stripFlagSize)));
-      segments = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 36+stripFlagSize, 40+stripFlagSize));
-      powerDomain = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 40+stripFlagSize, 44+stripFlagSize));
+    if (packet.length > 32+stripFlagSize && super.getSoftwareRevision() > 116) {
+      setPusherFlags(ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 34+stripFlagSize, 38+stripFlagSize)));
+      segments = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 38+stripFlagSize, 42+stripFlagSize));
+      powerDomain = ByteUtils.unsignedIntToLong(Arrays.copyOfRange(packet, 42+stripFlagSize, 46+stripFlagSize));
     }
   }
 

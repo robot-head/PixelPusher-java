@@ -23,6 +23,7 @@ public class Strip {
   private boolean isMotion;
   private boolean isNotIdempotent;
   private boolean hasBrightness;
+  private boolean isMonochrome;
 
   static final byte sLinearExp[] = { (byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 1,(byte) 1,(byte) 1,(byte) 1,
     (byte) 1,(byte) 2,(byte) 2,(byte) 2,(byte) 2,(byte) 2,(byte) 3,(byte) 3,(byte) 3,(byte) 3,(byte) 4,(byte) 4,
@@ -86,6 +87,7 @@ public class Strip {
     this.powerScale = 1.0;
     this.isRGBOW = false;
     this.useAntiLog = false;
+    this.isMonochrome = false;
     this.msg = new byte[pixels.length * 3];
   }
 
@@ -120,9 +122,36 @@ public class Strip {
       return;
     }
     // otherwise, do nothing.
-
   }
 
+  public void setIsMonochrome(boolean b) {
+    if (b != this.isMonochrome) {
+      // we are either switching to monochrome or away from it
+      if (b) {
+        // we are switching to it
+        int length = pixels.length;
+        this.pixels = new Pixel[length * 3];
+        for (int i = 0; i < this.pixels.length; i++) {
+          this.pixels[i] = new Pixel();
+        }
+        this.msg = new byte[pixels.length]; // one byte per pixel for monochrome.
+        this.isMonochrome = b;
+        pusher.markTouched();
+        return;
+      }
+      // otherwise, we are actually switching away from it.
+      int length = pixels.length;
+      this.pixels = new Pixel[length / 3];
+      for (int i = 0; i < this.pixels.length; i++) {
+        this.pixels[i] = new Pixel();
+      }
+      this.msg = new byte[pixels.length * 3]; // RGB
+      this.isMonochrome = b;
+      pusher.markTouched();
+      return;
+    }
+  }
+  
   public int getLength() {
       return pixels.length;
   }
@@ -330,12 +359,21 @@ public synchronized void setPixelWhite(byte intensity, int position) {
         msg[i++] = (byte) ((double)(pixel.white & 0xff) * powerScale * overallBrightnessScale);
       }
     } else {
-      for (Pixel pixel : pixels) {
-        if (pixel == null)
-          pixel = new Pixel();
-        msg[i++] = (byte) ((double)(pixel.red & 0xff) * powerScale * overallBrightnessScale);
-        msg[i++] = (byte) ((double)(pixel.green & 0xff) * powerScale * overallBrightnessScale);
-        msg[i++] = (byte) ((double)(pixel.blue & 0xff) * powerScale * overallBrightnessScale);
+      if (!isMonochrome) {
+        for (Pixel pixel : pixels) {
+          if (pixel == null)
+            pixel = new Pixel();
+          msg[i++] = (byte) ((double)(pixel.red & 0xff) * powerScale * overallBrightnessScale);
+          msg[i++] = (byte) ((double)(pixel.green & 0xff) * powerScale * overallBrightnessScale);
+          msg[i++] = (byte) ((double)(pixel.blue & 0xff) * powerScale * overallBrightnessScale);
+        } 
+      } else {
+        // isMonochrome
+        for (Pixel pixel : pixels) {
+          if (pixel == null)
+            pixel = new Pixel();
+          msg[i++] = (byte) ((double)(pixel.red & 0xff) * powerScale * overallBrightnessScale);
+        }
       }
     }
     return msg;

@@ -53,11 +53,13 @@ public class PixelPusher extends DeviceImpl
   final int SFLAG_MOTION = (1<<3);
   final int SFLAG_NOTIDEMPOTENT = (1<<4);
   final int SFLAG_BRIGHTNESS = (1<<5);
+  final int SFLAG_MONOCHROME = (1<<6);
   
   final int PFLAG_PROTECTED = (1<<0);
   final int PFLAG_FIXEDSIZE = (1<<1);
   final int PFLAG_GLOBALBRIGHTNESS = (1<<2);
   final int PFLAG_STRIPBRIGHTNESS = (1<<3);
+  final int PFLAG_MONOCHROME_NOT_PACKED = (1<<4);
 
   int artnet_universe = 0;
   int artnet_channel = 0;
@@ -113,6 +115,11 @@ public class PixelPusher extends DeviceImpl
         } else {
           strip.setHasBrightness(false);
         }
+        if ((stripFlags[strip.getStripNumber()] & SFLAG_MONOCHROME) != 0) {
+          strip.setIsMonochrome(true);
+        } else {
+          strip.setIsMonochrome(false);
+        }     
         strip.setRGBOW((stripFlags[strip.getStripNumber()] & SFLAG_RGBOW) == 1);
       }
       touchedStrips = false;

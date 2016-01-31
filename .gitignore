@@ -9,3 +9,6 @@
 
 compiled/PixelPusher.jar
 /bin
+target
+.idea
+*.iml

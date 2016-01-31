@@ -11,10 +11,13 @@ import org.junit.Test;
 import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 
-public class DeviceRegistryTest {
+/**
+ * Integration-test. This test runs indefinitely and needs to be run/stopped manually.
+ */
+public class DeviceRegistryIT {
 
   private final static Logger LOGGER = Logger
-      .getLogger(DeviceRegistryTest.class.getName());
+      .getLogger(DeviceRegistryIT.class.getName());
 
   private Random random = new Random();
 

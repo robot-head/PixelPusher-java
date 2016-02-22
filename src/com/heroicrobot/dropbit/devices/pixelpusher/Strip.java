@@ -25,7 +25,6 @@ public class Strip {
   private boolean hasBrightness;
   private boolean isMonochrome;
   private boolean isRGBW;
-    
 
   static final byte sLinearExp[] = { (byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 0,(byte) 1,(byte) 1,(byte) 1,(byte) 1,
     (byte) 1,(byte) 2,(byte) 2,(byte) 2,(byte) 2,(byte) 2,(byte) 3,(byte) 3,(byte) 3,(byte) 3,(byte) 4,(byte) 4,
@@ -77,7 +76,7 @@ public class Strip {
     this.useAntiLog = antiLog;
     this.msg = new byte[pixels.length * 3];
     this.RGBW = false;
-      
+
   }
 
   public Strip(PixelPusher pusher, int stripNumber, int length) {
@@ -155,7 +154,7 @@ public class Strip {
       return;
     }
   }
-    
+
   public void setIsRGBW(boolean b) {
     if (b != this.isRGBW) {
       // we are either switching to RGBW or away from it
@@ -183,7 +182,7 @@ public class Strip {
       return;
     }
   }
-  
+
   public int getLength() {
       return pixels.length;
   }
@@ -381,7 +380,7 @@ public synchronized void setPixelWhite(byte intensity, int position) {
         msg[i++] = (byte) ((double)(pixel.red & 0xff)  * powerScale * overallBrightnessScale);    // C
         msg[i++] = (byte) ((double)(pixel.green & 0xff) * powerScale * overallBrightnessScale);
         msg[i++] = (byte) ((double)(pixel.blue & 0xff)  * powerScale * overallBrightnessScale);
-        
+
         msg[i++] = (byte) ((double)(pixel.orange & 0xff) * powerScale * overallBrightnessScale);   // O
         msg[i++] = (byte) ((double)(pixel.orange & 0xff) * powerScale * overallBrightnessScale);
         msg[i++] = (byte) ((double)(pixel.orange & 0xff) * powerScale * overallBrightnessScale);
@@ -399,7 +398,7 @@ public synchronized void setPixelWhite(byte intensity, int position) {
           msg[i++] = (byte) ((double)(pixel.red & 0xff) * powerScale * overallBrightnessScale);  // C
           msg[i++] = (byte) ((double)(pixel.green & 0xff) * powerScale * overallBrightnessScale);
           msg[i++] = (byte) ((double)(pixel.blue & 0xff) * powerScale * overallBrightnessScale);
-          
+
           msg[i++] = (byte) ((double)(pixel.white & 0xff) * powerScale * overallBrightnessScale);  // W
           msg[i++] = (byte) ((double)(pixel.white & 0xff) * powerScale * overallBrightnessScale);
           msg[i++] = (byte) ((double)(pixel.white & 0xff) * powerScale * overallBrightnessScale);

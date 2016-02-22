@@ -173,7 +173,7 @@ public class Strip {
             }
             // otherwise, we are actually switching away from it.
             int length = pixels.length;
-            this.pixels = new Pixel[length / (3/4)];   ///  Does this also get set to 3/4?
+            this.pixels = new Pixel[length / 3];   ///  Does this stay the same?
             for (int i = 0; i < this.pixels.length; i++) {
                 this.pixels[i] = new Pixel();
             }

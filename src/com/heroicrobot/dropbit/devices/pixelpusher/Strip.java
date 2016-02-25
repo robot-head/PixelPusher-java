@@ -50,7 +50,7 @@ public class Strip {
     (byte) 183,(byte) 186,(byte) 188,(byte) 190,(byte) 192,(byte) 195,(byte) 197,(byte) 199,(byte) 202,(byte) 204,
     (byte) 206,(byte) 209,(byte) 211,(byte) 214,(byte) 216,(byte) 219,(byte) 221,(byte) 224,(byte) 227,(byte) 229,
     (byte) 232,(byte) 235,(byte) 237,(byte) 240,(byte) 243,(byte) 246,(byte) 249,(byte) 252 };
-    
+
   /*  
     
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

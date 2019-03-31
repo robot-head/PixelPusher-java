@@ -75,7 +75,7 @@ public class Strip {
     this.isRGBOW = false;
     this.useAntiLog = antiLog;
     this.msg = new byte[pixels.length * 3];
-    this.RGBW = false;
+    this.isRGBW = false;
 
   }
 
